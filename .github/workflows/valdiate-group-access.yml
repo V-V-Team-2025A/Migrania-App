@@ -1,0 +1,132 @@
+name: Validación de Acceso por Grupos
+
+on:
+  push:
+    branches:
+      - 'feature_Grupo*'
+  pull_request:
+    branches:
+      - develop
+      - main
+    types: [opened, synchronize, reopened]
+
+jobs:
+  validate-group-access:
+    runs-on: ubuntu-latest
+    name: Validar acceso de grupos a carpetas
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Validar estructura de carpetas y permisos
+      run: |
+        # Obtener la rama actual
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          BRANCH_NAME="${{ github.head_ref }}"
+        else
+          BRANCH_NAME="${{ github.ref_name }}"
+        fi
+        
+        echo "🔍 Validando rama: $BRANCH_NAME"
+        
+        # Definir mapeo de ramas a carpetas
+        declare -A branch_folders=(
+          ["feature_Grupo1_AutoevaluacionMidas"]="AutoevaluacionMidas"
+          ["feature_Grupo2_BitacoraAsistidaCefalea"]="BitacoraAsistidaCefalea"
+          ["feature_Grupo3_AutoevaluacionMidas"]="AutoevaluacionMidas"
+          ["feature_Grupo4_Recordatorios"]="Recordatorios"
+          ["feature_Grupo5_AgendamientoCitasMedicas"]="AgendamientoCitasMedicas"
+          ["feature_Grupo6_AnalisisPatronesClinicos"]="AnalisisPatronesClinicos"
+          ["feature_Grupo7_GeneracionSeguimientoTratamiento"]="GeneracionSeguimientoTratamiento"
+        )
+        
+        # Verificar si es una rama de feature válida
+        if [[ ! "$BRANCH_NAME" =~ ^feature_Grupo[0-9]_ ]]; then
+          echo "Rama $BRANCH_NAME no es una rama de feature de grupo"
+          if [[ "$BRANCH_NAME" == "main" || "$BRANCH_NAME" == "develop" ]]; then
+            echo "Rama principal - permitida para líderes técnicos"
+            exit 0
+          else
+            echo "Rama no reconocida"
+            exit 1
+          fi
+        fi
+        
+        # Obtener carpeta permitida
+        ALLOWED_FOLDER="${branch_folders[$BRANCH_NAME]}"
+        if [[ -z "$ALLOWED_FOLDER" ]]; then
+          echo "No se encontró configuración para la rama: $BRANCH_NAME"
+          exit 1
+        fi
+        
+        echo "Carpeta permitida: $ALLOWED_FOLDER"
+        
+        # Obtener archivos modificados
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}..HEAD)
+        else
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+        fi
+        
+        echo "Archivos modificados:"
+        echo "$CHANGED_FILES"
+        
+        # Validar cada archivo
+        INVALID_FILES=()
+        while IFS= read -r file; do
+          if [[ -n "$file" ]]; then
+            # Verificar si el archivo está en las carpetas permitidas
+            if [[ ! "$file" =~ ^(frontend|backend)/$ALLOWED_FOLDER/ ]] && \
+               [[ ! "$file" =~ ^GRUPO_[0-9]+_README\.md$ ]] && \
+               [[ ! "$file" =~ ^\.github/ ]] && \
+               [[ ! "$file" =~ ^docs/ ]] && \
+               [[ "$file" != "README.md" ]]; then
+              INVALID_FILES+=("$file")
+            fi
+          fi
+        done <<< "$CHANGED_FILES"
+        
+        # Reportar resultados
+        if [[ ${#INVALID_FILES[@]} -gt 0 ]]; then
+          echo "VALIDACIÓN FALLIDA"
+          echo "Los siguientes archivos NO están en las carpetas permitidas:"
+          for file in "${INVALID_FILES[@]}"; do
+            echo "   $file"
+          done
+          echo ""
+          echo "Carpetas permitidas para $BRANCH_NAME:"
+          echo "   frontend/$ALLOWED_FOLDER/"
+          echo "   backend/$ALLOWED_FOLDER/"
+          echo "   GRUPO_*_README.md"
+          echo "   .github/ (configuración)"
+          echo "   docs/ (documentación)"
+          echo "   README.md (raíz)"
+          echo ""
+          echo "🔧 Solución:"
+          echo "   1. Mueve tus archivos a las carpetas permitidas"
+          echo "   2. O contacta al líder técnico para permisos especiales"
+          exit 1
+        fi
+        
+        echo "VALIDACIÓN EXITOSA"
+        echo "Todos los archivos están en las ubicaciones correctas"
+
+    - name: Generar reporte de validación
+      if: always()
+      run: |
+        GROUP_NUM=$(echo "${{ github.ref_name }}" | grep -o 'Grupo[0-9]' | grep -o '[0-9]')
+        echo "## Reporte de Validación - Grupo $GROUP_NUM" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Rama:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Autor:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [[ "${{ job.status }}" == "success" ]]; then
+          echo " **Estado:** Validación exitosa" >> $GITHUB_STEP_SUMMARY
+        else
+          echo " **Estado:** Validación fallida" >> $GITHUB_STEP_SUMMARY
+        fi
