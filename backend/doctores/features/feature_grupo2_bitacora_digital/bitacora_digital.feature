@@ -42,14 +42,15 @@ Característica: Bitácora digital de episodios de cefalea.
       | Presencia de Aura        | <presencia_aura>         |
       | Síntomas del Aura        | <sintomas_aura>          |
       | Duración del Aura (min)  | <duracion_aura_minutos>  |
-      | En menstruación         | <en_menstruacion>         |
+      | En menstruación          | <en_menstruacion>        |
+      | Anticonceptivos          | <anticonceptivos>        | 
 
     Cuando todos los datos estén completos
     Entonces el sistema debe categorizar el episodio como "<categoria_esperada>"
     Y el episodio se guarda en la bitácora del paciente
 
     Ejemplos:
-      | categoria_esperada          | duracion_cefalea_horas | severidad  | localizacion | caracter_dolor | empeora_actividad | nauseas_vomitos | fotofobia | fonofobia | presencia_aura | sintomas_aura          | duracion_aura_minutos | en_menstruacion |
-      | "Migraña sin aura"          | 6                      | "Severa"   | "Unilateral" | "Pulsátil"     | "Sí"              | "Sí"            | "Sí"      | "Sí"      | "No"           | "Ninguno"              | 0                     | "Si"         |
-      | "Migraña con aura"          | 4                      | "Moderada" | "Unilateral" | "Pulsátil"     | "Sí"              | "No"            | "Sí"      | "Sí"      | "Sí"           | "Visuales, Sensitivos" | 30                    | "Si"          |
-      | "Cefalea de tipo tensional" | 2                      | "Leve"     | "Bilateral"  | "Opresivo"     | "No"              | "No"            | "No"      | "Sí"      | "No"           | "Ninguno"              | 0                     | "No"          |
+      | categoria_esperada          | duracion_cefalea_horas | severidad  | localizacion | caracter_dolor | empeora_actividad | nauseas_vomitos | fotofobia | fonofobia | presencia_aura | sintomas_aura          | duracion_aura_minutos | en_menstruacion | anticonceptivos |
+      | "Migraña sin aura"          | 6                      | "Severa"   | "Unilateral" | "Pulsátil"     | "Sí"              | "Sí"            | "Sí"      | "Sí"      | "No"           | "Ninguno"              | 0                     | "Si"            | "Si"            |
+      | "Migraña con aura"          | 4                      | "Moderada" | "Unilateral" | "Pulsátil"     | "Sí"              | "No"            | "Sí"      | "Sí"      | "Sí"           | "Visuales, Sensitivos" | 30                    | "Si"            | "Si"            | 
+      | "Cefalea de tipo tensional" | 2                      | "Leve"     | "Bilateral"  | "Opresivo"     | "No"              | "No"            | "No"      | "Sí"      | "No"           | "Ninguno"              | 0                     | "No"            | "No"            |
