@@ -1,6 +1,6 @@
 # language: es
 
-Característica: Evaluación MIDAS
+Característica: Autoevaluación MIDAS
   Como paciente
   Quiero saber mi grado de discapacidad
   Para entender mejor el impacto de migrañas en mi vida diaria
