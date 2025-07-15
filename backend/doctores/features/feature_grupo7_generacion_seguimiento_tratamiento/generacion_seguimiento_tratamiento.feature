@@ -1,60 +1,127 @@
 # Created by CamilaL at 7/7/2025
 #language: es
 
-Característica: Generación y seguimiento de tratamiento
+Característica: Generación y seguimiento de tratamiento médico
 
   Como médico
   Quiero saber la información médica del paciente
   Para crear un tratamiento médico que mejore la calidad de vida del paciente
-  Y sea personalizado según el nivel de dolor, frecuencia de ataques, tiempo de duración y desencadenante
+  Y sea personalizado según la categorizacion (migraña sin aura, migraña con aura,cefalea de tipo tensional)
 
   Antecedentes:
     Dado que el paciente tiene al menos un historial de migrañas
 
-  Escenario: Generar tratamiento para dolor leve con baja frecuencia
-    Dado que el paciente "María García" tiene:
-      | Nivel de dolor      | 3/10                    |
-      | Frecuencia ataques  | 1 vez por mes           |
-      | Duración promedio   | 2 horas                 |
-      | Desencadenante      | Cambios hormonales      |
-    Cuando genero un tratamiento personalizado
+  Escenario: Generar tratamiento para migraña paciente masculino
+    Dado que el paciente tiene su primer episodio con una de las siguientes categorizaciones:
+      | Migraña sin aura            |
+      | Migraña con aura            |
+      | Cefalea de tipo tensional   |
+    Y se verifican las siguientes características del episodio:
+      | Característica           | Valor                    |
+      | Duración Cefalea (horas) | <duracion_cefalea_horas> |
+      | Severidad del Dolor      | <severidad>              |
+      | Localización del Dolor   | <localizacion>           |
+      | Carácter del Dolor       | <caracter_dolor>         |
+      | Empeora con Actividad    | <empeora_actividad>      |
+      | Náuseas o Vómitos        | <nauseas_vomitos>        |
+      | Sensibilidad a la Luz    | <fotofobia>              |
+      | Sensibilidad al Sonido   | <fonofobia>              |
+      | Presencia de Aura        | <presencia_aura>         |
+      | Síntomas del Aura        | <sintomas_aura>          |
+      | Duración del Aura (min)  | <duracion_aura_minutos>  |
+    Cuando genero un tratamiento
     Entonces el sistema debe sugerir:
-      | Tipo tratamiento    | Preventivo básico       |
-      | Medicación          | Analgésicos suaves      |
-      | Frecuencia          | Según necesidad         |
-      | Recomendaciones     | Técnicas de relajación  |
+      | Tipo tratamiento     | Preventivo básico       |
+      | Medicación           | Analgésicos suaves      |
+      | Frecuencia           | Horas                   |
+      | Duracion tratamiento | Dias                    |
+      | Recomendaciones      | Técnicas de relajación  |
 
-  Escenario: Generar tratamiento para dolor severo con alta frecuencia
-    Dado que el paciente "Carlos Rodríguez" tiene:
-      | Nivel de dolor      | 9/10                    |
-      | Frecuencia ataques  | Diario                  |
-      | Duración promedio   | 6 horas                 |
-      | Desencadenante      | Múltiples factores      |
-    Cuando genero un tratamiento personalizado
+
+  Escenario: Generar tratamiento para migraña paciente femenino
+    Dado que el paciente tiene su primer episodio con una de las siguientes categorizaciones:
+      | Migraña sin aura            |
+      | Migraña con aura            |
+      | Cefalea de tipo tensional   |
+    Y se verifican las siguientes características del episodio:
+      | Característica           | Valor                    |
+      | Duración Cefalea (horas) | <duracion_cefalea_horas> |
+      | Severidad del Dolor      | <severidad>              |
+      | Localización del Dolor   | <localizacion>           |
+      | Carácter del Dolor       | <caracter_dolor>         |
+      | Empeora con Actividad    | <empeora_actividad>      |
+      | Náuseas o Vómitos        | <nauseas_vomitos>        |
+      | Sensibilidad a la Luz    | <fotofobia>              |
+      | Sensibilidad al Sonido   | <fonofobia>              |
+      | Presencia de Aura        | <presencia_aura>         |
+      | Síntomas del Aura        | <sintomas_aura>          |
+      | Duración del Aura (min)  | <duracion_aura_minutos>  |
+      | En menstruación          | <en_menstruacion>        |
+      | Anticonceptivos          | <anticonceptivos>        |
+    Cuando genero un tratamiento
+    Entonces el sistema debe sugerir:
+      | Tipo tratamiento     | Preventivo básico       |
+      | Medicación           | Analgésicos suaves      |
+      | Frecuencia           | Horas                   |
+      | Duracion tratamiento | Dias                    |
+      | Recomendaciones      | Técnicas de relajación  |
+
+
+  Escenario: Seguimiento tratamiento para paciente masculino
+    Dado que el paciente tiene un tratamiento activo de un episodio
+    Y se verifican el historial del o los episodios con las siguientes características:
+      | Característica           | Valor                    |
+      | Duración Cefalea (horas) | <duracion_cefalea_horas> |
+      | Severidad del Dolor      | <severidad>              |
+      | Localización del Dolor   | <localizacion>           |
+      | Carácter del Dolor       | <caracter_dolor>         |
+      | Empeora con Actividad    | <empeora_actividad>      |
+      | Náuseas o Vómitos        | <nauseas_vomitos>        |
+      | Sensibilidad a la Luz    | <fotofobia>              |
+      | Sensibilidad al Sonido   | <fonofobia>              |
+      | Presencia de Aura        | <presencia_aura>         |
+      | Síntomas del Aura        | <sintomas_aura>          |
+      | Duración del Aura (min)  | <duracion_aura_minutos>  |
+    Y el historial de alertas indica que el paciente ha confirmado al menos el 80% de las tomas
+    Cuando el médico decide evaluar el tratamiento actual
+    Entonces si el paciente ha cumplido con el tratamiento anterior
+    Y se decide modificar el tratamiento
     Entonces el sistema debe sugerir:
       | Tipo tratamiento    | Intensivo y preventivo   |
       | Medicación          | Triptanes + preventivos  |
       | Frecuencia          | Diaria (preventivo)      |
       | Recomendaciones     | Derivación a especialista|
+    Pero si el paciente ha confirmado menos del 80% de las tomas
+    Entonces se debe cancelar el tratamiento actual
+    Y registrar el motivo como "incumplimiento de tratamiento"
 
-  Escenario: Personalizar tratamiento según desencadenante específico
-    Dado que el paciente "Ana López" tiene como desencadenante "Alimentos específicos"
-    Y su nivel de dolor es "7/10"
-    Y la frecuencia de ataques es "2 veces por semana"
-    Cuando genero un tratamiento personalizado
-    Entonces el sistema debe incluir:
-      | Recomendación principal | Dieta de eliminación     |
-      | Medicación             | Analgésicos moderados    |
-      | Seguimiento            | Diario alimentario       |
-      | Consulta especializada | Nutricionista            |
 
-  Escenario: Modificar tratamiento basado en evolución del paciente
-    Dado que el paciente "Pedro Martín" tiene un tratamiento activo
-    Y su nivel de dolor actual es "4/10"
-    Y su nivel de dolor inicial era "8/10"
-    Y la frecuencia de ataques se redujo de "5 veces por semana" a "1 vez por semana"
-    Cuando actualizo el tratamiento
+  Escenario: Seguimiento de tratamiento para paciente femenino
+    Dado que el paciente tiene un tratamiento activo de un episodio
+    Y se verifican el historial del o los episodios con las siguientes características:
+      | Característica           | Valor                    |
+      | Duración Cefalea (horas) | <duracion_cefalea_horas> |
+      | Severidad del Dolor      | <severidad>              |
+      | Localización del Dolor   | <localizacion>           |
+      | Carácter del Dolor       | <caracter_dolor>         |
+      | Empeora con Actividad    | <empeora_actividad>      |
+      | Náuseas o Vómitos        | <nauseas_vomitos>        |
+      | Sensibilidad a la Luz    | <fotofobia>              |
+      | Sensibilidad al Sonido   | <fonofobia>              |
+      | Presencia de Aura        | <presencia_aura>         |
+      | Síntomas del Aura        | <sintomas_aura>          |
+      | Duración del Aura (min)  | <duracion_aura_minutos>  |
+      | En menstruación          | <en_menstruacion>        |
+      | Anticonceptivos          | <anticonceptivos>        |
+    Y el historial de alertas indica que el paciente ha confirmado al menos el 80% de las tomas
+    Cuando el médico decide evaluar el tratamiento actual
+    Entonces si el paciente ha cumplido con el tratamiento anterior
+    Y se decide modificar el tratamiento
     Entonces el sistema debe sugerir:
-      | Acción              | Reducir dosis medicación |
-      | Nuevo seguimiento   | Quincenal               |
-      | Estado tratamiento  | Efectivo - mantener     |
+      | Tipo tratamiento    | Intensivo y preventivo   |
+      | Medicación          | Triptanes + preventivos  |
+      | Frecuencia          | Diaria (preventivo)      |
+      | Recomendaciones     | Derivación a especialista|
+    Pero si el paciente ha confirmado menos del 80% de las tomas
+    Entonces se debe cancelar el tratamiento actual
+    Y registrar el motivo como "incumplimiento de tratamiento"
