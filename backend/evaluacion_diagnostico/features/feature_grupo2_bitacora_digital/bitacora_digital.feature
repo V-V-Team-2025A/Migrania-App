@@ -5,7 +5,6 @@ Característica: Bitácora digital de episodios de cefalea.
 
   Esquema del escenario: Categorización de un episodio de cefalea basado en los síntomas registrados en pacientes masculinos
     Dado que un paciente masculino ha ingresado datos para un nuevo episodio de cefalea con las siguientes características:
-      | Característica           | Valor                    |
       | Duración Cefalea (horas) | <duracion_cefalea_horas> |
       | Severidad del Dolor      | <severidad>              |
       | Localización del Dolor   | <localizacion>           |
@@ -14,6 +13,7 @@ Característica: Bitácora digital de episodios de cefalea.
       | Náuseas o Vómitos        | <nauseas_vomitos>        |
       | Sensibilidad a la Luz    | <fotofobia>              |
       | Sensibilidad al Sonido   | <fonofobia>              |
+      | Característica           | Valor                    |
       | Presencia de Aura        | <presencia_aura>         |
       | Síntomas del Aura        | <sintomas_aura>          |
       | Duración del Aura (min)  | <duracion_aura_minutos>  |
