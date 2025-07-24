@@ -166,6 +166,69 @@ button {
     background-color: #4A5A69;
 }
 
+/* === TABLA === */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: var(--spacing-l);
+    border-radius: var(--border-radius);
+    background-color: var(--color-background);
+}
+
+table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
+    background-color: var(--color-background);
+}
+
+table thead {
+    background-color: var(--color-background);
+}
+
+table th {
+    padding: var(--spacing-s) var(--spacing-m);
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--color-text);
+    border-bottom: 1px solid #4A5A69;
+    border-right: 1px solid #4A5A69;
+    text-align: center;
+    white-space: nowrap;
+    min-width: 120px;
+}
+
+table th:last-child {
+    border-right: none;
+}
+
+table td {
+    padding: var(--spacing-s) var(--spacing-m);
+    font-size: 1rem;
+    color: var(--color-text);
+    border-bottom: 1px solid #4A5A69;
+    border-right: 1px solid #4A5A69;
+    text-align: center;
+    white-space: nowrap;
+    min-width: 120px;
+}
+
+table td:last-child {
+    border-right: none;
+}
+
+table tbody tr {
+    background-color: var(--color-background);
+}
+
+table tbody tr:hover {
+    background-color: #4A5A69;
+}
+
+table tbody tr:last-child td {
+    border-bottom: none;
+}
+
 /* === LABEL === */
 label {
     display: block;
