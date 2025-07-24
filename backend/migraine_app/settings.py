@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'djoser',
     'corsheaders',
+    'drf_spectacular',
     
     # Aplicaciones locales
     'usuarios',              
@@ -151,6 +152,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # JWT
@@ -183,3 +185,11 @@ CORS_ALLOWED_ORIGINS = [
 
 # Email para desarrollo
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Spectacular settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Migraine App API',
+    'DESCRIPTION': 'API for Migraine App',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
