@@ -5,5 +5,10 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "django-cors-headers>=4.7.0",
     "djangorestframework>=3.16.0",
+    "djoser>=2.3.3",
+    "dotenv>=0.9.9",
+    "drf-spectacular>=0.28.0",
+    "psycopg2>=2.9.10",
 ]
