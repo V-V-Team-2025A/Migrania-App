@@ -131,7 +131,7 @@ export default function BitacoraDigital() {
             <Header
                 title="Bitácora"
                 onBack={handleVolver}
-                primaryButtonText="+ Nuevo episodio"
+                primaryButtonText="Nuevo episodio"
                 onPrimaryClick={handleNuevoEpisodio}
             />
             <Tabla

@@ -131,7 +131,7 @@ export default function BitacoraDigitalMedico() {
             <Header
                 title="Bitácora"
                 onBack={handleVolver}
-                primaryButtonText="Nuevo episodio"
+                primaryButtonText="Filtrar bitácora"
                 onPrimaryClick={handleNuevoEpisodio}
                 patientName="Juan Pérez"
             />
