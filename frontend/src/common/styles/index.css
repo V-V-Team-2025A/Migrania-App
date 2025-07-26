@@ -6,10 +6,15 @@
     --secondary-light: #D2D9B8;
     --color-secondary-dark: #9DB9D0;
     --color-action: #03A6A6;
+    --color-action-hover: #2E7474;
     --color-background: #3B4B59;
+    --color-background-hover: #4A5A69;
     --color-body-background: #2A353F;
     --color-text: #FFFFFF;
+    --color-text-muted: #ccc;
+    --color-text-disabled: #999;
     --color-error: #AA4D53;
+    --color-border: #4A5A69;
 
     /* === ESPACIADOS === */
     --spacing-xs: 4px;
@@ -19,10 +24,23 @@
     --spacing-xl: 32px;
     --spacing-xxl: 64px;
 
+    /* === TIPOGRAFÍA === */
+    --font-main: 'Poppins', sans-serif;
+    --font-size-xs: 14px;
+    --font-size-s: 16px;
+    --font-size-m: 18px;
+    --font-size-l: 24px;
+    --font-size-xl: 32px;
+    --font-size-xxl: 48px;
+    --font-weight-normal: 400;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
     /* === OTROS === */
     --border-radius: 13px;
     --max-width: 1100px;
-    --font-main: 'Poppins', sans-serif;
+    --border-width: 2px;
+    --border-width-thin: 1px;
 }
 
 /* === RESET Y BASE === */
@@ -41,6 +59,7 @@ body {
     padding: var(--spacing-m);
 }
 
+/* === LAYOUT === */
 header {
     display: flex;
     justify-content: space-between;
@@ -50,36 +69,37 @@ header {
 
 /* === TIPOGRAFÍA === */
 h1 {
-    font-size: 48px;
-    font-weight: 700;
+    font-size: var(--font-size-xxl);
+    font-weight: var(--font-weight-bold);
 }
 
 h2 {
-    font-size: 32px;
-    font-weight: 600;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
 }
 
 h3 {
-    font-size: 24px;
-    font-weight: 600;
+    font-size: var(--font-size-l);
+    font-weight: var(--font-weight-semibold);
 }
 
 h4 {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: var(--font-size-m);
+    font-weight: var(--font-weight-semibold);
 }
 
 p {
-    font-size: 16px;
+    font-size: var(--font-size-s);
 }
 
-/* === CHECKBOX Y RADIO === */
-input[type="checkbox"],
-input[type="radio"] {
-    accent-color: var(--color-action);
+label {
+    display: block;
+    font-size: var(--font-size-xs);
+    margin-bottom: var(--spacing-xs);
+    color: var(--color-text);
 }
 
-/* === INPUTS === */
+/* === INPUTS BASE === */
 input[type="text"],
 input[type="email"],
 input[type="password"] {
@@ -89,55 +109,66 @@ input[type="password"] {
     border: none;
     outline: none;
     font-family: var(--font-main);
+    background-color: #fff;
 }
 
 input:disabled {
     background-color: var(--color-secondary-dark);
-    color: #ccc;
+    color: var(--color-text-muted);
 }
 
 input::placeholder {
-    color: #ccc;
+    color: var(--color-text-muted);
 }
 
+/* === INPUTS ESTADOS === */
 .input-default {
     background-color: #fff;
 }
 
 .input-valid {
     background-color: #fff;
-    border: 2px solid var(--color-action);
+    border: var(--border-width) solid var(--color-action);
 }
 
 .input-error {
     background-color: #fff;
-    border: 2px solid var(--color-error);
+    border: var(--border-width) solid var(--color-error);
 }
 
-/* === BOTONES === */
+/* === CHECKBOX Y RADIO === */
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: var(--color-action);
+}
+
+/* === BOTONES BASE === */
 button {
     font-family: var(--font-main);
     padding: var(--spacing-s) var(--spacing-m);
     border-radius: var(--border-radius);
     border: none;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-s);
 }
 
+/* === BOTONES VARIANTES === */
 .btn-primary {
     background-color: var(--color-action);
     padding: 1rem;
-    font-size: 24px;
-    font-weight: 600;
+    font-size: var(--font-size-l);
 }
 
 .btn-primary:hover {
-    background-color: #2E7474;
+    background-color: var(--color-action-hover);
 }
 
 .btn-secondary {
-    background-color: var(-secondary-light);
+    background-color: var(--secondary-light);
     color: var(--color-background);
 }
 
@@ -148,22 +179,18 @@ button {
 .btn-disabled {
     background-color: var(--color-secondary-dark);
     cursor: not-allowed;
-    color: #999;
+    color: var(--color-text-disabled);
 }
 
 .btn-back {
-    font-size: 24px;
-    font-weight: 600;
+    font-size: var(--font-size-l);
     background-color: transparent;
     color: var(--color-text);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-s);
     padding: var(--spacing-s) var(--spacing-m);
 }
 
 .btn-back:hover {
-    background-color: #4A5A69;
+    background-color: var(--color-background-hover);
 }
 
 /* === TABLA === */
@@ -186,53 +213,41 @@ table thead {
     background-color: var(--color-background);
 }
 
-table th {
+/* === CELDAS DE TABLA === */
+table th,
+table td {
     padding: var(--spacing-s) var(--spacing-m);
-    font-weight: 600;
-    font-size: 1.2rem;
     color: var(--color-text);
-    border-bottom: 1px solid #4A5A69;
-    border-right: 1px solid #4A5A69;
+    border-bottom: var(--border-width-thin) solid var(--color-border);
+    border-right: var(--border-width-thin) solid var(--color-border);
     text-align: center;
     white-space: nowrap;
     min-width: 120px;
 }
 
-table th:last-child {
-    border-right: none;
+table th {
+    font-weight: var(--font-weight-semibold);
+    font-size: 1.2rem;
 }
 
 table td {
-    padding: var(--spacing-s) var(--spacing-m);
     font-size: 1rem;
-    color: var(--color-text);
-    border-bottom: 1px solid #4A5A69;
-    border-right: 1px solid #4A5A69;
-    text-align: center;
-    white-space: nowrap;
-    min-width: 120px;
 }
 
+table th:last-child,
 table td:last-child {
     border-right: none;
 }
 
+/* === FILAS DE TABLA === */
 table tbody tr {
     background-color: var(--color-background);
 }
 
 table tbody tr:hover {
-    background-color: #4A5A69;
+    background-color: var(--color-background-hover);
 }
 
 table tbody tr:last-child td {
     border-bottom: none;
-}
-
-/* === LABEL === */
-label {
-    display: block;
-    font-size: 14px;
-    margin-bottom: var(--spacing-xs);
-    color: var(--color-text);
 }
