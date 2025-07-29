@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -7,16 +8,13 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-vmqe-^x45+go2sj@h-qs&ym7$rr)8(v)t4l81dw(s90o%+ht1s')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
 
 # Application definition
@@ -28,8 +26,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    # Aplicaciones de terceros
     'rest_framework',
-    'usuarios',
+    'rest_framework_simplejwt',
+    'djoser',
+    'corsheaders',
+    'drf_spectacular',
+    
+    # Aplicaciones locales
+    'usuarios',              
     'tratamiento',
     'evaluacion_diagnostico',
     'analiticas',
@@ -37,6 +43,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -93,8 +100,9 @@ DATABASES = {
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
 DATABASE_ROUTERS = ['migraine_app.routers.CustomRouter']
-# Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
+
+# Usuario personalizado
+AUTH_USER_MODEL = 'usuarios.Usuario'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -133,3 +141,55 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# JWT
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+}
+
+# Djoser
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'USER_CREATE_PASSWORD_RETYPE': True,
+    'SEND_ACTIVATION_EMAIL': False,
+    'SEND_CONFIRMATION_EMAIL': False,
+    'SERIALIZERS': {
+        'user_create': 'usuarios.serializers.CrearUsuarioSerializer',
+        'user': 'usuarios.serializers.UsuarioCompletoSerializer',
+        'current_user': 'usuarios.serializers.UsuarioCompletoSerializer',
+    },
+}
+
+# CORS
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+# Email para desarrollo
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Spectacular settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Migraine App API',
+    'DESCRIPTION': 'API for Migraine App',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}

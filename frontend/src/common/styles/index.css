@@ -1,68 +1,238 @@
+/* === FUENTE GENERAL === */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+    /* === COLORES === */
+    --secondary-light: #D2D9B8;
+    --color-secondary-dark: #9DB9D0;
+    --color-action: #03A6A6;
+    --color-background: #3B4B59;
+    --color-body-background: #2A353F;
+    --color-text: #FFFFFF;
+    --color-error: #AA4D53;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+    /* === ESPACIADOS === */
+    --spacing-xs: 4px;
+    --spacing-s: 8px;
+    --spacing-m: 16px;
+    --spacing-l: 24px;
+    --spacing-xl: 32px;
+    --spacing-xxl: 64px;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    /* === OTROS === */
+    --border-radius: 13px;
+    --max-width: 1100px;
+    --font-main: 'Poppins', sans-serif;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+/* === RESET Y BASE === */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+    font-family: var(--font-main);
+    background-color: var(--color-body-background);
+    color: var(--color-text);
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: var(--spacing-m);
 }
 
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-m) 0;
+}
+
+/* === TIPOGRAFÍA === */
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+    font-size: 48px;
+    font-weight: 700;
 }
 
+h2 {
+    font-size: 32px;
+    font-weight: 600;
+}
+
+h3 {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+h4 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+p {
+    font-size: 16px;
+}
+
+/* === CHECKBOX Y RADIO === */
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: var(--color-action);
+}
+
+/* === INPUTS === */
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: var(--spacing-s);
+    border-radius: var(--border-radius);
+    border: none;
+    outline: none;
+    font-family: var(--font-main);
+}
+
+input:disabled {
+    background-color: var(--color-secondary-dark);
+    color: #ccc;
+}
+
+input::placeholder {
+    color: #ccc;
+}
+
+.input-default {
+    background-color: #fff;
+}
+
+.input-valid {
+    background-color: #fff;
+    border: 2px solid var(--color-action);
+}
+
+.input-error {
+    background-color: #fff;
+    border: 2px solid var(--color-error);
+}
+
+/* === BOTONES === */
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+    font-family: var(--font-main);
+    padding: var(--spacing-s) var(--spacing-m);
+    border-radius: var(--border-radius);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--color-text);
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+.btn-primary {
+    background-color: var(--color-action);
+    padding: 1rem;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background-color: #2E7474;
+}
+
+.btn-secondary {
+    background-color: var(-secondary-light);
+    color: var(--color-background);
+}
+
+.btn-cancel {
+    background-color: var(--color-error);
+}
+
+.btn-disabled {
+    background-color: var(--color-secondary-dark);
+    cursor: not-allowed;
+    color: #999;
+}
+
+.btn-back {
+    font-size: 24px;
+    font-weight: 600;
+    background-color: transparent;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-s);
+    padding: var(--spacing-s) var(--spacing-m);
+}
+
+.btn-back:hover {
+    background-color: #4A5A69;
+}
+
+/* === TABLA === */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: var(--spacing-l);
+    border-radius: var(--border-radius);
+    background-color: var(--color-background);
+}
+
+table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
+    background-color: var(--color-background);
+}
+
+table thead {
+    background-color: var(--color-background);
+}
+
+table th {
+    padding: var(--spacing-s) var(--spacing-m);
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--color-text);
+    border-bottom: 1px solid #4A5A69;
+    border-right: 1px solid #4A5A69;
+    text-align: center;
+    white-space: nowrap;
+    min-width: 120px;
+}
+
+table th:last-child {
+    border-right: none;
+}
+
+table td {
+    padding: var(--spacing-s) var(--spacing-m);
+    font-size: 1rem;
+    color: var(--color-text);
+    border-bottom: 1px solid #4A5A69;
+    border-right: 1px solid #4A5A69;
+    text-align: center;
+    white-space: nowrap;
+    min-width: 120px;
+}
+
+table td:last-child {
+    border-right: none;
+}
+
+table tbody tr {
+    background-color: var(--color-background);
+}
+
+table tbody tr:hover {
+    background-color: #4A5A69;
+}
+
+table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* === LABEL === */
+label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: var(--spacing-xs);
+    color: var(--color-text);
 }
