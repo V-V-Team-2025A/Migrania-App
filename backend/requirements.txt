@@ -37,3 +37,6 @@ typing-extensions==4.14.0
 tzdata==2025.2
 uritemplate==4.2.0
 urllib3==2.5.0
+pylint==3.3.7
+pylint-django==2.6.1
+coverage==7.10.1
