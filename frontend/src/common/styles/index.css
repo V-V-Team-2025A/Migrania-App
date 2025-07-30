@@ -61,10 +61,22 @@ body {
 
 /* === LAYOUT === */
 header {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
     padding: var(--spacing-m) 0;
+}
+
+header>*:first-child {
+    justify-self: start;
+}
+
+header>*:nth-child(2) {
+    justify-self: center;
+}
+
+header>*:last-child {
+    justify-self: end;
 }
 
 /* === TIPOGRAFÍA === */
@@ -103,7 +115,7 @@ label {
 input[type="text"],
 input[type="email"],
 input[type="password"] {
-    width: 100%;
+    flex: 1;
     padding: var(--spacing-s);
     border-radius: var(--border-radius);
     border: none;
@@ -250,4 +262,75 @@ table tbody tr:hover {
 
 table tbody tr:last-child td {
     border-bottom: none;
+}
+
+/* === FORMULARIOS === */
+.form-container {
+    background-color: var(--color-background);
+    padding: var(--spacing-xl);
+    border-radius: var(--border-radius);
+    margin-top: var(--spacing-l);
+}
+
+.form-title {
+    margin-bottom: var(--spacing-l);
+    text-align: center;
+}
+
+.form-grid {
+    display: grid;
+    gap: var(--spacing-m);
+}
+
+.form-buttons {
+    display: flex;
+    gap: var(--spacing-m);
+    margin-top: var(--spacing-xl);
+    justify-content: center;
+}
+
+/* === CAMPO DE FORMULARIO === */
+.form-field {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-m);
+}
+
+/* === LABELS ESTILIZADOS === */
+.label-styled {
+    display: inline-block;
+    background-color: var(--color-background);
+    color: var(--color-text);
+    padding: var(--spacing-xs) var(--spacing-s);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: 0;
+    white-space: nowrap;
+    flex: 0 0 40%;
+}
+
+/* === SELECTS === */
+.select-default {
+    flex: 0 0 60%;
+    padding: var(--spacing-s);
+    border-radius: var(--border-radius);
+    border: none;
+    background-color: #fff;
+    font-family: var(--font-main);
+    outline: none;
+    font-size: var(--font-size-s);
+    color: var(--color-background);
+    min-height: 40px;
+    cursor: pointer;
+}
+
+.select-default:focus {
+    box-shadow: 0 0 0 2px var(--color-action);
+}
+
+.select-default option {
+    padding: var(--spacing-s);
+    color: var(--color-background);
+    background-color: #fff;
 }

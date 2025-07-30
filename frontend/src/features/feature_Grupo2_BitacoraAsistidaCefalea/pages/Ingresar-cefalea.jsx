@@ -45,21 +45,16 @@ export default function IngresarCefalea() {
                 onBack={() => console.log('Volver')}
             />
 
-            <div style={{
-                backgroundColor: 'var(--color-background)',
-                padding: 'var(--spacing-xl)',
-                borderRadius: 'var(--border-radius)',
-                marginTop: 'var(--spacing-l)'
-            }}>
-                <h2 style={{ marginBottom: 'var(--spacing-l)', textAlign: 'center' }}>
+            <div className="form-container">
+                <h2 className="form-title">
                     Registrar nuevo episodio
                 </h2>
 
                 <form onSubmit={handleSubmit}>
-                    <div style={{ display: 'grid', gap: 'var(--spacing-m)' }}>
+                    <div className="form-grid">
 
-                        <div>
-                            <label htmlFor="duracion_cefalea_horas">Duración (h)</label>
+                        <div className="form-field">
+                            <label htmlFor="duracion_cefalea_horas" className="label-styled">Duración (h)</label>
                             <input
                                 type="text"
                                 id="duracion_cefalea_horas"
@@ -71,33 +66,26 @@ export default function IngresarCefalea() {
                             />
                         </div>
 
-                        <div>
-                            <label htmlFor="fecha_episodio">Fecha del episodio</label>
+                        <div className="form-field">
+                            <label htmlFor="fecha_episodio" className="label-styled">Fecha del episodio</label>
                             <input
                                 type="date"
                                 id="fecha_episodio"
                                 name="fecha_episodio"
                                 value={formData.fecha_episodio}
                                 onChange={handleInputChange}
-                                className="input-default"
-                                style={{ padding: 'var(--spacing-s)', borderRadius: 'var(--border-radius)', border: 'none' }}
+                                className="input-default input-date"
                             />
                         </div>
 
-                        <div>
-                            <label htmlFor="severidad">Severidad</label>
+                        <div className="form-field">
+                            <label htmlFor="severidad" className="label-styled">Severidad</label>
                             <select
                                 id="severidad"
                                 name="severidad"
                                 value={formData.severidad}
                                 onChange={handleInputChange}
-                                style={{
-                                    width: '100%',
-                                    padding: 'var(--spacing-s)',
-                                    borderRadius: 'var(--border-radius)',
-                                    border: 'none',
-                                    backgroundColor: '#fff'
-                                }}
+                                className="select-default"
                             >
                                 <option value="">Seleccione una opción</option>
                                 <option value="Leve">Leve</option>
@@ -106,20 +94,14 @@ export default function IngresarCefalea() {
                             </select>
                         </div>
 
-                        <div>
-                            <label htmlFor="caracter_dolor">Carácter</label>
+                        <div className="form-field">
+                            <label htmlFor="caracter_dolor" className="label-styled">Carácter</label>
                             <select
                                 id="caracter_dolor"
                                 name="caracter_dolor"
                                 value={formData.caracter_dolor}
                                 onChange={handleInputChange}
-                                style={{
-                                    width: '100%',
-                                    padding: 'var(--spacing-s)',
-                                    borderRadius: 'var(--border-radius)',
-                                    border: 'none',
-                                    backgroundColor: '#fff'
-                                }}
+                                className="select-default"
                             >
                                 <option value="">Seleccione una opción</option>
                                 <option value="Pulsátil">Pulsátil</option>
@@ -127,20 +109,14 @@ export default function IngresarCefalea() {
                             </select>
                         </div>
 
-                        <div>
-                            <label htmlFor="localizacion">Localización</label>
+                        <div className="form-field">
+                            <label htmlFor="localizacion" className="label-styled">Localización</label>
                             <select
                                 id="localizacion"
                                 name="localizacion"
                                 value={formData.localizacion}
                                 onChange={handleInputChange}
-                                style={{
-                                    width: '100%',
-                                    padding: 'var(--spacing-s)',
-                                    borderRadius: 'var(--border-radius)',
-                                    border: 'none',
-                                    backgroundColor: '#fff'
-                                }}
+                                className="select-default"
                             >
                                 <option value="">Seleccione una opción</option>
                                 <option value="Unilateral">Unilateral</option>
@@ -148,20 +124,14 @@ export default function IngresarCefalea() {
                             </select>
                         </div>
 
-                        <div>
-                            <label htmlFor="empeora_actividad">Empeora con actividad</label>
+                        <div className="form-field">
+                            <label htmlFor="empeora_actividad" className="label-styled">Empeora con actividad</label>
                             <select
                                 id="empeora_actividad"
                                 name="empeora_actividad"
                                 value={formData.empeora_actividad}
                                 onChange={handleInputChange}
-                                style={{
-                                    width: '100%',
-                                    padding: 'var(--spacing-s)',
-                                    borderRadius: 'var(--border-radius)',
-                                    border: 'none',
-                                    backgroundColor: '#fff'
-                                }}
+                                className="select-default"
                             >
                                 <option value="">Seleccione una opción</option>
                                 <option value="Sí">Sí</option>
@@ -169,20 +139,14 @@ export default function IngresarCefalea() {
                             </select>
                         </div>
 
-                        <div>
-                            <label htmlFor="nauseas_vomitos">Náuseas o vómitos</label>
+                        <div className="form-field">
+                            <label htmlFor="nauseas_vomitos" className="label-styled">Náuseas o vómitos</label>
                             <select
                                 id="nauseas_vomitos"
                                 name="nauseas_vomitos"
                                 value={formData.nauseas_vomitos}
                                 onChange={handleInputChange}
-                                style={{
-                                    width: '100%',
-                                    padding: 'var(--spacing-s)',
-                                    borderRadius: 'var(--border-radius)',
-                                    border: 'none',
-                                    backgroundColor: '#fff'
-                                }}
+                                className="select-default"
                             >
                                 <option value="">Seleccione una opción</option>
                                 <option value="Sí">Sí</option>
@@ -190,20 +154,14 @@ export default function IngresarCefalea() {
                             </select>
                         </div>
 
-                        <div>
-                            <label htmlFor="fotofobia">Sensibilidad a la luz</label>
+                        <div className="form-field">
+                            <label htmlFor="fotofobia" className="label-styled">Sensibilidad a la luz</label>
                             <select
                                 id="fotofobia"
                                 name="fotofobia"
                                 value={formData.fotofobia}
                                 onChange={handleInputChange}
-                                style={{
-                                    width: '100%',
-                                    padding: 'var(--spacing-s)',
-                                    borderRadius: 'var(--border-radius)',
-                                    border: 'none',
-                                    backgroundColor: '#fff'
-                                }}
+                                className="select-default"
                             >
                                 <option value="">Seleccione una opción</option>
                                 <option value="Sí">Sí</option>
@@ -211,20 +169,14 @@ export default function IngresarCefalea() {
                             </select>
                         </div>
 
-                        <div>
-                            <label htmlFor="fonofobia">Sensibilidad al sonido</label>
+                        <div className="form-field">
+                            <label htmlFor="fonofobia" className="label-styled">Sensibilidad al sonido</label>
                             <select
                                 id="fonofobia"
                                 name="fonofobia"
                                 value={formData.fonofobia}
                                 onChange={handleInputChange}
-                                style={{
-                                    width: '100%',
-                                    padding: 'var(--spacing-s)',
-                                    borderRadius: 'var(--border-radius)',
-                                    border: 'none',
-                                    backgroundColor: '#fff'
-                                }}
+                                className="select-default"
                             >
                                 <option value="">Seleccione una opción</option>
                                 <option value="Sí">Sí</option>
@@ -232,20 +184,14 @@ export default function IngresarCefalea() {
                             </select>
                         </div>
 
-                        <div>
-                            <label htmlFor="presencia_aura">Presencia de aura</label>
+                        <div className="form-field">
+                            <label htmlFor="presencia_aura" className="label-styled">Presencia de aura</label>
                             <select
                                 id="presencia_aura"
                                 name="presencia_aura"
                                 value={formData.presencia_aura}
                                 onChange={handleInputChange}
-                                style={{
-                                    width: '100%',
-                                    padding: 'var(--spacing-s)',
-                                    borderRadius: 'var(--border-radius)',
-                                    border: 'none',
-                                    backgroundColor: '#fff'
-                                }}
+                                className="select-default"
                             >
                                 <option value="">Seleccione una opción</option>
                                 <option value="Sí">Sí</option>
@@ -253,20 +199,14 @@ export default function IngresarCefalea() {
                             </select>
                         </div>
 
-                        <div>
-                            <label htmlFor="sintomas_aura">Síntomas del aura</label>
+                        <div className="form-field">
+                            <label htmlFor="sintomas_aura" className="label-styled">Síntomas del aura</label>
                             <select
                                 id="sintomas_aura"
                                 name="sintomas_aura"
                                 value={formData.sintomas_aura}
                                 onChange={handleInputChange}
-                                style={{
-                                    width: '100%',
-                                    padding: 'var(--spacing-s)',
-                                    borderRadius: 'var(--border-radius)',
-                                    border: 'none',
-                                    backgroundColor: '#fff'
-                                }}
+                                className="select-default"
                             >
                                 <option value="">Seleccione una opción</option>
                                 <option value="Ninguno">Ninguno</option>
@@ -274,8 +214,8 @@ export default function IngresarCefalea() {
                             </select>
                         </div>
 
-                        <div>
-                            <label htmlFor="duracion_aura_minutos">Duración del aura (min)</label>
+                        <div className="form-field">
+                            <label htmlFor="duracion_aura_minutos" className="label-styled">Duración del aura (min)</label>
                             <input
                                 type="text"
                                 id="duracion_aura_minutos"
@@ -287,20 +227,14 @@ export default function IngresarCefalea() {
                             />
                         </div>
 
-                        <div>
-                            <label htmlFor="en_menstruacion">En menstruación</label>
+                        <div className="form-field">
+                            <label htmlFor="en_menstruacion" className="label-styled">En menstruación</label>
                             <select
                                 id="en_menstruacion"
                                 name="en_menstruacion"
                                 value={formData.en_menstruacion}
                                 onChange={handleInputChange}
-                                style={{
-                                    width: '100%',
-                                    padding: 'var(--spacing-s)',
-                                    borderRadius: 'var(--border-radius)',
-                                    border: 'none',
-                                    backgroundColor: '#fff'
-                                }}
+                                className="select-default"
                             >
                                 <option value="">Seleccione una opción</option>
                                 <option value="Si">Si</option>
@@ -308,20 +242,14 @@ export default function IngresarCefalea() {
                             </select>
                         </div>
 
-                        <div>
-                            <label htmlFor="anticonceptivos">Anticonceptivos</label>
+                        <div className="form-field">
+                            <label htmlFor="anticonceptivos" className="label-styled">Anticonceptivos</label>
                             <select
                                 id="anticonceptivos"
                                 name="anticonceptivos"
                                 value={formData.anticonceptivos}
                                 onChange={handleInputChange}
-                                style={{
-                                    width: '100%',
-                                    padding: 'var(--spacing-s)',
-                                    borderRadius: 'var(--border-radius)',
-                                    border: 'none',
-                                    backgroundColor: '#fff'
-                                }}
+                                className="select-default"
                             >
                                 <option value="">Seleccione una opción</option>
                                 <option value="Si">Si</option>
@@ -330,12 +258,7 @@ export default function IngresarCefalea() {
                         </div>
                     </div>
 
-                    <div style={{
-                        display: 'flex',
-                        gap: 'var(--spacing-m)',
-                        marginTop: 'var(--spacing-xl)',
-                        justifyContent: 'center'
-                    }}>
+                    <div className="form-buttons">
                         <button type="submit" className="btn-primary">
                             Registrar
                         </button>
