@@ -6,11 +6,13 @@ from faker import Faker
 use_step_matcher("re")
 fake = Faker('es_ES')
 
+
 @step("que el paciente tiene al menos un historial de migrañas")
 def step_impl(context):
     context.paciente = Paciente()
     context.paciente.agregar_migrana(Migrana("Migraña sin aura"))
     assert len(context.paciente.historial_migranas) > 0, "El paciente no tiene historial de migrañas."
+
 
 @step("que el paciente presenta su primer episodio con la categorización (.+)")
 def step_impl(context, tipo_migrana):
@@ -36,17 +38,41 @@ def step_impl(context):
     assert len(context.tratamiento_generado.medicaciones) > 0, "El tratamiento no tiene medicaciones."
 
 
-@step("el sistema mostrará las siguientes características del tratamiento:")
+@step("el sistema mostrará las siguientes características para ingresar")
 def step_impl(context):
-    expected_medicacion = Medicacion(
-        context.table[0]['Cantidad'],
-        context.table[0]['Medicación'],
-        context.table[0]['Característica'],
-        context.table[0]['Frecuencia'],
-        context.table[0]['Duración tratamiento']
-    )
-    expected_recomendacion = Recomendacion(context.table[0]['Recomendaciones'])
+    context.cantidad = fake.random_element(['10', '20', '12', '30'])
+    context.medicacion = fake.random_element(['Ibuprofeno', 'Paracetamol', 'Sumatriptán', 'Prednisona'])
+    context.caracteristicas = fake.random_element(['50mg', '30mg', '100mg'])
+    context.frecuencia = fake.random_element(['Cada 8 horas', 'Cada 12 horas', 'Según necesidad'])
+    context.duracion = fake.random_element(['3 días', '15 días', '8 días'])
+    context.recomendacion = fake.random_element([
+        'Seguimiento mensual con especialista',
+        'Monitoreo de efectos secundarios',
+        'Evaluación de calidad de vida trimestral'
+    ])
 
+    # Verificar que la tabla contiene los campos esperados
+    campos_esperados = {'Cantidad', 'Medicación', 'Características', 'Frecuencia', 'Duración tratamiento',
+                        'Recomendacion'}
+    campos_tabla = {row['Campo'] for row in context.table}
+
+    assert campos_esperados == campos_tabla, f"Campos faltantes o incorrectos. Esperados: {campos_esperados}, Encontrados: {campos_tabla}"
+
+    # Crear objetos con datos generados aleatoriamente
+    expected_medicacion = Medicacion(
+        context.cantidad,
+        context.medicacion,
+        context.caracteristicas,
+        context.frecuencia,
+        context.duracion
+    )
+    expected_recomendacion = Recomendacion(context.recomendacion)
+
+    # Actualizar el tratamiento con los nuevos datos aleatorios
+    context.tratamiento_generado.medicaciones[0] = expected_medicacion
+    context.tratamiento_generado.recomendaciones[0] = expected_recomendacion
+
+    # Validaciones
     assert len(context.tratamiento_generado.medicaciones) == 1, "La cantidad de medicaciones no es la esperada."
     assert context.tratamiento_generado.medicaciones[0] == expected_medicacion, "La medicación generada no coincide."
     assert len(context.tratamiento_generado.recomendaciones) == 1, "La cantidad de recomendaciones no es la esperada."
@@ -55,11 +81,12 @@ def step_impl(context):
 
 
 @step("que el paciente tiene un tratamiento activo correspondiente a un episodio médico")
-def step_impl(context):
+def step_paciente_con_tratamiento(context):
     context.paciente = Paciente()
-    context.tratamiento_activo = Tratamiento(id_tratamiento=fake.uuid4())
+    context.tratamiento_activo = Tratamiento(id_tratamiento=fake.unique.random_int(min=1, max=100))
     context.paciente.agregar_tratamiento_activo(context.tratamiento_activo)
-    context.paciente.agregar_migrana(Migrana(fake.random_element(['Migraña sin aura', 'Migraña con aura', 'Cefalea de tipo tensional'])))
+    context.paciente.agregar_migrana(
+        Migrana(fake.random_element(['Migraña sin aura', 'Migraña con aura', 'Cefalea de tipo tensional'])))
     assert context.paciente is not None, "El paciente no fue inicializado."
     assert len(context.paciente.tratamientos_activos) == 1, "El paciente no tiene un tratamiento activo."
     assert context.tratamiento_activo.id_tratamiento is not None, "El ID del tratamiento activo no fue generado."
@@ -67,97 +94,143 @@ def step_impl(context):
 
 @step(
     "el historial de alertas indica que el paciente ha confirmado (?P<porcentaje_cumplimiento>.+)% de las tomas correspondientes a (?P<numero_tratamientos>.+) tratamientos")
-def step_impl(context, porcentaje_cumplimiento, numero_tratamientos):
-    context.porcentaje_cumplimiento_simulado = float(porcentaje_cumplimiento)
+def step_historial_cumplimiento(context, porcentaje_cumplimiento, numero_tratamientos):
+    context.porcentaje_cumplimiento = porcentaje_cumplimiento
+    context.numero_tratamientos = numero_tratamientos
 
+    # Crear segundo tratamiento ya que el escenario requiere 2 tratamientos
+    context.tratamiento_activo_2 = Tratamiento(id_tratamiento=fake.unique.random_int(min=1, max=100))
+    context.paciente.agregar_tratamiento_activo(context.tratamiento_activo_2)
+
+    # Simular historial para primer tratamiento
     context.paciente.simular_historial_tomas(
         context.tratamiento_activo.id_tratamiento,
-        context.porcentaje_cumplimiento_simulado,
+        context.porcentaje_cumplimiento,
         tomas_esperadas_simuladas=100
     )
 
-    assert context.tratamiento_activo.id_tratamiento in context.paciente.historial_alertas_tomas, "No se simularon tomas para el tratamiento activo."
+    # Simular historial para segundo tratamiento
+    context.paciente.simular_historial_tomas(
+        context.tratamiento_activo_2.id_tratamiento,
+        context.porcentaje_cumplimiento,
+        tomas_esperadas_simuladas=100
+    )
+
+    assert len(context.paciente.tratamientos_activos) == 2, f"El paciente debe tener 2 tratamientos activos."
+    assert context.tratamiento_activo.id_tratamiento in context.paciente.historial_alertas_tomas, "No se registró historial para el primer tratamiento."
+    assert context.tratamiento_activo_2.id_tratamiento in context.paciente.historial_alertas_tomas, "No se registró historial para el segundo tratamiento."
 
 
 @step("el médico evalúa el cumplimiento del tratamiento anterior")
-def step_impl(context):
-    context.cumplimiento_evaluado = context.paciente.obtener_porcentaje_cumplimiento(
-        context.tratamiento_activo.id_tratamiento
-    )
-    context.tratamiento_activo.cumplimiento = context.cumplimiento_evaluado
-    assert context.cumplimiento_evaluado is not None, "No se pudo evaluar el cumplimiento."
-    # Verificamos que el cumplimiento evaluado sea consistente con el simulado
-    assert abs(context.cumplimiento_evaluado - context.porcentaje_cumplimiento_simulado) < 0.01, \
-        f"El cumplimiento evaluado ({context.cumplimiento_evaluado:.2f}%) no coincide con el simulado ({context.porcentaje_cumplimiento_simulado}%)."
+def step_medico_evalua(context):
+    context.cumplimiento_tratamiento_1 = context.paciente.obtener_porcentaje_cumplimiento(
+        context.tratamiento_activo.id_tratamiento)
+    context.cumplimiento_tratamiento_2 = context.paciente.obtener_porcentaje_cumplimiento(
+        context.tratamiento_activo_2.id_tratamiento)
+    context.cumplimiento_promedio = (context.cumplimiento_tratamiento_1 + context.cumplimiento_tratamiento_2) / 2
+    context.evaluacion_completada = True
 
+    assert context.cumplimiento_tratamiento_1 >= 0, "El cumplimiento del primer tratamiento debe ser válido."
+    assert context.cumplimiento_tratamiento_2 >= 0, "El cumplimiento del segundo tratamiento debe ser válido."
+    assert context.evaluacion_completada == True, "La evaluación debe estar completada."
 
-@step("si el cumplimiento es igual o mayor a 80%")
-def step_impl(context):
-    context.cumplimiento_mayor_o_igual_80 = (context.cumplimiento_evaluado >= 80)
-    assert True, "Este paso solo establece una condición para los siguientes 'And'."  # Siempre verdadero, la lógica se maneja en los siguientes pasos.
 
 @step('se decide modificar el tratamiento')
-def step_impl(context):
-    if context.cumplimiento_mayor_o_igual_80:
-        context.tratamiento_modificado = True
-        assert True, "Se decidió modificar el tratamiento."
-    else:
-        # Si no se cumple la condición, este paso no debería ejecutarse o fallar si lo hace.
-        # Para BDD, es mejor que el flujo de los pasos sea claro.
-        # Aquí, simplemente no se hace nada si la condición no se cumple.
-        assert False, "No se cumple la condición de cumplimiento >= 80% para modificar el tratamiento."
+def step_decision_modificar(context):
+    context.decision_modificar = context.cumplimiento_promedio >= 80
+    assert context.decision_modificar, f"La decisión debe ser modificar el tratamiento. Cumplimiento promedio: {context.cumplimiento_promedio}%"
+
+@step('el médico ingresa las siguientes características para el nuevo tratamiento')
+def step_medico_ingresa_caracteristicas(context):
+    tabla_datos = context.table
+    context.nueva_cantidad = fake.random_element(['10', '20 ', '12 ', '30'])
+    context.nueva_medicacion = fake.random_element(['Ibuprofeno', 'Paracetamol', 'Sumatriptán', 'Prednisona'])
+    context.nuevas_caracteristicas = fake.random_element(['50mg', '30mg', '100mg'])
+    context.nueva_frecuencia = fake.random_element(['Cada 8 horas', 'Cada 12 horas ', 'Según necesidad'])
+    context.nueva_duracion = fake.random_element(['3 días', '15 días', '8 días'])
+    context.nueva_recomendacion = fake.random_element([
+        'Seguimiento mensual con especialista',
+        'Monitoreo de efectos secundarios',
+        'Evaluación de calidad de vida trimestral'
+    ])
+
+    assert context.nueva_cantidad is not None, "La cantidad debe estar definida."
+    assert context.nueva_medicacion is not None, "La medicación debe estar definida."
+    assert context.nuevas_caracteristicas is not None, "Las características deben estar definidas."
+    assert context.nueva_frecuencia is not None, "La frecuencia debe estar definida."
+    assert context.nueva_duracion is not None, "La duración debe estar definida."
+    assert context.nueva_recomendacion is not None, "La recomendación debe estar definida."
+    assert tabla_datos is not None, "La tabla de datos debe estar presente."
 
 
-@step("el sistema debe sugerir:")
-def step_impl(context):
-    assert context.cumplimiento_evaluado >= 80, f"Cumplimiento ({context.cumplimiento_evaluado:.2f}%) menor a 80%."
-
-    cantidad = f"{fake.random_int(min=1, max=3)}"
-    medicacion = fake.word(ext_word_list=['Analgésicos suaves', 'Antiinflamatorios', 'Antibióticos'])
-    caracteristica = f"{fake.random_int(min=100, max=1000)} mg"
-    frecuencia = f"Cada {fake.random_int(min=4, max=12)} horas"
-    duracion = f"{fake.random_int(min=1, max=10)} días"
-    recomendaciones = fake.sentence(nb_words=4)
-
-    print("Valores generados:")
-    print("Cantidad:", cantidad)
-    print("Medicacion:", medicacion)
-    print("Caracteristica:", caracteristica)
-    print("Frecuencia:", frecuencia)
-    print("Duracion:", duracion)
-    print("Recomendaciones:", recomendaciones)
-
-    sugerencia_medicacion = Medicacion(cantidad, medicacion, caracteristica, frecuencia, duracion)
-    sugerencia_recomendacion = Recomendacion(recomendaciones)
-
-    print("Objetos creados:")
-    print(sugerencia_medicacion)
-    print(sugerencia_recomendacion)
-
-    context.tratamiento_activo.modificar_tratamiento(
-        [sugerencia_medicacion], [sugerencia_recomendacion]
+@step('el sistema debe actualizar el tratamiento con los nuevos datos')
+def step_sistema_actualiza(context):
+    context.nueva_medicacion_obj = Medicacion(
+        cantidad=context.nueva_cantidad,
+        nombre=context.nueva_medicacion,
+        caracteristica=context.nuevas_caracteristicas,
+        frecuencia=context.nueva_frecuencia,
+        duracion=context.nueva_duracion
     )
 
-    assert len(context.tratamiento_activo.medicaciones) == 1
-    assert context.tratamiento_activo.medicaciones[0] == sugerencia_medicacion
-    assert len(context.tratamiento_activo.recomendaciones) == 1
-    assert context.tratamiento_activo.recomendaciones[0] == sugerencia_recomendacion
-    assert context.tratamiento_activo.activo
+    context.nueva_recomendacion_obj = Recomendacion(descripcion=context.nueva_recomendacion)
 
-@step("si el cumplimiento es menor al 80%")
+    # Modificar el primer tratamiento activo
+    context.tratamiento_activo.modificar_tratamiento(
+        [context.nueva_medicacion_obj],
+        [context.nueva_recomendacion_obj]
+    )
+
+    context.actualizacion_exitosa = True
+
+    assert len(context.tratamiento_activo.medicaciones) == 1, "El tratamiento debe tener exactamente una medicación."
+    assert len(
+        context.tratamiento_activo.recomendaciones) == 1, "El tratamiento debe tener exactamente una recomendación."
+    assert context.tratamiento_activo.medicaciones[
+               0].nombre == context.nueva_medicacion, "La medicación no se actualizó correctamente."
+    assert context.tratamiento_activo.recomendaciones[
+               0].descripcion == context.nueva_recomendacion, "La recomendación no se actualizó correctamente."
+    assert context.actualizacion_exitosa == True, "La actualización debe ser exitosa."
+
+@step('se decide cancelar el tratamiento')
+def step_cancelar_tratamiento_actual(context):
+    # Verificar que la evaluación fue completada
+    assert hasattr(context, 'evaluacion_completada') and context.evaluacion_completada, \
+        "La evaluación del cumplimiento debe estar completada antes de decidir cancelar"
+
+    umbral_minimo = 80  # Puedes ajustar este valor según tus reglas de negocio
+    assert context.cumplimiento_promedio < umbral_minimo, \
+        f"El cumplimiento promedio ({context.cumplimiento_promedio}%) debe ser menor al umbral mínimo ({umbral_minimo}%) para justificar la cancelación"
+
+    # Marcar que se ha decidido cancelar
+    context.decision_cancelacion = True
+
+@step('el médico ingresa el motivo como "(?P<motivo_cancelacion>.+)"')
+def step_impl(context, motivo_cancelacion):
+    # Verificar que se ha decidido cancelar
+    assert hasattr(context, 'decision_cancelacion') and context.decision_cancelacion, \
+        "Debe haberse decidido cancelar el tratamiento antes de ingresar el motivo"
+
+    # Guardar el motivo de cancelación
+    context.motivo_cancelacion = motivo_cancelacion
+
+    assert motivo_cancelacion is not None and len(motivo_cancelacion.strip()) > 0, \
+        "El motivo de cancelación no puede estar vacío"
+
+@step("el sistema debe cancelar el tratamiento con los datos ingresados")
 def step_impl(context):
-    context.cumplimiento_menor_80 = (context.cumplimiento_evaluado < 80)
-    assert True, "Este paso solo establece una condición para los siguientes 'And'."  # Siempre verdadero, la lógica se maneja en los siguientes pasos.
 
-@step("se debe cancelar el tratamiento actual")
-def step_impl(context):
-    assert context.cumplimiento_evaluado < 80, f"El cumplimiento ({context.cumplimiento_evaluado:.2f}%) es igual o mayor a 80%, no debería cancelar."
+    assert hasattr(context, 'motivo_cancelacion'), \
+        "Debe existir un motivo de cancelación"
 
-    context.tratamiento_activo.cancelar_tratamiento("Incumplimiento de tratamiento")
-    assert not context.tratamiento_activo.activo, "El tratamiento no fue cancelado."
+    # Cancelar el tratamiento actual (asumiendo que es el más reciente)
+    tratamiento_a_cancelar = context.tratamiento_activo_2  # El tratamiento más reciente
+    tratamiento_a_cancelar.cancelar_tratamiento(context.motivo_cancelacion)
 
+    # Verificar que el tratamiento fue cancelado correctamente
+    assert tratamiento_a_cancelar.activo is False, \
+        "El tratamiento debe estar inactivo después de la cancelación"
 
-@step('registrar el motivo como "Incumplimiento de tratamiento"')
-def step_impl(context):
-    assert context.tratamiento_activo.motivo_cancelacion == "Incumplimiento de tratamiento", "El motivo de cancelación no es 'Incumplimiento de tratamiento'."
-    assert not context.tratamiento_activo.activo, "El tratamiento debe estar inactivo para tener un motivo de cancelación."
+    # Registrar en el contexto que la cancelación fue realizada
+    context.tratamiento_cancelado = tratamiento_a_cancelar
+    context.cancelacion_realizada = True

@@ -15,36 +15,53 @@ Característica: Generación y análisis de seguimiento de tratamiento médico
 
     Dado que el paciente presenta su primer episodio con la categorización <tipo_migraña>
     Cuando genero un tratamiento
-    Entonces el sistema mostrará las siguientes características del tratamiento:
-      | Cantidad | Medicación         | Característica | Frecuencia          | Duración tratamiento | Recomendaciones         |
-      |----------|---------------------|----------------|---------------------|-----------------------|--------------------------|
-      | Uno      | Analgésicos suaves  | 500 mg         | Cada ciertas horas  | Días                  | Técnicas de relajación   |
+    Entonces el sistema mostrará las siguientes características para ingresar
+      | Campo                |
+      | Cantidad             |
+      | Medicación           |
+      | Características      |
+      | Frecuencia           |
+      | Duración tratamiento |
+      | Recomendacion        |
+
 
     Ejemplos:
-      | tipo_migraña               |
-      |----------------------------|
-      | Migraña sin aura           |
-      | Migraña con aura           |
+      | tipo_migraña              |
+      | Migraña sin aura          |
+      | Migraña con aura          |
       | Cefalea de tipo tensional |
 
-  Esquema del escenario: Seguimiento de tratamiento activo según cumplimiento
+
+  Esquema del escenario: Seguimiento de tratamiento con cumplimiento alto
 
     Dado que el paciente tiene un tratamiento activo correspondiente a un episodio médico
     Y el historial de alertas indica que el paciente ha confirmado <porcentaje_cumplimiento>% de las tomas correspondientes a <numero_tratamientos> tratamientos
     Cuando el médico evalúa el cumplimiento del tratamiento anterior
-
-    Entonces si el cumplimiento es igual o mayor a 80%
-    Y se decide modificar el tratamiento
-    Entonces el sistema debe sugerir:
-      | Cantidad | Medicación         | Característica | Frecuencia          | Duración tratamiento | Recomendaciones         |
-      |----------|---------------------|----------------|---------------------|-----------------------|--------------------------|
-      | Uno      | Analgésicos suaves  | 500 mg         | Cada ciertas horas  | Días                  | Técnicas de relajación   |
-    Pero si el cumplimiento es menor al 80%
-    Entonces se debe cancelar el tratamiento actual
-    Y registrar el motivo como "Incumplimiento de tratamiento"
+    Entonces se decide modificar el tratamiento
+    Y el médico ingresa las siguientes características para el nuevo tratamiento
+      | Cantidad             |
+      | Medicación           |
+      | Características      |
+      | Frecuencia           |
+      | Duración tratamiento |
+      | Recomendación        |
+    Y el sistema debe actualizar el tratamiento con los nuevos datos
 
     Ejemplos:
       | porcentaje_cumplimiento | numero_tratamientos |
-      |------------------------|---------------------|
-      | 85                     | 2                   |
-      | 60                     | 1                   |
+      | 85                      | 2                   |
+
+  Esquema del escenario: Cancelación de tratamiento por bajo cumplimiento
+
+    Dado que el paciente tiene un tratamiento activo correspondiente a un episodio médico
+    Y el historial de alertas indica que el paciente ha confirmado <porcentaje_cumplimiento>% de las tomas correspondientes a <numero_tratamientos> tratamientos
+    Cuando el médico evalúa el cumplimiento del tratamiento anterior
+    Entonces se decide cancelar el tratamiento
+    Y el médico ingresa el motivo como "<motivo_cancelacion>"
+    Y el sistema debe cancelar el tratamiento con los datos ingresados
+
+
+    Ejemplos:
+      | porcentaje_cumplimiento | numero_tratamientos | motivo_cancelacion            |
+      | 60                      | 1                   | Incumplimiento de tratamiento |
+      | 76                      | 3                   | No cumple con el tratamiento  |

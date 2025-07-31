@@ -73,8 +73,8 @@ class Migrana:
 class Paciente:
     """Representa un paciente con su historial médico y tratamientos."""
     def __init__(self, nombre=None, id_paciente=None):
-        self.id_paciente = id_paciente if id_paciente else fake.uuid4()
-        self.nombre = nombre if nombre else fake.name()
+        self.id_paciente = id_paciente
+        self.nombre = nombre
         self.historial_migranas = []
         self.tratamientos_activos = []
         self.historial_alertas_tomas = {} # {id_tratamiento: [fecha_toma_confirmada, ...]}
