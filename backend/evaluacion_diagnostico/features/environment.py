@@ -3,10 +3,7 @@ import sys
 import django
 
 def before_all(context):
-    """
-    Configurar Django antes de ejecutar todos los tests de Behave
-    Este environment.py sirve para TODAS las apps del proyecto
-    """
+    """Configurar Django antes de ejecutar todos los tests de Behave"""
     
     # Configurar Django
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'migraine_app.settings')
