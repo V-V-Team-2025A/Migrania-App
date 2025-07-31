@@ -11,6 +11,7 @@ from .serializers import (
     RegistroEnfermeraSerializer
 )
 from .permissions import EsMedicoOEnfermera
+from .services import usuario_service
 
 Usuario = get_user_model()
 
@@ -24,13 +25,9 @@ class UsuarioViewSet(viewsets.ReadOnlyModelViewSet):
         """Usuarios ven solo su info, personal médico ve todo"""
         user = self.request.user
         if user.es_medico or user.es_enfermera:
-            return Usuario.objects.all().select_related(
-                'perfil_medico', 'perfil_paciente', 'perfil_enfermera'
-            )
+            return usuario_service.obtener_todos_usuarios()
         else:
-            return Usuario.objects.filter(id=user.id).select_related(
-                'perfil_medico', 'perfil_paciente', 'perfil_enfermera'
-            )
+            return [usuario_service.obtener_usuario_por_id(user.id)]
     
     @action(detail=False, methods=['get'])
     def mi_perfil(self, request):
@@ -42,116 +39,26 @@ class UsuarioViewSet(viewsets.ReadOnlyModelViewSet):
     def dashboard(self, request):
         """ GET /api/usuarios/dashboard/ - Dashboard según rol"""
         user = request.user
-        
-        base_data = {
-            'usuario': {
-                'id': user.id,
-                'nombre_completo': user.get_full_name(),
-                'email': user.email,
-                'tipo_usuario': user.tipo_usuario,
-            }
-        }
-        
-        if user.es_medico:
-            perfil = getattr(user, 'perfil_medico', None)
-            base_data.update({
-                'tipo_usuario': 'medico',
-                'especializacion': perfil.especializacion if perfil else None,
-                'numero_licencia': perfil.numero_licencia if perfil else None,
-                'permisos': {
-                    'puede_ver_todos_pacientes': True,
-                    'puede_crear_diagnosticos': True,
-                    'puede_prescribir_tratamientos': True,
-                    'puede_agendar_citas': True,
-                }
-            })
-        
-        elif user.es_enfermera:
-            perfil = getattr(user, 'perfil_enfermera', None)
-            base_data.update({
-                'tipo_usuario': 'enfermera',
-                'departamento': perfil.departamento if perfil else None,
-                'permisos': {
-                    'puede_ver_pacientes_asignados': True,
-                    'puede_registrar_vitales': True,
-                    'puede_administrar_medicamentos': True,
-                    'puede_agendar_citas': True,
-                }
-            })
-        
-        else:  # paciente
-            perfil = getattr(user, 'perfil_paciente', None)
-            base_data.update({
-                'tipo_usuario': 'paciente',
-                'grupo_sanguineo': perfil.grupo_sanguineo if perfil else None,
-                'permisos': {
-                    'puede_agendar_citas': True,
-                    'puede_ver_historial_propio': True,
-                    'puede_completar_evaluaciones': True,
-                    'puede_registrar_episodios': True,
-                }
-            })
-        
-        return Response(base_data)
+        dashboard_data = usuario_service.generar_dashboard_datos(user)
+        return Response(dashboard_data)
     
     @action(detail=False, methods=['get'], permission_classes=[EsMedicoOEnfermera])
     def medicos(self, request):
         """ GET /api/usuarios/medicos/ - Lista médicos (solo personal médico)"""
-        medicos = MedicoProfile.objects.filter(
-            usuario__is_active=True
-        ).select_related('usuario')
-        
-        data = []
-        for medico in medicos:
-            data.append({
-                'id': medico.usuario.id,
-                'nombre_completo': medico.usuario.get_full_name(),
-                'email': medico.usuario.email,
-                'especializacion': medico.get_especializacion_display(),
-                'numero_licencia': medico.numero_licencia,
-                'anos_experiencia': medico.anos_experiencia,
-            })
-        
-        return Response({'medicos': data, 'count': len(data)})
+        data = usuario_service.obtener_lista_medicos_resumida()
+        return Response(data)
     
     @action(detail=False, methods=['get'], permission_classes=[EsMedicoOEnfermera])
     def pacientes(self, request):
         """ GET /api/usuarios/pacientes/ - Lista pacientes (solo personal médico)"""
-        pacientes = PacienteProfile.objects.filter(
-            usuario__is_active=True
-        ).select_related('usuario')
-        
-        data = []
-        for paciente in pacientes:
-            data.append({
-                'id': paciente.usuario.id,
-                'nombre_completo': paciente.usuario.get_full_name(),
-                'email': paciente.usuario.email,
-                'grupo_sanguineo': paciente.grupo_sanguineo,
-                'contacto_emergencia': paciente.contacto_emergencia_nombre,
-                'telefono_emergencia': paciente.contacto_emergencia_telefono,
-            })
-        
-        return Response({'pacientes': data, 'count': len(data)})
+        data = usuario_service.obtener_lista_pacientes_resumida()
+        return Response(data)
     
     @action(detail=False, methods=['get'], permission_classes=[EsMedicoOEnfermera])
     def enfermeras(self, request):
         """ GET /api/usuarios/enfermeras/ - Lista enfermeras (solo personal médico)"""
-        enfermeras = EnfermeraProfile.objects.filter(
-            usuario__is_active=True
-        ).select_related('usuario')
-        
-        data = []
-        for enfermera in enfermeras:
-            data.append({
-                'id': enfermera.usuario.id,
-                'nombre_completo': enfermera.usuario.get_full_name(),
-                'email': enfermera.usuario.email,
-                'numero_registro': enfermera.numero_registro,
-                'departamento': enfermera.departamento,
-            })
-        
-        return Response({'enfermeras': data, 'count': len(data)})
+        data = usuario_service.obtener_lista_enfermeras_resumida()
+        return Response(data)
 
 # VIEWSETS PÚBLICOS DE REGISTRO (sin autenticación)
 
