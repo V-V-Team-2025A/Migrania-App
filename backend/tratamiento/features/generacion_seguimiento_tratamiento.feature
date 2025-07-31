@@ -1,12 +1,12 @@
 # language: es
-# Created by CamilaL at 7/7/2025
+# Created by Lema Dayana, López Paula, Damarys Oña, Proaño Juan at 7/7/2025
 
 Característica: Generación y análisis de seguimiento de tratamiento médico
 
   Como médico
   Quiero saber la información médica del paciente
   Para crear un tratamiento médico que mejore la calidad de vida del paciente
-  Y sea personalizado según la categorizacion (migraña sin aura, migraña con aura, cefalea de tipo tensional)
+  Y sea personalizado según la categorización (migraña sin aura, migraña con aura, cefalea de tipo tensional)
 
   Antecedentes:
     Dado que el paciente tiene al menos un historial de migrañas
@@ -51,7 +51,7 @@ Característica: Generación y análisis de seguimiento de tratamiento médico
       | porcentaje_cumplimiento | numero_tratamientos |
       | 85                      | 2                   |
 
-  Esquema del escenario: Cancelación de tratamiento por bajo cumplimiento
+  Esquema del escenario: Seguimiento de tratamiento con bajo cumplimiento
 
     Dado que el paciente tiene un tratamiento activo correspondiente a un episodio médico
     Y el historial de alertas indica que el paciente ha confirmado <porcentaje_cumplimiento>% de las tomas correspondientes a <numero_tratamientos> tratamientos
