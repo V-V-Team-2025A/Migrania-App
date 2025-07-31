@@ -7,14 +7,14 @@ fake = Faker('es_ES')
 # Create your models here.
 class Medicacion:
     """Representa una medicación con sus atributos."""
-    def __init__(self, cantidad, nombre, caracteristica, frecuencia, duracion):
+    def _init_(self, cantidad, nombre, caracteristica, frecuencia, duracion):
         self.cantidad = cantidad
         self.nombre = nombre
         self.caracteristica = caracteristica
         self.frecuencia = frecuencia
         self.duracion = duracion
 
-    def __eq__(self, other):
+    def _eq_(self, other):
         """Compara si dos objetos Medicacion son iguales."""
         return (self.cantidad == other.cantidad and
                 self.nombre == other.nombre and
@@ -25,10 +25,10 @@ class Medicacion:
 
 class Recomendacion:
     """Representa una recomendación para el tratamiento."""
-    def __init__(self, descripcion):
+    def _init_(self, descripcion):
         self.descripcion = descripcion
 
-    def __eq__(self, other):
+    def _eq_(self, other):
         """Compara si dos objetos Recomendacion son iguales."""
         return self.descripcion == other.descripcion
 
@@ -38,7 +38,7 @@ class Tratamiento:
     Representa un tratamiento médico, incluyendo medicaciones y recomendaciones.
     Los tratamientos son ingresados por el médico.
     """
-    def __init__(self, id_tratamiento=None):
+    def _init_(self, id_tratamiento=None):
         self.id_tratamiento = id_tratamiento if id_tratamiento else fake.uuid4()
         self.medicaciones = []
         self.recomendaciones = []
@@ -66,13 +66,13 @@ class Tratamiento:
 
 class Migrana:
     """Representa un episodio de migraña con su tipo."""
-    def __init__(self, tipo):
+    def _init_(self, tipo):
         self.tipo = tipo
         self.fecha = fake.date_time_this_year()
 
 class Paciente:
     """Representa un paciente con su historial médico y tratamientos."""
-    def __init__(self, nombre=None, id_paciente=None):
+    def _init_(self, nombre=None, id_paciente=None):
         self.id_paciente = id_paciente
         self.nombre = nombre
         self.historial_migranas = []
