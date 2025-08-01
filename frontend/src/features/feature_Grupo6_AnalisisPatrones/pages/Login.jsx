@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeSlash } from '@phosphor-icons/react'; // <-- Importamos los íconos correctos
+import { Eye, EyeSlash } from '@phosphor-icons/react';
 import styles from '../styles/Login.module.css';
 
 export default function Login() {
