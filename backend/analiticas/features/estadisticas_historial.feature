@@ -1,88 +1,76 @@
-#language: es
+# Created by Dorian at 18/7/2025
+# language: es
 
 Característica: Estadística e historial
-
   Como médico,
   Quiero acceder al historial clínico y estadísticas detalladas relacionadas con episodios de migraña de mis pacientes o posibles pacientes,
   Para personalizar el tratamiento y apoyar el diagnóstico de manera efectiva.
 
-#POSITIVO
-Escenario: Generar historial clínico consolidado a partir de datos registrados
-  Dado que un paciente ha registrado al menos una biracota digital de cefalea
-  Y ha realizado al menos una autoevaluación MIDAS con puntaje válido
-  Cuando el médico accede al historial clínico consolidado del paciente
-  Entonces el sistema genera un historial que incluye:
-    | Componente                               | Detalle esperado                                  |
-    | Episodios de cefalea                     | Listado con fecha, severidad y categoría clínica  |
-    | Autoevaluaciones MIDAS                   | Puntajes registrados y fechas de aplicación       |
-    | Tratamientos/En caso de tener            | Medicación prescrita, dosis y fecha de inicio     |
+  Antecedentes:
+  Dado que el paciente tiene al menos tres episodios registrados en su bitácora digital
+  Y cuenta al menos tres evaluaciones MIDAS completadas
 
-#NEGATIVO
-Escenario: Intentar generar historial clínico consolidado sin registros suficientes
-  Dado que un paciente no ha registrado ningún episodio de cefalea
-  Y no ha realizado ninguna autoevaluación MIDAS
-  Cuando el médico accede a la opción para generar el historial clínico consolidado del paciente
-  Entonces el sistema muestra un mensaje indicando que no hay información clínica disponible para consolidar
-
-#POSITIVO
-Escenario: Generar historial clínico consolidado filtrado por rango de fechas
-  Dado que un paciente ha registrado al menos una biracota digital de cefalea
-  Y ha realizado al menos una autoevaluación MIDAS con puntaje válido
-  Cuando el médico filtra el historial clínico consolidado del paciente usando un rango de fechas entre "<fecha_inicio>" y "<fecha_fin>"
-  Entonces el sistema incluye únicamente los registros cuyo campo de fecha se encuentra dentro del intervalo definido
-    | Componente              | Condición de inclusión en el historial            |
-    | Episodios de cefalea    | Fecha del episodio está dentro del rango         |
-    | Autoevaluaciones MIDAS  | Fecha de realización está dentro del rango       |
-    | Tratamientos            | Fecha de inicio del tratamiento está en el rango |
-
-#NEGATIVO
-Escenario: Intentar generar historial clínico consolidado cuando no existen registros dentro del rango de fechas
-  Dado que un paciente ha registrado al menos una bitácora digital de cefalea
-  Y ha realizado al menos una autoevaluación MIDAS con puntaje válido
-  Cuando el médico filtra el historial clínico consolidado del paciente usando un rango de fechas entre "<fecha_inicio>" y "<fecha_fin>"
-  Pero no existen registros dentro de ese intervalo de tiempo
-  Entonces el sistema muestra un mensaje indicando que no se encontraron registros clínicos en el intervalo seleccionado
-
-Escenario: Generar estadísticas clínicas a partir de los episodios registrados en la bitácora de cefalea
-  Dado que un paciente ha registrado al menos <minimo_episodios> episodios en su bitácora digital de cefalea con sus respectivos síntomas, severidad y fechas
-  Cuando el médico genera del resumen estadístico clínico de  los episodios de cefalea del paciente
-  Entonces el sistema presenta un conjunto de indicadores clínicos calculados a partir de los registros, incluyendo:
-    | Estadística                              | Cálculo esperado                                                        |
-    | Frecuencia total de episodios            | Número total de episodios registrados                                  |
-    | Promedio de episodios por mes            | Frecuencia mensual estimada según fechas registradas                   |
-    | Severidad promedio del dolor             | Media de los niveles: Leve = 1, Moderada = 2, Severa = 3               |
-    | Duración promedio de los episodios       | Promedio de la duración en horas                                        |
-    | Porcentaje por tipo de cefalea           | Clasificación automática: migraña con aura, sin aura, tensional        |
-    | Frecuencia de síntomas acompañantes      | Porcentaje de episodios con náuseas, fotofobia, fonofobia, etc.        |
-    | Asociación con menstruación (si aplica)  | Número y porcentaje de episodios ocurridos durante el ciclo menstrual  |
+Esquema del escenario: Análisis del promedio semanal de episodios de migraña
+  Dado que el paciente tiene <total_episodios> episodios registrados en su bitácora digital
+  Y el primer episodio fue registrado en la fecha <fecha_inicio>
+  Y el último episodio fue registrado en la fecha <fecha_fin>
+  Cuando solicito el análisis del promedio semanal
+  Entonces el sistema mostrará que el promedio semanal de episodios es <promedio_semanal> veces
 Ejemplos:
-  | minimo_episodios |
-  | 3                |
+  | total_episodios | fecha_inicio | fecha_fin  | promedio_semanal  |
+  | 28              | 2024-01-01   | 2024-02-26 | 3.5               |
+  | 14              | 2024-05-01   | 2024-06-12 | 2.0               |
 
-Escenario: Generar estadísticas clínicas a partir de autoevaluaciones MIDAS registradas
-  Dado que un paciente ha realizado al menos <minimo_autoevaluaciones> autoevaluaciones MIDAS con sus respectivos puntajes y fechas
-  Cuando el médico genera del resumen estadístico clínico de  las autoevaluaciones MIDAS del paciente
-  Entonces el sistema presenta un conjunto de indicadores clínicos derivados de las autoevaluaciones, incluyendo:
-    | Estadística                              | Cálculo esperado                                                  |
-    | Puntaje MIDAS más reciente               | Valor y fecha del último test                                     |
-    | Promedio de puntajes MIDAS               | Media de todos los puntajes registrados                          |
-    | Clasificación promedio de discapacidad   | Según rango: leve, moderada, severa                              |
-    | Tendencia de evolución del puntaje       | Mejora, estabilidad o deterioro a lo largo del tiempo            |
+Esquema del escenario: Análisis de duración promedio por episodio de migraña
+  Dado que el paciente tiene <total_episodios> episodios registrados en su bitácora digital
+  Y la suma total de duración de todos los episodios es de <suma_duracion_total> horas
+  Cuando solicito el análisis de duración promedio
+  Entonces el sistema mostrará que la duración promedio por episodio es de <duracion_promedio> horas
 Ejemplos:
-  | minimo_autoevaluaciones |
-  | 2                       |
+  | total_episodios | suma_duracion_total | duracion_promedio |
+  | 10              | 25                  | 2.5               |
+  | 8               | 16                  | 2.0               |
 
-Escenario: Generar estadísticas clínicas a partir de tratamientos registrados
-
-  Dado que un paciente ha recibido al menos <minimo_tratamientos> tratamientos con sus respectivas fechas, tipos de medicación y seguimiento clínico
-  Cuando el médico genera del resumen estadístico del historial de tratamientos del paciente
-  Entonces el sistema presenta indicadores clínicos relevantes, incluyendo:
-    | Estadística                            | Cálculo esperado                                                     |
-    | Total de tratamientos aplicados        | Número de tratamientos distintos registrados                        |
-    | Promedio de duración por tratamiento   | Diferencia entre fecha de inicio y fecha de modificación o cierre   |
-    | Variación promedio del nivel de dolor  | Diferencia entre nivel de dolor inicial y final por tratamiento     |
-    | Porcentaje de tratamientos efectivos   | Casos con reducción significativa de dolor o frecuencia              |
-    | Frecuencia de ajustes                  | Número de veces que se modificó un tratamiento activo                |
+Esquema del escenario: Cálculo de intensidad promedio del dolor en episodios de migraña
+  Dado que el paciente tiene episodios registrados en su bitácora digital
+  Y cada episodio incluye una calificación de intensidad en la escala de dolor
+  Cuando solicito el análisis de intensidad promedio
+  Entonces el sistema mostrará la intensidad promedio como <intensidad_promedio>
 Ejemplos:
-  | minimo_tratamientos |
-  | 2                   |
+  | intensidad_promedio  |
+  | Moderado             |
+  | Severo               |
+  | Leve                 |
+
+Esquema del escenario: Análisis de episodios asociados a menstruación y anticonceptivos
+  Dado que el paciente tiene <total_episodios> episodios registrados en su bitácora digital
+  Y <episodios_menstruacion> episodios ocurrieron durante la menstruación
+  Y <episodios_anticonceptivos> episodios están asociados al uso de anticonceptivos
+  Cuando solicito el análisis de asociación hormonal
+  Entonces el sistema mostrará que el <porcentaje_menstruacion>% de los episodios ocurrieron durante la menstruación
+  Y mostrará que el <porcentaje_anticonceptivos>% de los episodios están asociados al uso de anticonceptivos
+
+Ejemplos:
+  | total_episodios | episodios_menstruacion | episodios_anticonceptivos | porcentaje_menstruacion | porcentaje_anticonceptivos |
+  | 50              | 20                     | 15                        | 40%                     | 30%                       |
+  | 30              | 10                     | 12                        | 33%                     | 40%                       |
+
+Esquema del escenario: Evolución de la autoevaluación MIDAS
+  Dado que el paciente tiene un promedio de puntuación MIDAS de <puntuacion_promedio> puntos
+  Y en la evaluación MIDAS más reciente tuvo una puntuación de <puntuacion_actual> puntos
+  Cuando solicito el análisis de evolución de discapacidad
+  Entonces el sistema mostrará que la variación en la puntuación MIDAS es de <variacion_puntaje_midas> puntos
+  Y mostrará que la discapacidad del paciente ha <tendencia_de_discapacidad>
+  Ejemplos:
+    | puntuacion_promedio | puntuacion_actual | variacion_puntaje_midas | tendencia_de_discapacidad|
+    | 20                  | 15                | -5                      | "Mejorado"               |
+    | 15                  | 22                | -7                      | "Empeorado"              |
+
+
+Esquema del escenario: Evolución semanal de episodios registrados en la bitácora digital
+  Dado que el paciente tiene episodios registrados en su bitácora digital
+  Y los episodios están distribuidos a lo largo de varias semanas entre las fechas "<fecha_inicio>" y "<fecha_fin>"
+  Cuando solicito el análisis semanal de episodios
+  Entonces el sistema mostrará la cantidad de episodios registrados por semana  
+  Y mostrará el promedio semanal de episodios en el período solicitado
+
