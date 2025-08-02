@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Header from '@/common/components/Header.jsx';
 import Tabla from '@/common/components/Tabla.jsx';
 
-export default function BitacoraDigital() {
+export default function BitacoraDigitalMedico() {
     const [episodios, setEpisodios] = useState([
         {
             id: 1,
@@ -131,8 +131,9 @@ export default function BitacoraDigital() {
             <Header
                 title="Bitácora"
                 onBack={handleVolver}
-                primaryButtonText="Nuevo episodio"
+                primaryButtonText="Filtrar bitácora"
                 onPrimaryClick={handleNuevoEpisodio}
+                patientName="Juan Pérez"
             />
             <Tabla
                 data={episodios}
