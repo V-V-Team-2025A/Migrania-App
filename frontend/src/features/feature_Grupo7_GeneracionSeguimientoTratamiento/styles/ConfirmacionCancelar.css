@@ -33,7 +33,7 @@
 .button-confirm, .button-cancel {
     padding: 10px 20px;
     margin: 10px;
-    border-radius: 5px;
+    border-radius: var(--border-radius);
     border: none;
     justify-content: center;
     width: 200px;
@@ -43,8 +43,13 @@
     background-color: var(--color-error);
     color: white;
 }
-
+.button-confirm:hover {
+    background-color: #D94A50;
+}
 .button-cancel {
     background-color: var(--color-action);
     color: white;
+}
+.button-cancel:hover {
+    background-color: #2E7474;
 }
