@@ -6,12 +6,14 @@ import './common/styles/normalize.css'
 import "./common/styles/index.css"
 
 import Login from './pages/Login.jsx'
-import MedicalDashboard from './pages/Estadisticas-Medico.jsx'
+import PatientDashboard from './features/feature_Grupo4_EstadisticasHistorial/pages/Estadisticas-Paciente.jsx'
+import MedicalDashboard from './features/feature_Grupo4_EstadisticasHistorial/pages/Estadisticas-Medico.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Router>
       <Routes>
-        <Route path="/" element={<MedicalDashboard/>}/>
+        <Route path="/medico" element={<MedicalDashboard/>}/>
+        <Route path="/paciente" element={<PatientDashboard/>}/>
       </Routes>
     </Router>
   </StrictMode>,
