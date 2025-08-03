@@ -5,13 +5,16 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import './common/styles/normalize.css'
 import "./common/styles/index.css"
 
-import Login from './pages/Login.jsx'
+import Login from './features/feature_Grupo6_AnalisisPatrones/pages/Login'
+import AnalisisPatrones from './features/feature_Grupo6_AnalisisPatrones/pages/AnalisisPatrones';
+
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Router>
       <Routes>
         <Route path="/" element={<Login />}/>
+        <Route path="/analisis-patrones" element={<AnalisisPatrones />}/>
       </Routes>
     </Router>
   </StrictMode>,
