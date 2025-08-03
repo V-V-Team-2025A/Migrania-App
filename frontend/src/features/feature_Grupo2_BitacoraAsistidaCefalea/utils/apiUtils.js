@@ -137,6 +137,7 @@ export const createEpisodio = async (episodioData, token = null, userType = 'pac
     return await response.json();
 };
 
+
 // Funciones específicas para pacientes
 export const fetchUserInfoPaciente = async (token = null) => {
     return fetchUserInfo(token, 'paciente');
@@ -146,6 +147,7 @@ export const createEpisodioPaciente = async (episodioData, token = null) => {
     return createEpisodio(episodioData, token, 'paciente');
 };
 
+
 // Funciones específicas para médicos
 export const fetchUserInfoMedico = async (token = null) => {
     return fetchUserInfo(token, 'medico');
@@ -154,6 +156,7 @@ export const fetchUserInfoMedico = async (token = null) => {
 export const createEpisodioMedico = async (episodioData, token = null) => {
     return createEpisodio(episodioData, token, 'medico');
 };
+
 
 export const fetchPacienteInfo = async (pacienteId, baseUrl, token) => {
     try {

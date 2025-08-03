@@ -19,6 +19,10 @@ createRoot(document.getElementById('root')).render(
                 <Route path="/" element={<Login />} />
                 <Route path="/bitacora-medico/:pacienteId" element={<BDoctor />} />
                 <Route path="/bitacora-paciente" element={<BPaciente />} />
+                <Route path="/registro" element={<Registro />} />
+
+
+
                 <Route path="/dashboard-paciente" element={<Dashboard />} />
                 <Route path="/midas" element={<Midas />} />
                 <Route path="/midas/resultados" element={<Resultados />} />
