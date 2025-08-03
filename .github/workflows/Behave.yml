@@ -31,8 +31,13 @@ jobs:
     - name: Install Behave
       run: |
         python -m pip install --upgrade pip
+        # Instalar behave globalmente primero
+        pip install behave
         cd backend
         pip install -r requirements.txt
+        # Verificar que behave se instaló correctamente
+        python -m pip list | grep behave
+        python -c "import behave; print('Behave version:', behave.__version__)"
 
     - name: Configure Django for Behave
       run: |
