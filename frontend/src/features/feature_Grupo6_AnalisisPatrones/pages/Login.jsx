@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Eye, EyeSlash } from '@phosphor-icons/react';
 import styles from '../styles/Login.module.css';
 
@@ -58,6 +59,9 @@ export default function Login() {
                         Iniciar sesión
                     </button>
                 </form>
+                <Link to="/analisis-patrones" className={styles.login__boton}>
+                    Registrarse
+                </Link>
             </div>
         </div>
     );
