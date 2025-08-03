@@ -33,9 +33,8 @@ Ejemplos:
 
 Esquema del escenario: Cálculo de intensidad promedio del dolor en episodios de migraña
   Dado que el paciente tiene episodios registrados en su bitácora digital
-  Y cada episodio incluye una calificación de intensidad en la escala de dolor
-  Cuando solicito el análisis de intensidad promedio
-  Entonces el sistema mostrará la intensidad promedio como <intensidad_promedio>
+  Cuando solicito el análisis de intensidad de dolores promedio
+  Entonces el sistema mostrará la intensidad promedio es <intensidad_promedio>
 Ejemplos:
   | intensidad_promedio  |
   | Moderado             |
@@ -62,15 +61,12 @@ Esquema del escenario: Evolución de la autoevaluación MIDAS
   Entonces el sistema mostrará que la variación en la puntuación MIDAS es de <variacion_puntaje_midas> puntos
   Y mostrará que la discapacidad del paciente ha <tendencia_de_discapacidad>
   Ejemplos:
-    | puntuacion_promedio | puntuacion_actual | variacion_puntaje_midas | tendencia_de_discapacidad|
+    | puntuacion_promedio | puntuacion_actuaßßl | variacion_puntaje_midas | tendencia_de_discapacidad|
     | 20                  | 15                | -5                      | "Mejorado"               |
     | 15                  | 22                | -7                      | "Empeorado"              |
 
-
-Escenario: Evolución semanal de episodios registrados en la bitácora digital
+Escenario: Identificacion de desencadentantes comunes
   Dado que el paciente tiene episodios registrados en su bitácora digital
-  Y los episodios están distribuidos a lo largo de varias semanas entre las fechas "<fecha_inicio>" y "<fecha_fin>"
-  Cuando solicito el análisis semanal de episodios
-  Entonces el sistema mostrará la cantidad de episodios registrados por semana  
-  Y mostrará el promedio semanal de episodios en el período solicitado
-
+  Y los episodios tienen desencadenantes asociados
+  Cuando solicito el análisis de desencadenantes comunes
+  Entonces el sistema mostrará los desencadenantes más frecuentes y su porcentaje de ocurrencia
