@@ -12,3 +12,7 @@ dependencies = [
     "drf-spectacular>=0.28.0",
     "psycopg2>=2.9.10",
 ]
+[tool.behave]
+junit = true
+junit_directory = "tests"
+paths = ["tests"]
