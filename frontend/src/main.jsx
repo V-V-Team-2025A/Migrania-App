@@ -11,6 +11,7 @@ import Login from './pages/Login.jsx'
 import BDoctor from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/pages/Bitacora-Medico.jsx'
 import BPaciente from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/pages/Bitacora-Paciente.jsx'
 import Registro from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/pages/Registro-cefalea.jsx'
+import MidasMedico from './features/feature_Grupo1_EvaluacionMidas/pages/MidasMedico.jsx'
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>
@@ -18,6 +19,7 @@ createRoot(document.getElementById('root')).render(
             <Routes>
                 <Route path="/" element={<Login />} />
                 <Route path="/bitacora-medico/:pacienteId" element={<BDoctor />} />
+                <Route path="/midas-medico/:pacienteId" element={<MidasMedico />} />
                 <Route path="/bitacora-paciente" element={<BPaciente />} />
                 <Route path="/registro" element={<Registro />} />
 
