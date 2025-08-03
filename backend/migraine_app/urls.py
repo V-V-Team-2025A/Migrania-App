@@ -13,4 +13,7 @@ urlpatterns = [
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
+    # App de evaluación y diagnóstico.
+    path('api/', include('evaluacion_diagnostico.urls')),
+
 ]
