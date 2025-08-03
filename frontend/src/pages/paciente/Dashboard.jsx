@@ -2,11 +2,59 @@ import { useState, useEffect } from 'react';
 import styles from "../../common/styles/dashboardPaciente.module.css";
 import { BellIcon, StethoscopeIcon, ChartLineIcon, FilesIcon, PillIcon, PlusIcon } from "@phosphor-icons/react";
 import { fetchEpisodiosPaciente } from "../../utils/apiUtils.js";
+import {
+    obtenerFechaEpisodio,
+    compararFechas,
+    formatearFecha
+} from "../../utils/funciones.js";
+
+// Constantes para las tarjetas del dashboard
+const TARJETAS_DASHBOARD = [
+    {
+        icono: PlusIcon,
+        color: "#c9525aff",
+        backgroundColor: "#c42d3750",
+        titulo: "Registrar episodio",
+        descripcion: "Documenta un nuevo episodio de migraña."
+    },
+    {
+        icono: FilesIcon,
+        color: "#a555ebff",
+        backgroundColor: "#9f58dd59",
+        titulo: "Evaluación MIDAS",
+        descripcion: "Evalúa el impacto de la migraña en tu vida diaria."
+    },
+    {
+        icono: PillIcon,
+        color: "#4c84f3ff",
+        backgroundColor: "#3e68be50",
+        titulo: "Mis tratamientos",
+        descripcion: "Revisa tus tratamientos actuales."
+    },
+    {
+        icono: ChartLineIcon,
+        color: "#42b668ff",
+        backgroundColor: "#3588517d",
+        titulo: "Mi progreso",
+        descripcion: "Visualiza tendencias y estadísticas."
+    }
+];
 
 export default function Dashboard() {
     const [episodiosRecientes, setEpisodiosRecientes] = useState([]);
     const [cargandoEpisodios, setCargandoEpisodios] = useState(true);
     const [errorEpisodios, setErrorEpisodios] = useState(null);
+
+    const procesarEpisodios = (episodios) => {
+        if (!Array.isArray(episodios)) {
+            throw new Error('Formato de datos incorrecto recibido de la API');
+        }
+
+        return episodios
+            .filter(episodio => episodio && obtenerFechaEpisodio(episodio))
+            .sort(compararFechas)
+            .slice(0, 4);
+    };
 
     useEffect(() => {
         const cargarEpisodiosRecientes = async () => {
@@ -14,79 +62,8 @@ export default function Dashboard() {
                 setCargandoEpisodios(true);
                 setErrorEpisodios(null);
 
-                console.log('Iniciando carga de episodios...');
                 const episodios = await fetchEpisodiosPaciente();
-                console.log('Episodios recibidos de la API:', episodios);
-                console.log('Tipo de datos recibidos:', typeof episodios);
-                console.log('Es array?:', Array.isArray(episodios));
-                console.log('Longitud:', episodios?.length);
-
-                if (!Array.isArray(episodios)) {
-                    console.error('Los episodios no son un array:', episodios);
-                    setErrorEpisodios('Formato de datos incorrecto recibido de la API');
-                    return;
-                }
-
-                // Ordenar por fecha más reciente y tomar solo los 4 primeros
-                const episodiosOrdenados = episodios
-                    .filter(episodio => {
-                        console.log('Evaluando episodio:', episodio);
-                        const tieneFecha = episodio && (
-                            episodio.fecha_inicio ||
-                            episodio.creado_en ||
-                            episodio.fecha
-                        );
-                        console.log('Tiene fecha válida:', tieneFecha);
-                        return tieneFecha;
-                    })
-                    .sort((a, b) => {
-                        try {
-                            // Obtener fechas con múltiples respaldos
-                            let fechaA = a.fecha_inicio || a.creado_en || a.fecha;
-                            let fechaB = b.fecha_inicio || b.creado_en || b.fecha;
-
-                            console.log('Fecha A original:', fechaA);
-                            console.log('Fecha B original:', fechaB);
-
-                            // Limpiar fechas si tienen formato con coma
-                            if (fechaA && typeof fechaA === 'string' && fechaA.includes(',')) {
-                                fechaA = fechaA.split(',')[0].trim();
-                            }
-                            if (fechaB && typeof fechaB === 'string' && fechaB.includes(',')) {
-                                fechaB = fechaB.split(',')[0].trim();
-                            }
-
-                            console.log('Fecha A limpia:', fechaA);
-                            console.log('Fecha B limpia:', fechaB);
-
-                            // Convertir a objetos Date
-                            const dateA = new Date(fechaA);
-                            const dateB = new Date(fechaB);
-
-                            console.log('Date A:', dateA);
-                            console.log('Date B:', dateB);
-
-                            // Si alguna fecha es inválida, ponerla al final
-                            if (isNaN(dateA.getTime())) {
-                                console.log('Fecha A inválida');
-                                return 1;
-                            }
-                            if (isNaN(dateB.getTime())) {
-                                console.log('Fecha B inválida');
-                                return -1;
-                            }
-
-                            const resultado = dateB.getTime() - dateA.getTime(); // Más reciente primero
-                            console.log('Resultado comparación:', resultado);
-                            return resultado;
-                        } catch (error) {
-                            console.error('Error al ordenar fechas:', error);
-                            return 0;
-                        }
-                    })
-                    .slice(0, 4);
-
-                console.log('Episodios ordenados y filtrados:', episodiosOrdenados);
+                const episodiosOrdenados = procesarEpisodios(episodios);
                 setEpisodiosRecientes(episodiosOrdenados);
             } catch (error) {
                 console.error('Error al cargar episodios recientes:', error);
@@ -99,76 +76,90 @@ export default function Dashboard() {
         cargarEpisodiosRecientes();
     }, []);
 
-    const formatearFecha = (fechaString) => {
-        if (!fechaString) {
-            return 'Fecha no disponible';
+    // Componentes de renderizado
+    const TarjetaDashboard = ({ icono: Icono, color, backgroundColor, titulo, descripcion }) => (
+        <div className={styles["dashboard__tarjeta"]}>
+            <div
+                className={styles["dashboard__icono"]}
+                style={{ backgroundColor }}
+            >
+                <Icono size={32} color={color} />
+            </div>
+            <h4>{titulo}</h4>
+            <p>{descripcion}</p>
+        </div>
+    );
+
+    const EstadoCarga = ({ cargando, error, vacio, textoVacio = "No hay datos disponibles" }) => {
+        if (cargando) {
+            return (
+                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-secondary-dark)' }}>
+                    Cargando...
+                </div>
+            );
         }
 
-        try {
-            // Manejar diferentes formatos de fecha
-            let fechaLimpia = fechaString;
-
-            // Si la fecha viene en formato "3/8/2025, 2:02:02 p. m.", extraer solo la parte de la fecha
-            if (fechaString.includes(',')) {
-                fechaLimpia = fechaString.split(',')[0].trim();
-            }
-
-            // Si es formato ISO (2025-08-03T19:02:02.165994Z), usarlo directamente
-            const fecha = new Date(fechaLimpia);
-
-            // Verificar si la fecha es válida
-            if (isNaN(fecha.getTime())) {
-                console.warn('Fecha inválida recibida:', fechaString);
-                return 'Fecha inválida';
-            }
-
-            return fecha.toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-        } catch (error) {
-            console.error('Error al formatear fecha:', error, fechaString);
-            return 'Error en fecha';
+        if (error) {
+            return (
+                <div style={{ textAlign: 'center', padding: '20px', color: '#e74c3c' }}>
+                    Error: {error}
+                </div>
+            );
         }
+
+        if (vacio) {
+            return (
+                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-secondary-dark)' }}>
+                    {textoVacio}
+                </div>
+            );
+        }
+
+        return null;
     };
 
-    const formatearFechaCompleta = (fechaString) => {
-        if (!fechaString) {
-            return 'Fecha no disponible';
-        }
+    const DetalleEpisodio = ({ icono, texto }) => (
+        <div className={styles["dashboard__episodio-detalle"]}>
+            <div className={styles["dashboard__episodio-detalle-icono"]}>{icono}</div>
+            <span className={styles["dashboard__episodio-detalle-texto"]}>{texto}</span>
+        </div>
+    );
 
-        try {
-            // Manejar el formato "3/8/2025, 2:02:02 p. m."
-            let fechaLimpia = fechaString.trim();
+    const EpisodioItem = ({ episodio, index }) => {
+        const fechaFormateada = formatearFecha(obtenerFechaEpisodio(episodio));
+        const severidadClass = episodio.severidad
+            ? styles[`dashboard__episodio-severidad--${episodio.severidad.toLowerCase()}`]
+            : '';
 
-            // Si contiene coma, es probable que tenga formato de fecha y hora
-            if (fechaString.includes(',')) {
-                const [fechaParte, horaParte] = fechaString.split(',').map(s => s.trim());
-                fechaLimpia = fechaParte;
-
-                const fecha = new Date(fechaParte);
-                if (isNaN(fecha.getTime())) {
-                    return 'Fecha inválida';
-                }
-
-                return `${fecha.toLocaleDateString('es-ES')} ${horaParte}`;
-            }
-
-            const fecha = new Date(fechaLimpia);
-            if (isNaN(fecha.getTime())) {
-                return 'Fecha inválida';
-            }
-
-            return fecha.toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-        } catch (error) {
-            console.error('Error al formatear fecha completa:', error, fechaString);
-            return 'Error en fecha';
-        }
+        return (
+            <div key={episodio.id || index} className={styles["dashboard__episodio-item"]}>
+                <div className={styles["dashboard__episodio-fecha"]}>
+                    {fechaFormateada}
+                </div>
+                <div className={styles["dashboard__episodio-contenido"]}>
+                    <div className={styles["dashboard__episodio-header"]}>
+                        <div className={`${styles["dashboard__episodio-severidad"]} ${severidadClass}`}>
+                            {episodio.severidad || 'N/A'}
+                        </div>
+                    </div>
+                    <div className={styles["dashboard__episodio-detalles"]}>
+                        <DetalleEpisodio
+                            icono="⏱"
+                            texto={episodio.duracion_cefalea_horas || episodio.duracion || 'N/A'}
+                        />
+                        {episodio.localizacion && (
+                            <DetalleEpisodio icono="📍" texto={episodio.localizacion} />
+                        )}
+                        {(episodio.caracter_dolor || episodio.desencadenante) && (
+                            <DetalleEpisodio
+                                icono="💫"
+                                texto={episodio.caracter_dolor || episodio.desencadenante}
+                            />
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     return (
@@ -178,115 +169,30 @@ export default function Dashboard() {
                     <h2>¿Cómo te sientes hoy?</h2>
                     <p>¡Vas 5 días sin episodios! Sigue cuidándote y registrando tus síntomas.</p>
                 </div>
-                <BellIcon size={32} color={"var(--color-text)"} />
+                <BellIcon size={32} color="var(--color-text)" />
             </div>
+
             <section className={styles["dashboard__contenedor-tarjetas"]}>
-                <div className={styles["dashboard__tarjeta"]}>
-                    <div
-                        className={styles["dashboard__icono"]}
-                        style={{
-                            backgroundColor: "#c42d3750",
-                        }}>
-                        <PlusIcon size={32} color={"#c9525aff"} />
-                    </div>
-                    <h4>Registrar episodio</h4>
-                    <p>Documenta un nuevo episodio de migraña.</p>
-                </div>
-                <div className={styles["dashboard__tarjeta"]}>
-                    <div
-                        className={styles["dashboard__icono"]}
-                        style={{
-                            backgroundColor: "#9f58dd59",
-                        }}>
-                        <FilesIcon size={32} color={"#a555ebff"} />
-                    </div>
-                    <h4>Evaluación MIDAS</h4>
-                    <p>Evalúa el impacto de la migraña en tu vida diaria.</p>
-                </div>
-                <div className={styles["dashboard__tarjeta"]}>
-                    <div
-                        className={styles["dashboard__icono"]}
-                        style={{
-                            backgroundColor: "#3e68be50",
-                        }}>
-                        <PillIcon size={32} color={"#4c84f3ff"} />
-                    </div>
-                    <h4>Mis tratamientos</h4>
-                    <p>Revisa tus tratamientos actuales.</p>
-                </div>
-                <div className={styles["dashboard__tarjeta"]}>
-                    <div
-                        className={styles["dashboard__icono"]}
-                        style={{
-                            backgroundColor: "#3588517d",
-                        }}>
-                        <ChartLineIcon size={32} color={"#42b668ff"} />
-                    </div>
-                    <h4>Mi progreso</h4>
-                    <p>Visualiza tendencias y estadísticas.</p>
-                </div>
+                {TARJETAS_DASHBOARD.map((tarjeta, index) => (
+                    <TarjetaDashboard key={index} {...tarjeta} />
+                ))}
             </section>
 
             <div className={styles["dashboard__seccion-inferior"]}>
                 <section className={styles["dashboard__episodios-recientes"]}>
                     <h4>Episodios recientes</h4>
 
-                    {cargandoEpisodios ? (
-                        <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-secondary-dark)' }}>
-                            Cargando episodios...
-                        </div>
-                    ) : errorEpisodios ? (
-                        <div style={{ textAlign: 'center', padding: '20px', color: '#e74c3c' }}>
-                            Error: {errorEpisodios}
-                        </div>
-                    ) : episodiosRecientes.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-secondary-dark)' }}>
-                            No hay episodios registrados
-                        </div>
-                    ) : (
+                    <EstadoCarga
+                        cargando={cargandoEpisodios}
+                        error={errorEpisodios}
+                        vacio={episodiosRecientes.length === 0}
+                        textoVacio="No hay episodios registrados"
+                    />
+
+                    {!cargandoEpisodios && !errorEpisodios && episodiosRecientes.length > 0 && (
                         <div className={styles["dashboard__lista-episodios"]}>
                             {episodiosRecientes.map((episodio, index) => (
-                                <div key={episodio.id || index} className={styles["dashboard__episodio-item"]}>
-                                    <div className={styles["dashboard__episodio-fecha"]}>
-                                        {formatearFecha(episodio.fecha_inicio || episodio.creado_en || episodio.fecha)}
-                                    </div>
-                                    <div className={styles["dashboard__episodio-contenido"]}>
-                                        <div className={styles["dashboard__episodio-header"]}>
-                                            <div
-                                                className={`${styles["dashboard__episodio-severidad"]} ${episodio.severidad ?
-                                                    styles[`dashboard__episodio-severidad--${episodio.severidad.toLowerCase()}`] :
-                                                    ''
-                                                    }`}
-                                            >
-                                                {episodio.severidad || 'N/A'}
-                                            </div>
-                                        </div>
-                                        <div className={styles["dashboard__episodio-detalles"]}>
-                                            <div className={styles["dashboard__episodio-detalle"]}>
-                                                <div className={styles["dashboard__episodio-detalle-icono"]}>⏱</div>
-                                                <span className={styles["dashboard__episodio-detalle-texto"]}>
-                                                    {episodio.duracion_cefalea_horas || episodio.duracion || 'N/A'}
-                                                </span>
-                                            </div>
-                                            {episodio.localizacion && (
-                                                <div className={styles["dashboard__episodio-detalle"]}>
-                                                    <div className={styles["dashboard__episodio-detalle-icono"]}>📍</div>
-                                                    <span className={styles["dashboard__episodio-detalle-texto"]}>
-                                                        {episodio.localizacion}
-                                                    </span>
-                                                </div>
-                                            )}
-                                            {(episodio.caracter_dolor || episodio.desencadenante) && (
-                                                <div className={styles["dashboard__episodio-detalle"]}>
-                                                    <div className={styles["dashboard__episodio-detalle-icono"]}>💫</div>
-                                                    <span className={styles["dashboard__episodio-detalle-texto"]}>
-                                                        {episodio.caracter_dolor || episodio.desencadenante}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
+                                <EpisodioItem key={episodio.id || index} episodio={episodio} index={index} />
                             ))}
                         </div>
                     )}
@@ -314,7 +220,6 @@ export default function Dashboard() {
                     <button className="btn-primary">Agendar</button>
                 </section>
             </div>
-
         </>
     );
 }
