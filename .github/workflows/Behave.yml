@@ -27,33 +27,27 @@ jobs:
         # Solo instalar las dependencias mínimas necesarias
         pip install attrs parse parse-type
 
-    - name: Run Behave tests for all features
+    - name: Run Behave tests for implemented features only
       run: |
         cd backend
-        echo "Running BDD tests with Behave..."
+        echo "Running BDD tests with Behave for features with implemented steps..."
         
-        # Ejecutar tests de evaluacion_diagnostico
-        echo "🧠 Testing Evaluacion y Diagnostico features..."
-        python -m behave evaluacion_diagnostico/features/ --format pretty --no-capture --tags=~@skip || echo "Tests completed with issues in evaluacion_diagnostico"
+        # Solo ejecutar features que tienen steps implementados
+        echo "🧠 Testing Evaluacion y Diagnostico - Bitacora Digital..."
+        python -m behave evaluacion_diagnostico/features/bitacora_digital.feature --format pretty --no-capture --tags=~@skip || echo "Tests completed with issues in bitacora_digital"
         
-        # Ejecutar tests de agendamiento_citas
-        echo "📅 Testing Agendamiento de Citas features..."
-        python -m behave agendamiento_citas/features/ --format pretty --no-capture --tags=~@skip || echo "Tests completed with issues in agendamiento_citas"
+        echo "💊 Testing Tratamiento - Generacion y Seguimiento..."
+        python -m behave tratamiento/features/generacion_seguimiento_tratamiento.feature --format pretty --no-capture --tags=~@skip || echo "Tests completed with issues in generacion_seguimiento_tratamiento"
         
-        # Ejecutar tests de tratamiento
-        echo "💊 Testing Tratamiento features..."
-        python -m behave tratamiento/features/ --format pretty --no-capture --tags=~@skip || echo "Tests completed with issues in tratamiento"
-        
-        # Ejecutar tests de analiticas
-        echo "📊 Testing Analiticas features..."
-        python -m behave analiticas/features/ --format pretty --no-capture --tags=~@skip || echo "Tests completed with issues in analiticas"
+        echo "✅ Only testing features with implemented step files"
+        echo "� Features pendientes de implementación: autoevaluacion_midas, agendamiento_citas, aseguramiento_tratamiento, estadisticas_historial, analisis_factores_desencadenantes"
 
     - name: Generate Behave Report
       if: always()
       run: |
         cd backend
         mkdir -p reports
-        echo "Behave tests execution completed" > reports/behave-summary.txt
+        echo "Behave tests execution completed for implemented features" > reports/behave-summary.txt
         python -m behave --help > reports/behave-help.txt 2>&1 || true
 
     - name: Upload Behave Reports
@@ -70,11 +64,16 @@ jobs:
         cd backend
         echo "## 🧪 Behave BDD Test Results" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Features Tested:" >> $GITHUB_STEP_SUMMARY
-        echo "- 🧠 Evaluación y Diagnóstico" >> $GITHUB_STEP_SUMMARY
-        echo "- 📅 Agendamiento de Citas" >> $GITHUB_STEP_SUMMARY
-        echo "- 💊 Tratamiento" >> $GITHUB_STEP_SUMMARY
-        echo "- 📊 Analíticas" >> $GITHUB_STEP_SUMMARY
+        echo "### Features Implemented y Probadas (2 de 7):" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ 🧠 Evaluación y Diagnóstico: Bitácora Digital" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ 💊 Tratamiento: Generación y Seguimiento" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Archivos de Features:" >> $GITHUB_STEP_SUMMARY
+        echo "### Features Pendientes (5 de 7):" >> $GITHUB_STEP_SUMMARY
+        echo "- ⏳ 🧠 Evaluación y Diagnóstico: Autoevaluación MIDAS" >> $GITHUB_STEP_SUMMARY
+        echo "- ⏳ 📅 Agendamiento de Citas" >> $GITHUB_STEP_SUMMARY
+        echo "- ⏳ 💊 Tratamiento: Aseguramiento" >> $GITHUB_STEP_SUMMARY
+        echo "- ⏳ 📊 Analíticas: Estadísticas Historial" >> $GITHUB_STEP_SUMMARY
+        echo "- ⏳ 📊 Analíticas: Análisis Factores Desencadenantes" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Archivos de Features encontrados:" >> $GITHUB_STEP_SUMMARY
         find . -name "*.feature" | sort >> $GITHUB_STEP_SUMMARY
