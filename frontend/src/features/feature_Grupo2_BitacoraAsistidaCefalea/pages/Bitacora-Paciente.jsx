@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+
 import Header from '@/common/components/Header.jsx';
 import Tabla from '@/common/components/Tabla.jsx';
+import '@/features/feature_Grupo2_BitacoraAsistidaCefalea/styles/bitacora.module.css';
 
 export default function BitacoraDigital() {
     const [episodios, setEpisodios] = useState([]);
