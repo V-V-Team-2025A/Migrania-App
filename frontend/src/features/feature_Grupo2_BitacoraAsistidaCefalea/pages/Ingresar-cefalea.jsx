@@ -166,7 +166,7 @@ export default function IngresarCefalea() {
 
             // Obtener token de autenticación
 
-            const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MTk0Mjg3LCJpYXQiOjE3NTQxOTA2ODcsImp0aSI6IjZjZjA3Yjg3Y2QwNDQ3NTY5Y2MwYTA4Y2M1NjRjOGU1IiwidXNlcl9pZCI6IjIifQ.tb9AKkSOiS45A9eer6FnJAKzd2Mn3aNI_dYdHc5WitE"
+            const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MjM5MDY5LCJpYXQiOjE3NTQyMzU0NjksImp0aSI6IjdjMjY5MTUyOGQxMzRiNjI5Mzc2ZjU0NjUzZmVmN2JiIiwidXNlcl9pZCI6IjkyNCJ9.25h2p1kmAdsABEdzaVfbbn5i_Lp37PMXpbjgYeVxKZg"
 
             const response = await fetch(url, {
                 method: 'POST',
