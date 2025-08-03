@@ -10,7 +10,8 @@ if not settings.configured:
 from behave import *
 from datetime import datetime, date
 from faker import Faker
-from analiticas.repositories import DjangoEstadisticaHistorialRepository
+from analiticas.repositories import FakeEstadisticaHistorialRepository
+from analiticas.estadisticas_historial_service import EstadisticaHistorialService
 
 fake = Faker('es_ES')
 use_step_matcher("parse")
@@ -19,20 +20,23 @@ use_step_matcher("parse")
 @given('que el paciente tiene al menos tres episodios registrados en su bitácora digital')
 def step_antecedentes_episodios(context):
     if not hasattr(context, 'repo'):
-        context.repo = DjangoEstadisticaHistorialRepository()
+        context.repo = FakeEstadisticaHistorialRepository()
+        context.service = EstadisticaHistorialService(context.repo)
     context.episodios_bitacora = fake.random_int(min=3, max=20)
 
 @given('cuenta al menos tres evaluaciones MIDAS completadas')
 def step_antecedentes_midas(context):
     if not hasattr(context, 'repo'):
-        context.repo = DjangoEstadisticaHistorialRepository()
+        context.repo = FakeEstadisticaHistorialRepository()
+        context.service = EstadisticaHistorialService(context.repo)
     context.evaluaciones_midas = fake.random_int(min=3, max=10)
 
 # PROMEDIO SEMANAL 
 @given('que el paciente tiene {total_episodios:d} episodios registrados en su bitácora digital')
 def step_total_episodios(context, total_episodios):
     if not hasattr(context, 'repo'):
-        context.repo = DjangoEstadisticaHistorialRepository()
+        context.repo = FakeEstadisticaHistorialRepository()
+        context.service = EstadisticaHistorialService(context.repo)
     context.total_episodios = total_episodios
 
 @given('el primer episodio fue registrado en la fecha {fecha_inicio}')
@@ -77,7 +81,8 @@ def step_verificar_duracion_promedio(context, duracion_promedio):
 @given('que el paciente tiene episodios registrados en su bitácora digital')
 def step_episodios_intensidad(context):
     if not hasattr(context, 'repo'):
-        context.repo = DjangoEstadisticaHistorialRepository()
+        context.repo = FakeEstadisticaHistorialRepository()
+        context.service = EstadisticaHistorialService(context.repo)
     context.episodios_intensidad = fake.random_int(min=5, max=15)
 
 @when('solicito el análisis de intensidad de dolores promedio')
@@ -152,7 +157,8 @@ def step_verificar_tendencia_discapacidad(context, tendencia_de_discapacidad):
 @given('los episodios tienen desencadenantes asociados')
 def step_episodios_desencadenantes(context):
     if not hasattr(context, 'repo'):
-        context.repo = DjangoEstadisticaHistorialRepository()
+        context.repo = FakeEstadisticaHistorialRepository()
+        context.service = EstadisticaHistorialService(context.repo)
     desencadenantes = ['estrés', 'falta de sueño', 'alimentos', 'cambios hormonales', 'clima']
     context.desencadenantes_disponibles = desencadenantes
 
