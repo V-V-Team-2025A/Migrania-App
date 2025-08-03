@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '@/common/components/Header.jsx';
 import Tabla from '@/common/components/Tabla.jsx';
+import ModalFiltro from '../components/ModalFiltro.jsx';
 
 export default function BitacoraDigitalMedico() {
     const { pacienteId } = useParams(); // Obtener el ID del paciente desde la URL
     const [episodios, setEpisodios] = useState([]);
+    const [episodiosOriginales, setEpisodiosOriginales] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showModalFiltro, setShowModalFiltro] = useState(false);
+    const [filtroActivo, setFiltroActivo] = useState("");
+    const [nombrePaciente, setNombrePaciente] = useState("");
 
     useEffect(() => {
         const fetchEpisodios = async () => {
@@ -22,15 +27,39 @@ export default function BitacoraDigitalMedico() {
                 setLoading(true);
                 setError(null);
 
-                // Para médicos, necesitamos especificar el paciente_id
+                // Obtener el token de autenticación desde localStorage
+                const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MjM2MDE5LCJpYXQiOjE3NTQyMzI0MTksImp0aSI6IjQ5ODBkZmY3Mjg4MjQwMjA4Nzc3NTFhNDM0NmZkMGRiIiwidXNlcl9pZCI6IjEifQ.t6JduFMuUiLb3d7snf8ge06M-uFy-tgv89-pKjDM2EQ"
                 const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+
+                // Obtener información del paciente
+                try {
+                    const pacienteUrl = `${baseUrl}/usuarios/${pacienteId}/`;
+                    const pacienteResponse = await fetch(pacienteUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': token ? `Bearer ${token}` : '',
+                        }
+                    });
+
+                    if (pacienteResponse.ok) {
+                        const pacienteData = await pacienteResponse.json();
+                        console.log('Datos del paciente:', pacienteData);
+
+                        // Usar solo el first_name del paciente
+                        const nombre = pacienteData.first_name || 'Paciente';
+                        setNombrePaciente(nombre);
+                    }
+                } catch (pacienteError) {
+                    console.log('No se pudo obtener información del paciente:', pacienteError);
+                    setNombrePaciente('Paciente');
+                }
+
+                // Para médicos, necesitamos especificar el paciente_id
                 const url = `${baseUrl}/evaluaciones/episodios/?paciente_id=${pacienteId}`;
 
                 console.log('Intentando conectar a:', url);
                 console.log('Base URL configurada:', import.meta.env.VITE_API_BASE_URL);
-
-                // Obtener el token de autenticación desde localStorage
-                const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MTg5NDU0LCJpYXQiOjE3NTQxODU4NTQsImp0aSI6Ijc5YThlNTcxMzk4ZjQ5OWY5ZGJjNmQ0ZTFiOThjODg5IiwidXNlcl9pZCI6IjU4In0.vGZieu_vT30hyM6Z0H71shBfqCG9MJb6yx6yXOSvWmg"
 
                 const response = await fetch(url, {
                     method: 'GET',
@@ -87,6 +116,7 @@ export default function BitacoraDigitalMedico() {
                 }));
 
                 setEpisodios(episodiosTransformados);
+                setEpisodiosOriginales(episodiosTransformados); // Guardar copia original para filtrado
             } catch (err) {
                 console.error('Error al cargar episodios:', err);
 
@@ -128,11 +158,32 @@ export default function BitacoraDigitalMedico() {
     ];
 
     const handleNuevoEpisodio = () => {
-        console.log('Nuevo episodio clickeado');
+        setShowModalFiltro(true);
     };
 
     const handleVolver = () => {
         console.log('Volver clickeado');
+    };
+
+    const handleConfirmarFiltro = (tipoFiltro) => {
+        setFiltroActivo(tipoFiltro);
+
+        if (tipoFiltro === "") {
+            // Mostrar todos los episodios
+            setEpisodios(episodiosOriginales);
+        } else {
+            // Filtrar por tipo de cefalea
+            const episodiosFiltrados = episodiosOriginales.filter(episodio =>
+                episodio.categoria_diagnostica === tipoFiltro
+            );
+            setEpisodios(episodiosFiltrados);
+        }
+
+        setShowModalFiltro(false);
+    };
+
+    const handleCancelarFiltro = () => {
+        setShowModalFiltro(false);
     };
 
     return (
@@ -142,7 +193,7 @@ export default function BitacoraDigitalMedico() {
                 onBack={handleVolver}
                 primaryButtonText="Filtrar bitácora"
                 onPrimaryClick={handleNuevoEpisodio}
-                patientName="Juan Pérez"
+                patientName={nombrePaciente}
             />
             {loading && (
                 <div style={{ padding: '20px', textAlign: 'center' }}>
@@ -160,6 +211,13 @@ export default function BitacoraDigitalMedico() {
                     columns={columnasEpisodios}
                     keyField="id"
                     emptyMessage="No hay episodios de cefalea registrados"
+                />
+            )}
+            {showModalFiltro && (
+                <ModalFiltro
+                    message="Seleccionar filtro para la bitácora"
+                    onConfirm={handleConfirmarFiltro}
+                    onCancel={handleCancelarFiltro}
                 />
             )}
         </div>

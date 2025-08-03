@@ -21,7 +21,7 @@ export default function BitacoraDigital() {
                 console.log('Base URL configurada:', import.meta.env.VITE_API_BASE_URL);
 
                 // Obtener el token de autenticación desde localStorage
-                const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MTk1MzE3LCJpYXQiOjE3NTQxOTE3MTcsImp0aSI6ImE5Yjg2NDI1ZTQ0ZjQxNzhhNWIxNzU0ZWE3ODQ3Y2E5IiwidXNlcl9pZCI6IjE1NyJ9.mosOa4Qd8O-w-sT0Yzo2sH94FOj3W6aTFpKNS4LAmck"
+                const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MjM2MDQ2LCJpYXQiOjE3NTQyMzI0NDYsImp0aSI6IjE4N2M2MTM5ZTY4ZTRhN2VhOWYxZGJhYjFmZTFkODk0IiwidXNlcl9pZCI6IjU4In0.uyam2muX7Us_4Kpz4I1Xg92Y6vaddPfNN3LSi-P6JGU"
 
                 const response = await fetch(url, {
                     method: 'GET',
