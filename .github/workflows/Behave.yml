@@ -49,19 +49,19 @@ jobs:
         
         # Ejecutar tests de evaluacion_diagnostico
         echo "🧠 Testing Evaluacion y Diagnostico features..."
-        behave evaluacion_diagnostico/features/ --format pretty --no-capture --tags=~@skip --no-logcapture || echo "Tests completed with issues in evaluacion_diagnostico"
+        python -m behave evaluacion_diagnostico/features/ --format pretty --no-capture --tags=~@skip --no-logcapture || echo "Tests completed with issues in evaluacion_diagnostico"
         
         # Ejecutar tests de agendamiento_citas
         echo "📅 Testing Agendamiento de Citas features..."
-        behave agendamiento_citas/features/ --format pretty --no-capture --tags=~@skip --no-logcapture || echo "Tests completed with issues in agendamiento_citas"
+        python -m behave agendamiento_citas/features/ --format pretty --no-capture --tags=~@skip --no-logcapture || echo "Tests completed with issues in agendamiento_citas"
         
         # Ejecutar tests de tratamiento
         echo "💊 Testing Tratamiento features..."
-        behave tratamiento/features/ --format pretty --no-capture --tags=~@skip --no-logcapture || echo "Tests completed with issues in tratamiento"
+        python -m behave tratamiento/features/ --format pretty --no-capture --tags=~@skip --no-logcapture || echo "Tests completed with issues in tratamiento"
         
         # Ejecutar tests de analiticas
         echo "📊 Testing Analiticas features..."
-        behave analiticas/features/ --format pretty --no-capture --tags=~@skip --no-logcapture || echo "Tests completed with issues in analiticas"
+        python -m behave analiticas/features/ --format pretty --no-capture --tags=~@skip --no-logcapture || echo "Tests completed with issues in analiticas"
 
     - name: Generate Behave HTML Report
       if: always()
@@ -70,7 +70,7 @@ jobs:
         export DJANGO_SETTINGS_MODULE=migraine_app.settings
         export PYTHONPATH=$PWD:$PYTHONPATH
         mkdir -p reports
-        behave evaluacion_diagnostico/features/ agendamiento_citas/features/ tratamiento/features/ analiticas/features/ \
+        python -m behave evaluacion_diagnostico/features/ agendamiento_citas/features/ tratamiento/features/ analiticas/features/ \
           --format html --outfile reports/behave-report.html --tags=~@skip --no-logcapture || echo "Report generation completed with warnings"
 
     - name: Upload Behave Reports
