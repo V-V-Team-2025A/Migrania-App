@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import styles from "../../common/styles/dashboardPaciente.module.css";
-import { BellIcon,StethoscopeIcon, ChartLineIcon, FilesIcon, PillIcon, PlusIcon, BrainIcon} from "@phosphor-icons/react";
+import { BellIcon, StethoscopeIcon, ChartLineIcon, FilesIcon, PillIcon, PlusIcon, BrainIcon } from "@phosphor-icons/react";
 import { fetchEpisodiosPaciente } from "../../utils/apiUtils.js";
 export default function Dashboard() {
     const [episodiosRecientes, setEpisodiosRecientes] = useState([]);
@@ -276,7 +276,11 @@ export default function Dashboard() {
                                             <div className={styles["dashboard__episodio-detalle"]}>
                                                 <div className={styles["dashboard__episodio-detalle-icono"]}>⏱</div>
                                                 <span className={styles["dashboard__episodio-detalle-texto"]}>
+<<<<<<< HEAD
                                                     {episodio.duracion_cefalea_horas ? `${episodio.duracion_cefalea_horas}h` : 'N/A'}
+=======
+                                                    {episodio.duracion_cefalea_horas || episodio.duracion || 'N/A'}
+>>>>>>> 444e66e (feat: añadir episodios recientes)
                                                 </span>
                                             </div>
                                             {episodio.localizacion && (
@@ -287,11 +291,19 @@ export default function Dashboard() {
                                                     </span>
                                                 </div>
                                             )}
+<<<<<<< HEAD
                                             {episodio.caracter_dolor && (
                                                 <div className={styles["dashboard__episodio-detalle"]}>
                                                     <div className={styles["dashboard__episodio-detalle-icono"]}>💫</div>
                                                     <span className={styles["dashboard__episodio-detalle-texto"]}>
                                                         {episodio.caracter_dolor}
+=======
+                                            {(episodio.caracter_dolor || episodio.desencadenante) && (
+                                                <div className={styles["dashboard__episodio-detalle"]}>
+                                                    <div className={styles["dashboard__episodio-detalle-icono"]}>💫</div>
+                                                    <span className={styles["dashboard__episodio-detalle-texto"]}>
+                                                        {episodio.caracter_dolor || episodio.desencadenante}
+>>>>>>> 444e66e (feat: añadir episodios recientes)
                                                     </span>
                                                 </div>
                                             )}
