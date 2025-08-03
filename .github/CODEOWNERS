@@ -1,0 +1,33 @@
+# Global owners - Deploy team and repository administrators
+* @migraine-app-deploy-team @migraine-app-admins
+
+# Backend applications ownership by squad (deploy team has final authority)
+/backend/evaluacion_diagnostico/ @migraine-app-squad1 @migraine-app-squad2 @migraine-app-deploy-team
+/backend/tratamiento/ @migraine-app-squad3 @migraine-app-squad7 @migraine-app-deploy-team
+/backend/analiticas/ @migraine-app-squad4 @migraine-app-squad6 @migraine-app-deploy-team
+/backend/agendamiento_citas/ @migraine-app-squad5 @migraine-app-deploy-team
+/backend/usuarios/ @migraine-app-deploy-team
+
+# Frontend features ownership by squad (deploy team has final authority)
+/frontend/src/features/feature_Grupo1_*/ @migraine-app-squad1 @migraine-app-deploy-team
+/frontend/src/features/feature_Grupo2_*/ @migraine-app-squad2 @migraine-app-deploy-team
+/frontend/src/features/feature_Grupo3_*/ @migraine-app-squad3 @migraine-app-deploy-team
+/frontend/src/features/feature_Grupo4_*/ @migraine-app-squad4 @migraine-app-deploy-team
+/frontend/src/features/feature_Grupo5_*/ @migraine-app-squad5 @migraine-app-deploy-team
+/frontend/src/features/feature_Grupo6_*/ @migraine-app-squad6 @migraine-app-deploy-team
+/frontend/src/features/feature_Grupo7_*/ @migraine-app-squad7 @migraine-app-deploy-team
+
+# Shared frontend components (deploy team only)
+/frontend/src/common/ @migraine-app-deploy-team
+/frontend/src/pages/ @migraine-app-deploy-team
+
+# Infrastructure and deployment files (deploy team only)
+/.github/ @migraine-app-deploy-team
+/docker-compose.yaml @migraine-app-deploy-team
+/Dockerfile @migraine-app-deploy-team
+/requirements.txt @migraine-app-deploy-team
+/setup.bat @migraine-app-deploy-team
+
+# Documentation (deploy team only)
+/README.md @migraine-app-deploy-team
+/LICENSE @migraine-app-admins
