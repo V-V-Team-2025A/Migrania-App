@@ -1,3 +1,5 @@
+import { BOOLEAN_FIELDS, REQUIRED_FIELDS } from './constants.js';
+
 export const transformEpisodio = (episodio) => ({
     ...episodio,
     creado_en: episodio.creado_en ? new Date(episodio.creado_en).toLocaleString() : '-',
@@ -10,6 +12,77 @@ export const transformEpisodio = (episodio) => ({
     anticonceptivos: episodio.anticonceptivos ? 'Sí' : 'No',
     sintomas_aura: episodio.sintomas_aura || '-'
 });
+
+/**
+ * Convierte string "Sí"/"No" a booleano
+ * @param {string} value - Valor a convertir
+ * @returns {boolean} Valor booleano
+ */
+export const convertStringToBoolean = (value) => {
+    return value === 'Sí' || value === 'Si';
+};
+
+/**
+ * Transforma los datos del formulario para enviar a la API
+ * @param {Object} formData - Datos del formulario
+ * @param {Object} userInfo - Información del usuario
+ * @returns {Object} Datos transformados para la API
+ */
+export const transformFormDataForAPI = (formData, userInfo) => {
+    const transformedData = { ...formData };
+
+    // Transformar campos booleanos
+    BOOLEAN_FIELDS.forEach(field => {
+        transformedData[field] = convertStringToBoolean(transformedData[field]);
+    });
+
+    // Campos específicos para hombres
+    if (userInfo?.genero === 'M') {
+        transformedData.en_menstruacion = false;
+        transformedData.anticonceptivos = false;
+    }
+
+    // Convertir campos numéricos
+    if (transformedData.duracion_cefalea_horas) {
+        transformedData.duracion_cefalea_horas = parseInt(transformedData.duracion_cefalea_horas);
+    }
+
+    transformedData.duracion_aura_minutos = transformedData.duracion_aura_minutos
+        ? parseInt(transformedData.duracion_aura_minutos)
+        : 0;
+
+    // Manejar síntomas del aura
+    if (!transformedData.presencia_aura) {
+        transformedData.sintomas_aura = "";
+        transformedData.duracion_aura_minutos = 0;
+    } else if (!transformedData.sintomas_aura) {
+        transformedData.sintomas_aura = "";
+    }
+
+    return transformedData;
+};
+
+/**
+ * Valida los datos del formulario
+ * @param {Object} formData - Datos del formulario a validar
+ * @throws {Error} Si la validación falla
+ */
+export const validateEpisodioForm = (formData) => {
+    const missingFields = REQUIRED_FIELDS.filter(field => !formData[field]);
+
+    if (missingFields.length > 0) {
+        throw new Error(`Campos requeridos faltantes: ${missingFields.join(', ')}`);
+    }
+
+    const duracion = parseInt(formData.duracion_cefalea_horas);
+    if (isNaN(duracion) || duracion < 1 || duracion > 72) {
+        throw new Error('La duración de la cefalea debe estar entre 1 y 72 horas.');
+    }
+
+    if (formData.presencia_aura === 'Sí' && formData.duracion_aura_minutos && parseInt(formData.duracion_aura_minutos) === 0) {
+        throw new Error('Si hay presencia de aura, debe especificar una duración mayor a 0 minutos.');
+    }
+};
 
 export const COLUMNAS_EPISODIOS = [
     { key: 'creado_en', header: 'Fecha de Registro' },

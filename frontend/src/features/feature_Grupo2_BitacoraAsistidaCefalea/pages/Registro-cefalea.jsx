@@ -1,73 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import Header from '@/common/components/Header.jsx';
 import classes from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/styles/bitacora.module.css';
+import { INITIAL_FORM_DATA } from '../utils/constants.js';
+import { fetchUserInfoPaciente, createEpisodioPaciente, getErrorMessage } from '../utils/apiUtils.js';
+import { transformFormDataForAPI, validateEpisodioForm } from '../utils/episodioUtils.js';
 
 export default function IngresarCefalea() {
-    const [formData, setFormData] = useState({
-        duracion_cefalea_horas: '',
-        severidad: '',
-        localizacion: '',
-        caracter_dolor: '',
-        empeora_actividad: '',
-        nauseas_vomitos: '',
-        fotofobia: '',
-        fonofobia: '',
-        presencia_aura: '',
-        sintomas_aura: '',
-        duracion_aura_minutos: '',
-        en_menstruacion: '',
-        anticonceptivos: ''
-    });
-
+    const [formData, setFormData] = useState(INITIAL_FORM_DATA);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
     const [userInfo, setUserInfo] = useState(null);
     const [loadingUser, setLoadingUser] = useState(true);
 
-    // Obtener información del usuario para verificar el género
+    // Obtener información del usuario
     useEffect(() => {
-        const fetchUserInfo = async () => {
+        const loadUserInfo = async () => {
             try {
                 setLoadingUser(true);
-
-                const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-                const url = `${baseUrl}/usuarios/mi_perfil/`;
-
-                const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MTk1MzE3LCJpYXQiOjE3NTQxOTE3MTcsImp0aSI6ImE5Yjg2NDI1ZTQ0ZjQxNzhhNWIxNzU0ZWE3ODQ3Y2E5IiwidXNlcl9pZCI6IjE1NyJ9.mosOa4Qd8O-w-sT0Yzo2sH94FOj3W6aTFpKNS4LAmck";
-
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': token ? `Bearer ${token}` : '',
-                    }
-                });
-
-                if (!response.ok) {
-                    console.error(`Error al obtener información del usuario desde ${url}:`, response.status);
-                    // Si no se puede obtener la info del usuario, asumir mujer para mostrar todos los campos
-                    setUserInfo({ genero: 'F', nombre_completo: 'Usuario' });
-                    return;
-                }
-
-                const userData = await response.json();
-                console.log('Información del usuario obtenida desde:', url);
-                console.log('Información del usuario:', userData);
-                console.log('Género del usuario:', userData.genero);
+                const userData = await fetchUserInfoPaciente();
                 setUserInfo(userData);
-
-
             } catch (err) {
                 console.error('Error al obtener información del usuario:', err);
-                // Si hay error, asumir mujer para mostrar todos los campos
+                // Fallback para mostrar todos los campos
                 setUserInfo({ genero: 'F', nombre_completo: 'Usuario' });
             } finally {
                 setLoadingUser(false);
             }
         };
 
-        fetchUserInfo();
+        loadUserInfo();
     }, []);
 
     const handleInputChange = (e) => {
@@ -78,69 +40,16 @@ export default function IngresarCefalea() {
         }));
     };
 
-    const transformFormDataForAPI = (data) => {
-        // Transformar strings "Sí"/"No" a booleanos
-        const booleanFields = ['empeora_actividad', 'nauseas_vomitos', 'fotofobia', 'fonofobia', 'presencia_aura', 'en_menstruacion', 'anticonceptivos'];
-
-        const transformedData = { ...data };
-
-        booleanFields.forEach(field => {
-            if (transformedData[field] === 'Sí' || transformedData[field] === 'Si') {
-                transformedData[field] = true;
-            } else if (transformedData[field] === 'No') {
-                transformedData[field] = false;
-            } else {
-                // Si no se seleccionó nada, por defecto false
-                transformedData[field] = false;
-            }
-        });
-
-        // Si el usuario es hombre, establecer campos específicos de mujeres como false
-        if (userInfo && userInfo.genero === 'M') {
-            transformedData.en_menstruacion = false;
-            transformedData.anticonceptivos = false;
-        }
-
-        // Convertir campos numéricos
-        if (transformedData.duracion_cefalea_horas) {
-            transformedData.duracion_cefalea_horas = parseInt(transformedData.duracion_cefalea_horas);
-        }
-
-        if (transformedData.duracion_aura_minutos) {
-            transformedData.duracion_aura_minutos = parseInt(transformedData.duracion_aura_minutos);
-        } else {
-            transformedData.duracion_aura_minutos = 0;
-        }
-
-        // Manejar síntomas del aura
-        if (!transformedData.presencia_aura || transformedData.presencia_aura === false) {
-            transformedData.sintomas_aura = "";
-            transformedData.duracion_aura_minutos = 0;
-        } else if (!transformedData.sintomas_aura || transformedData.sintomas_aura === "") {
-            transformedData.sintomas_aura = "";
-        }
-
-        return transformedData;
+    const resetForm = () => {
+        setFormData(INITIAL_FORM_DATA);
     };
 
-    const validateForm = (data) => {
-        const requiredFields = ['duracion_cefalea_horas', 'severidad', 'localizacion', 'caracter_dolor'];
-        const missingFields = requiredFields.filter(field => !data[field]);
-
-        if (missingFields.length > 0) {
-            throw new Error(`Campos requeridos faltantes: ${missingFields.join(', ')}`);
-        }
-
-        // Validar duración de cefalea
-        const duracion = parseInt(data.duracion_cefalea_horas);
-        if (isNaN(duracion) || duracion < 1 || duracion > 72) {
-            throw new Error('La duración de la cefalea debe estar entre 1 y 72 horas.');
-        }
-
-        // Validar coherencia de aura
-        if (data.presencia_aura === 'Sí' && data.duracion_aura_minutos && parseInt(data.duracion_aura_minutos) === 0) {
-            throw new Error('Si hay presencia de aura, debe especificar una duración mayor a 0 minutos.');
-        }
+    const showSuccessAndReset = () => {
+        setSuccess(true);
+        resetForm();
+        setTimeout(() => {
+            setSuccess(false);
+        }, 3000);
     };
 
     const handleSubmit = async (e) => {
@@ -151,94 +60,72 @@ export default function IngresarCefalea() {
             setError(null);
             setSuccess(false);
 
-            // Validar formulario
-            validateForm(formData);
-
-            // Transformar datos para la API
-            const apiData = transformFormDataForAPI(formData);
+            validateEpisodioForm(formData);
+            const apiData = transformFormDataForAPI(formData, userInfo);
 
             console.log('Datos del formulario original:', formData);
             console.log('Datos transformados para la API:', apiData);
-            console.log('Campos enviados:', Object.keys(apiData));
 
-            // Construir URL de la API
-            const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-            const url = `${baseUrl}/evaluaciones/episodios/`;
-
-            // Obtener token de autenticación
-
-            const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MjM5MDY5LCJpYXQiOjE3NTQyMzU0NjksImp0aSI6IjdjMjY5MTUyOGQxMzRiNjI5Mzc2ZjU0NjUzZmVmN2JiIiwidXNlcl9pZCI6IjkyNCJ9.25h2p1kmAdsABEdzaVfbbn5i_Lp37PMXpbjgYeVxKZg"
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : '',
-                },
-                body: JSON.stringify(apiData)
-            });
-
-            if (!response.ok) {
-                if (response.status === 401) {
-                    throw new Error('No autorizado. Por favor, inicia sesión nuevamente.');
-                } else if (response.status === 403) {
-                    throw new Error('No tienes permisos para crear episodios.');
-                } else if (response.status === 400) {
-                    const errorData = await response.json();
-                    const errorMessages = Object.entries(errorData).map(([field, messages]) =>
-                        `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`
-                    ).join('; ');
-                    throw new Error(`Error de validación: ${errorMessages}`);
-                } else {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
-            }
-
-            const responseData = await response.json();
+            const responseData = await createEpisodioPaciente(apiData);
             console.log('Episodio creado exitosamente:', responseData);
-
-            setSuccess(true);
-
-            // Limpiar formulario
-            setFormData({
-                duracion_cefalea_horas: '',
-                severidad: '',
-                localizacion: '',
-                caracter_dolor: '',
-                empeora_actividad: '',
-                nauseas_vomitos: '',
-                fotofobia: '',
-                fonofobia: '',
-                presencia_aura: '',
-                sintomas_aura: '',
-                duracion_aura_minutos: '',
-                en_menstruacion: '',
-                anticonceptivos: ''
-            });
-
-            // Opcional: redirigir después de un tiempo
-            setTimeout(() => {
-                setSuccess(false);
-                // Aquí podrías agregar navegación de vuelta a la bitácora
-            }, 3000);
+            showSuccessAndReset();
 
         } catch (err) {
             console.error('Error al crear episodio:', err);
-
-            if (err.name === 'TypeError' && err.message.includes('fetch')) {
-                setError('No se puede conectar al servidor. Verifica que el backend esté ejecutándose.');
-            } else {
-                setError(err.message);
-            }
+            setError(getErrorMessage(err));
         } finally {
             setLoading(false);
         }
     };
 
     const handleCancel = () => {
-        // Lógica para cancelar y volver
         console.log('Cancelar registro');
+        // TODO: Implementar navegación de vuelta
     };
+
+    const renderLoadingState = () => (
+        <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+            Cargando información del usuario...
+        </div>
+    );
+
+    const renderSubmissionState = () => (
+        <>
+            {loading && (
+                <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+                    Guardando episodio...
+                </div>
+            )}
+
+            {error && (
+                <div style={{
+                    padding: '20px',
+                    color: 'red',
+                    textAlign: 'center',
+                    background: '#ffebee',
+                    border: '1px solid #ffcdd2',
+                    borderRadius: '4px',
+                    margin: '20px 0'
+                }}>
+                    {error}
+                </div>
+            )}
+
+            {success && (
+                <div style={{
+                    padding: '20px',
+                    color: 'green',
+                    textAlign: 'center',
+                    background: '#e8f5e8',
+                    border: '1px solid #c8e6c9',
+                    borderRadius: '4px',
+                    margin: '20px 0'
+                }}>
+                    ¡Episodio registrado exitosamente!
+                </div>
+            )}
+        </>
+    );
 
     return (
         <div>
@@ -252,31 +139,8 @@ export default function IngresarCefalea() {
                     Registrar nuevo episodio
                 </h2>
 
-                {/* Mostrar loading mientras se obtiene información del usuario */}
-                {loadingUser && (
-                    <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
-                        Cargando información del usuario...
-                    </div>
-                )}
-
-                {/* Mostrar estados de loading, error o éxito */}
-                {loading && (
-                    <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
-                        Guardando episodio...
-                    </div>
-                )}
-
-                {error && (
-                    <div style={{ padding: '20px', color: 'red', textAlign: 'center', background: '#ffebee', border: '1px solid #ffcdd2', borderRadius: '4px', margin: '20px 0' }}>
-                        {error}
-                    </div>
-                )}
-
-                {success && (
-                    <div style={{ padding: '20px', color: 'green', textAlign: 'center', background: '#e8f5e8', border: '1px solid #c8e6c9', borderRadius: '4px', margin: '20px 0' }}>
-                        ¡Episodio registrado exitosamente!
-                    </div>
-                )}
+                {loadingUser && renderLoadingState()}
+                {renderSubmissionState()}
 
                 {!loadingUser && userInfo && (
                     <form onSubmit={handleSubmit}>
@@ -460,7 +324,7 @@ export default function IngresarCefalea() {
                             </div>
 
                             {/* Campos específicos para mujeres */}
-                            {userInfo && userInfo.genero === 'F' && (
+                            {userInfo?.genero === 'F' && (
                                 <>
                                     <div className="form-field">
                                         <label htmlFor="en_menstruacion" className={classes.labelStyled}>En menstruación</label>

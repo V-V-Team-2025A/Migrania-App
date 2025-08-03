@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Header from '@/common/components/Header.jsx';
 import Tabla from '@/common/components/Tabla.jsx';
-import { parseApiResponse, getErrorMessage } from '../utils/apiUtils.js';
+import { parseApiResponse, getErrorMessage, getApiUrl, getAuthHeaders } from '../utils/apiUtils.js';
 import { transformEpisodio, COLUMNAS_EPISODIOS } from '../utils/episodioUtils.js';
-import { BASE_URL, EPISODIOS_ENDPOINT, TEMP_TOKEN } from '../utils/constants.js';
+import { EPISODIOS_ENDPOINT } from '../utils/constants.js';
 import '@/features/feature_Grupo2_BitacoraAsistidaCefalea/styles/bitacora.module.css';
 
 export default function BitacoraDigital() {
@@ -17,16 +17,12 @@ export default function BitacoraDigital() {
                 setLoading(true);
                 setError(null);
 
-                const url = `${BASE_URL}${EPISODIOS_ENDPOINT}`;
+                const url = getApiUrl(EPISODIOS_ENDPOINT);
                 console.log('Intentando conectar a:', url);
-                console.log('Base URL configurada:', BASE_URL);
 
                 const response = await fetch(url, {
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': TEMP_TOKEN ? `Bearer ${TEMP_TOKEN}` : '',
-                    }
+                    headers: getAuthHeaders(null, 'paciente')
                 });
 
                 if (!response.ok) {

@@ -1,5 +1,46 @@
 export const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 export const EPISODIOS_ENDPOINT = '/evaluaciones/episodios/';
 export const USUARIOS_ENDPOINT = '/usuarios/';
+export const MI_PERFIL_ENDPOINT = '/usuarios/mi_perfil/';
 
-export const TEMP_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MjQ2MjM5LCJpYXQiOjE3NTQyNDI2MzksImp0aSI6ImIzOGE1NjgwYmE4ZTRmNTFiYmExZTI3YzRhNGY4YzdmIiwidXNlcl9pZCI6IjU4In0.3g1egaoaw4XbkELqqub1nvKuCTM0rw2gFCUHdF8otb4";
+// Tokens temporales - TODO: Implementar sistema de autenticación apropiado
+export const TEMP_TOKEN_PACIENTE = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MjUwODg2LCJpYXQiOjE3NTQyNDcyODYsImp0aSI6IjIzOGE2OTc5Y2EzZTRiMzE5MzI4ZTEyMDQ4ZWRmMTRkIiwidXNlcl9pZCI6IjU4In0.EQafLInInPtkzjXy9Tw0tKSVoZkJ2WcqzWnzQZvC1EA";
+
+export const TEMP_TOKEN_MEDICO = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MjUwOTcwLCJpYXQiOjE3NTQyNDczNzAsImp0aSI6ImRkNGM2MzkzZDY1ZjQwMTFhZDhjM2EyODAzOTE2NTYyIiwidXNlcl9pZCI6IjEifQ.uy39PM_JfpB0WAuPAc_pvTbjvKCzORkHSV6uD3nafqk";
+
+// Token por defecto (mantiene compatibilidad)
+export const TEMP_TOKEN = TEMP_TOKEN_PACIENTE;
+
+// Constantes del formulario de registro de cefalea
+export const INITIAL_FORM_DATA = {
+    duracion_cefalea_horas: '',
+    severidad: '',
+    localizacion: '',
+    caracter_dolor: '',
+    empeora_actividad: '',
+    nauseas_vomitos: '',
+    fotofobia: '',
+    fonofobia: '',
+    presencia_aura: '',
+    sintomas_aura: '',
+    duracion_aura_minutos: '',
+    en_menstruacion: '',
+    anticonceptivos: ''
+};
+
+export const BOOLEAN_FIELDS = [
+    'empeora_actividad',
+    'nauseas_vomitos',
+    'fotofobia',
+    'fonofobia',
+    'presencia_aura',
+    'en_menstruacion',
+    'anticonceptivos'
+];
+
+export const REQUIRED_FIELDS = [
+    'duracion_cefalea_horas',
+    'severidad',
+    'localizacion',
+    'caracter_dolor'
+];

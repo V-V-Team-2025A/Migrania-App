@@ -5,7 +5,7 @@ import Tabla from '@/common/components/Tabla.jsx';
 import ModalFiltro from '../components/ModalFiltro.jsx';
 import { parseApiResponse, getErrorMessageMedico, fetchPacienteInfo } from '../utils/apiUtils.js';
 import { transformEpisodioMedico, COLUMNAS_EPISODIOS_MEDICO } from '../utils/episodioUtils.js';
-import { BASE_URL, EPISODIOS_ENDPOINT, TEMP_TOKEN } from '../utils/constants.js';
+import { BASE_URL, EPISODIOS_ENDPOINT, TEMP_TOKEN_MEDICO } from '../utils/constants.js';
 import '@/features/feature_Grupo2_BitacoraAsistidaCefalea/styles/bitacora.module.css';
 
 export default function BitacoraDigitalMedico() {
@@ -31,8 +31,10 @@ export default function BitacoraDigitalMedico() {
                 setError(null);
 
                 // Obtener información del paciente
-                const nombrePaciente = await fetchPacienteInfo(pacienteId, BASE_URL, TEMP_TOKEN);
+                const nombrePaciente = await fetchPacienteInfo(pacienteId, BASE_URL, TEMP_TOKEN_MEDICO);
                 setNombrePaciente(nombrePaciente);
+                console.log(nombrePaciente);
+
 
                 // Obtener episodios del paciente
                 const url = `${BASE_URL}${EPISODIOS_ENDPOINT}?paciente_id=${pacienteId}`;
@@ -43,7 +45,7 @@ export default function BitacoraDigitalMedico() {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': TEMP_TOKEN ? `Bearer ${TEMP_TOKEN}` : '',
+                        'Authorization': TEMP_TOKEN_MEDICO ? `Bearer ${TEMP_TOKEN_MEDICO}` : '',
                     }
                 });
 
