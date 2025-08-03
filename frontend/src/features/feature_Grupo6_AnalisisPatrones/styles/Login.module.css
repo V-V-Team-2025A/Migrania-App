@@ -2,7 +2,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    min-height: 90vh;
 
     background-color: var(--color-body-background); 
     padding: var(--spacing-m);
@@ -56,6 +56,10 @@
     font-weight: var(--font-weight-semibold);
     text-align: center;
     transition: background-color 0.2s ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none; 
 }
 
 .login__boton :hover {
