@@ -2,15 +2,12 @@ import { useState, useEffect } from 'react';
 import styles from "../../common/styles/dashboardPaciente.module.css";
 import { BellIcon, StethoscopeIcon, ChartLineIcon, FilesIcon, PillIcon, PlusIcon, BrainIcon } from "@phosphor-icons/react";
 import { fetchEpisodiosPaciente } from "../../utils/apiUtils.js";
-<<<<<<< HEAD
-=======
 import {
     obtenerFechaEpisodio,
     compararFechas,
     formatearFecha
 } from "../../utils/funciones.js";
 
-// Constantes para las tarjetas del dashboard
 const TARJETAS_DASHBOARD = [
     {
         icono: PlusIcon,
@@ -39,10 +36,16 @@ const TARJETAS_DASHBOARD = [
         backgroundColor: "#3588517d",
         titulo: "Mi progreso",
         descripcion: "Visualiza tendencias y estadísticas."
+    },
+    {
+        icono: BrainIcon,
+        color: "#f39a4cff",
+        backgroundColor: "#be713e50",
+        titulo: "Mis patrones",
+        descripcion: "Revisa tus patrones semanales."
     }
 ];
 
->>>>>>> e5d6417 (chore: refactorización de dashboard)
 export default function Dashboard() {
     const [episodiosRecientes, setEpisodiosRecientes] = useState([]);
     const [cargandoEpisodios, setCargandoEpisodios] = useState(true);
@@ -79,13 +82,9 @@ export default function Dashboard() {
         cargarEpisodiosRecientes();
     }, []);
 
-    // Componentes de renderizado
     const TarjetaDashboard = ({ icono: Icono, color, backgroundColor, titulo, descripcion }) => (
         <div className={styles["dashboard__tarjeta"]}>
-            <div
-                className={styles["dashboard__icono"]}
-                style={{ backgroundColor }}
-            >
+            <div className={styles["dashboard__icono"]} style={{ backgroundColor }}>
                 <Icono size={32} color={color} />
             </div>
             <h4>{titulo}</h4>
@@ -95,27 +94,15 @@ export default function Dashboard() {
 
     const EstadoCarga = ({ cargando, error, vacio, textoVacio = "No hay datos disponibles" }) => {
         if (cargando) {
-            return (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-secondary-dark)' }}>
-                    Cargando...
-                </div>
-            );
+            return <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-secondary-dark)' }}>Cargando...</div>;
         }
 
         if (error) {
-            return (
-                <div style={{ textAlign: 'center', padding: '20px', color: '#e74c3c' }}>
-                    Error: {error}
-                </div>
-            );
+            return <div style={{ textAlign: 'center', padding: '20px', color: '#e74c3c' }}>Error: {error}</div>;
         }
 
         if (vacio) {
-            return (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-secondary-dark)' }}>
-                    {textoVacio}
-                </div>
-            );
+            return <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-secondary-dark)' }}>{textoVacio}</div>;
         }
 
         return null;
@@ -136,9 +123,7 @@ export default function Dashboard() {
 
         return (
             <div key={episodio.id || index} className={styles["dashboard__episodio-item"]}>
-                <div className={styles["dashboard__episodio-fecha"]}>
-                    {fechaFormateada}
-                </div>
+                <div className={styles["dashboard__episodio-fecha"]}>{fechaFormateada}</div>
                 <div className={styles["dashboard__episodio-contenido"]}>
                     <div className={styles["dashboard__episodio-header"]}>
                         <div className={`${styles["dashboard__episodio-severidad"]} ${severidadClass}`}>
@@ -146,18 +131,10 @@ export default function Dashboard() {
                         </div>
                     </div>
                     <div className={styles["dashboard__episodio-detalles"]}>
-                        <DetalleEpisodio
-                            icono="⏱"
-                            texto={episodio.duracion_cefalea_horas || episodio.duracion || 'N/A'}
-                        />
-                        {episodio.localizacion && (
-                            <DetalleEpisodio icono="📍" texto={episodio.localizacion} />
-                        )}
+                        <DetalleEpisodio icono="⏱" texto={episodio.duracion_cefalea_horas || episodio.duracion || 'N/A'} />
+                        {episodio.localizacion && <DetalleEpisodio icono="📍" texto={episodio.localizacion} />}
                         {(episodio.caracter_dolor || episodio.desencadenante) && (
-                            <DetalleEpisodio
-                                icono="💫"
-                                texto={episodio.caracter_dolor || episodio.desencadenante}
-                            />
+                            <DetalleEpisodio icono="💫" texto={episodio.caracter_dolor || episodio.desencadenante} />
                         )}
                     </div>
                 </div>
@@ -176,68 +153,9 @@ export default function Dashboard() {
             </div>
 
             <section className={styles["dashboard__contenedor-tarjetas"]}>
-<<<<<<< HEAD
-                <div className={styles["dashboard__tarjeta"]}>
-                    <div
-                        className={styles["dashboard__icono"]}
-                        style={{
-                            backgroundColor: "#c42d3750",
-                        }}>
-                        <PlusIcon size={32} color={"#c9525aff"} />
-                    </div>
-                    <h4>Registrar episodio</h4>
-                    <p>Documenta un nuevo episodio de migraña.</p>
-                </div>
-                <div className={styles["dashboard__tarjeta"]}>
-                    <div
-                        className={styles["dashboard__icono"]}
-                        style={{
-                            backgroundColor: "#9f58dd59",
-                        }}>
-                        <FilesIcon size={32} color={"#a555ebff"} />
-                    </div>
-                    <h4>Evaluación MIDAS</h4>
-                    <p>Evalúa el impacto de la migraña en tu vida diaria.</p>
-                </div>
-                <div className={styles["dashboard__tarjeta"]}>
-                    <div
-                        className={styles["dashboard__icono"]}
-                        style={{
-                            backgroundColor: "#3e68be50",
-                        }}>
-                        <PillIcon size={32} color={"#4c84f3ff"} />
-                    </div>
-                    <h4>Mis tratamientos</h4>
-                    <p>Revisa tus tratamientos actuales.</p>
-                </div>
-                <div className={styles["dashboard__tarjeta"]}>
-                    <div
-                        className={styles["dashboard__icono"]}
-                        style={{
-                            backgroundColor: "#3588517d",
-                        }}>
-                        <ChartLineIcon size={32} color={"#42b668ff"} />
-                    </div>
-                    <h4>Mi progreso</h4>
-                    <p>Visualiza tendencias y estadísticas.</p>
-                </div>
-                <div className={styles["dashboard__tarjeta"]}>
-                    <div
-                        className={styles["dashboard__icono"]}
-                        style={{
-                            backgroundColor: "#be713e50",
-                        }}>
-                        <BrainIcon size={32} color={"#f39a4cff"} />
-                    </div>
-                    <h4>Mis patrones</h4>
-                    <p>Revisa tus patrones semanales.</p>
-                </div>
-
-=======
                 {TARJETAS_DASHBOARD.map((tarjeta, index) => (
                     <TarjetaDashboard key={index} {...tarjeta} />
                 ))}
->>>>>>> e5d6417 (chore: refactorización de dashboard)
             </section>
 
             <div className={styles["dashboard__seccion-inferior"]}>
@@ -254,63 +172,7 @@ export default function Dashboard() {
                     {!cargandoEpisodios && !errorEpisodios && episodiosRecientes.length > 0 && (
                         <div className={styles["dashboard__lista-episodios"]}>
                             {episodiosRecientes.map((episodio, index) => (
-<<<<<<< HEAD
-                                <div key={episodio.id || index} className={styles["dashboard__episodio-item"]}>
-                                    <div className={styles["dashboard__episodio-fecha"]}>
-                                        {formatearFecha(episodio.fecha_inicio || episodio.creado_en || episodio.fecha)}
-                                    </div>
-                                    <div className={styles["dashboard__episodio-contenido"]}>
-                                        <div className={styles["dashboard__episodio-header"]}>
-                                            <div
-                                                className={`${styles["dashboard__episodio-severidad"]} ${episodio.severidad ?
-                                                    styles[`dashboard__episodio-severidad--${episodio.severidad.toLowerCase()}`] :
-                                                    ''
-                                                    }`}
-                                            >
-                                                {episodio.severidad || 'N/A'}
-                                            </div>
-                                        </div>
-                                        <div className={styles["dashboard__episodio-detalles"]}>
-                                            <div className={styles["dashboard__episodio-detalle"]}>
-                                                <div className={styles["dashboard__episodio-detalle-icono"]}>⏱</div>
-                                                <span className={styles["dashboard__episodio-detalle-texto"]}>
-<<<<<<< HEAD
-                                                    {episodio.duracion_cefalea_horas ? `${episodio.duracion_cefalea_horas}h` : 'N/A'}
-=======
-                                                    {episodio.duracion_cefalea_horas || episodio.duracion || 'N/A'}
->>>>>>> 444e66e (feat: añadir episodios recientes)
-                                                </span>
-                                            </div>
-                                            {episodio.localizacion && (
-                                                <div className={styles["dashboard__episodio-detalle"]}>
-                                                    <div className={styles["dashboard__episodio-detalle-icono"]}>📍</div>
-                                                    <span className={styles["dashboard__episodio-detalle-texto"]}>
-                                                        {episodio.localizacion}
-                                                    </span>
-                                                </div>
-                                            )}
-<<<<<<< HEAD
-                                            {episodio.caracter_dolor && (
-                                                <div className={styles["dashboard__episodio-detalle"]}>
-                                                    <div className={styles["dashboard__episodio-detalle-icono"]}>💫</div>
-                                                    <span className={styles["dashboard__episodio-detalle-texto"]}>
-                                                        {episodio.caracter_dolor}
-=======
-                                            {(episodio.caracter_dolor || episodio.desencadenante) && (
-                                                <div className={styles["dashboard__episodio-detalle"]}>
-                                                    <div className={styles["dashboard__episodio-detalle-icono"]}>💫</div>
-                                                    <span className={styles["dashboard__episodio-detalle-texto"]}>
-                                                        {episodio.caracter_dolor || episodio.desencadenante}
->>>>>>> 444e66e (feat: añadir episodios recientes)
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-=======
                                 <EpisodioItem key={episodio.id || index} episodio={episodio} index={index} />
->>>>>>> e5d6417 (chore: refactorización de dashboard)
                             ))}
                         </div>
                     )}

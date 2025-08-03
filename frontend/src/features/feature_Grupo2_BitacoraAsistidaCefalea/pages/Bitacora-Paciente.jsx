@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/common/components/Header.jsx';
 import Tabla from '@/common/components/Tabla.jsx';
 import { parseApiResponse, getErrorMessage, getApiUrl, getAuthHeaders } from '../utils/apiUtils.js';
@@ -7,6 +8,7 @@ import { EPISODIOS_ENDPOINT } from '../utils/constants.js';
 import '@/features/feature_Grupo2_BitacoraAsistidaCefalea/styles/bitacora.module.css';
 
 export default function BitacoraDigital() {
+    const navigate = useNavigate();
     const [episodios, setEpisodios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -48,11 +50,11 @@ export default function BitacoraDigital() {
     }, []);
 
     const handleNuevoEpisodio = () => {
-        console.log('Nuevo episodio clickeado');
+        navigate('/registro');
     };
 
     const handleVolver = () => {
-        console.log('Volver clickeado');
+        navigate('/dashboard-paciente');
     };
 
     return (
