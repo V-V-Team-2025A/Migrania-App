@@ -1,106 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@/common/components/Header.jsx';
 import Tabla from '@/common/components/Tabla.jsx';
 
 export default function BitacoraDigital() {
-    const [episodios, setEpisodios] = useState([
-        {
-            id: 1,
-            duracion_cefalea_horas: 5,
-            severidad: 'Moderada',
-            localizacion: 'Unilateral',
-            caracter_dolor: 'Pulsátil',
-            empeora_actividad: 'Sí',
-            nauseas_vomitos: 'Sí',
-            fotofobia: 'Sí',
-            fonofobia: 'No',
-            presencia_aura: 'Sí',
-            sintomas_aura: 'Visual',
-            duracion_aura_minutos: 30,
-            en_menstruacion: 'No',
-            anticonceptivos: 'No'
-        },
-        {
-            id: 2,
-            duracion_cefalea_horas: 3,
-            severidad: 'Severa',
-            localizacion: 'Bilateral',
-            caracter_dolor: 'Opresivo',
-            empeora_actividad: 'No',
-            nauseas_vomitos: 'No',
-            fotofobia: 'Sí',
-            fonofobia: 'Sí',
-            presencia_aura: 'No',
-            sintomas_aura: '-',
-            duracion_aura_minutos: 0,
-            en_menstruacion: 'Sí',
-            anticonceptivos: 'Sí'
-        },
-        {
-            id: 3,
-            duracion_cefalea_horas: 8,
-            severidad: 'Moderada',
-            localizacion: 'Unilateral',
-            caracter_dolor: 'Pulsátil',
-            empeora_actividad: 'Sí',
-            nauseas_vomitos: 'Sí',
-            fotofobia: 'Sí',
-            fonofobia: 'No',
-            presencia_aura: 'Sí',
-            sintomas_aura: 'Sensitivo',
-            duracion_aura_minutos: 20,
-            en_menstruacion: 'No',
-            anticonceptivos: 'No'
-        },
-        {
-            id: 4,
-            duracion_cefalea_horas: 2,
-            severidad: 'Leve',
-            localizacion: 'Frontal',
-            caracter_dolor: 'Punzante',
-            empeora_actividad: 'No',
-            nauseas_vomitos: 'No',
-            fotofobia: 'No',
-            fonofobia: 'No',
-            presencia_aura: 'No',
-            sintomas_aura: '-',
-            duracion_aura_minutos: 0,
-            en_menstruacion: 'No',
-            anticonceptivos: 'No'
-        },
-        {
-            id: 5,
-            duracion_cefalea_horas: 6,
-            severidad: 'Severa',
-            localizacion: 'Unilateral',
-            caracter_dolor: 'Pulsátil',
-            empeora_actividad: 'Sí',
-            nauseas_vomitos: 'Sí',
-            fotofobia: 'Sí',
-            fonofobia: 'Sí',
-            presencia_aura: 'Sí',
-            sintomas_aura: 'Visual y Sensitivo',
-            duracion_aura_minutos: 45,
-            en_menstruacion: 'Sí',
-            anticonceptivos: 'Sí'
-        },
-        {
-            id: 6,
-            duracion_cefalea_horas: 4,
-            severidad: 'Moderada',
-            localizacion: 'Bilateral',
-            caracter_dolor: 'Opresivo',
-            empeora_actividad: 'No',
-            nauseas_vomitos: 'No',
-            fotofobia: 'No',
-            fonofobia: 'No',
-            presencia_aura: 'No',
-            sintomas_aura: '-',
-            duracion_aura_minutos: 0,
-            en_menstruacion: 'No',
-            anticonceptivos: 'No'
-        }
-    ]);
+    const [episodios, setEpisodios] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchEpisodios = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                // URL para que el paciente vea sus propios episodios
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/evaluaciones/episodios/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': localStorage.getItem('access_token') ? `Bearer ${localStorage.getItem('access_token')}` : '',
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('No autorizado. Por favor, inicia sesión nuevamente.');
+                    } else {
+                        throw new Error(`Error ${response.status}: ${response.statusText}`);
+                    }
+                }
+
+                const data = await response.json();
+
+                // Transformar los datos booleanos a strings para la tabla
+                const episodiosTransformados = data.map(episodio => ({
+                    ...episodio,
+                    empeora_actividad: episodio.empeora_actividad ? 'Sí' : 'No',
+                    nauseas_vomitos: episodio.nauseas_vomitos ? 'Sí' : 'No',
+                    fotofobia: episodio.fotofobia ? 'Sí' : 'No',
+                    fonofobia: episodio.fonofobia ? 'Sí' : 'No',
+                    presencia_aura: episodio.presencia_aura ? 'Sí' : 'No',
+                    en_menstruacion: episodio.en_menstruacion ? 'Sí' : 'No',
+                    anticonceptivos: episodio.anticonceptivos ? 'Sí' : 'No',
+                    sintomas_aura: episodio.sintomas_aura || '-'
+                }));
+
+                setEpisodios(episodiosTransformados);
+            } catch (err) {
+                console.error('Error al cargar episodios:', err);
+                setError('Error al cargar los episodios de cefalea');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEpisodios();
+    }, []);
 
     const columnasEpisodios = [
         { key: 'duracion_cefalea_horas', header: 'Duración Cefalea (horas)' },
@@ -134,12 +89,24 @@ export default function BitacoraDigital() {
                 primaryButtonText="Nuevo episodio"
                 onPrimaryClick={handleNuevoEpisodio}
             />
-            <Tabla
-                data={episodios}
-                columns={columnasEpisodios}
-                keyField="id"
-                emptyMessage="No hay episodios de cefalea registrados"
-            />
+            {loading && (
+                <div style={{ padding: '20px', textAlign: 'center' }}>
+                    Cargando episodios...
+                </div>
+            )}
+            {error && (
+                <div style={{ padding: '20px', color: 'red', textAlign: 'center' }}>
+                    {error}
+                </div>
+            )}
+            {!loading && !error && (
+                <Tabla
+                    data={episodios}
+                    columns={columnasEpisodios}
+                    keyField="id"
+                    emptyMessage="No hay episodios de cefalea registrados"
+                />
+            )}
         </div>
     );
 }
