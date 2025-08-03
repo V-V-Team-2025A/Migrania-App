@@ -1,17 +1,15 @@
-# analiticas/features/steps/analisis_patrones_steps.py
-
 from behave import *
-from usuarios.repositories import FakeUserRepository
-
-from analiticas.repositories import FakeAnalisisPatronesRepository
-from analiticas.services import AnalisisPatronesService
-from analiticas.analisis_patrones_data_structures import EpisodioData
 
 use_step_matcher("re")
 
 
 @given("que el paciente ha registrado los siguientes episodios")
 def step_impl(context):
+    from usuarios.repositories import FakeUserRepository
+    from analiticas.repositories import FakeAnalisisPatronesRepository
+    from analiticas.services import AnalisisPatronesService
+    from analiticas.analisis_patrones_data_structures import EpisodioData
+
     user_repo = FakeUserRepository()
     context.analisis_repo = FakeAnalisisPatronesRepository()
     context.analisis_service = AnalisisPatronesService(repository=context.analisis_repo)
@@ -35,7 +33,6 @@ def step_impl(context):
         episodio_data.paciente_id = context.paciente.pk
         context.analisis_repo.guardar_episodio(context.paciente.pk, episodio_data)
 
-    # Aserción para verificar que todos los episodios se guardaron
     episodios_guardados = len(context.analisis_repo.obtener_episodios_por_paciente(context.paciente.pk))
     episodios_esperados = len(context.table.rows)
     assert episodios_guardados == episodios_esperados, \
