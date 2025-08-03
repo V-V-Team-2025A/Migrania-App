@@ -12,7 +12,49 @@ dependencies = [
     "drf-spectacular>=0.28.0",
     "psycopg2>=2.9.10",
 ]
+
 [tool.behave]
 junit = true
 junit_directory = "tests"
 paths = ["tests"]
+
+[tool.black]
+line-length = 127
+target-version = ['py313']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 127
+known_django = "django"
+sections = ["FUTURE", "STDLIB", "DJANGO", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+skip = ["migrations"]
+
+[tool.flake8]
+max-line-length = 127
+exclude = [
+    ".git",
+    "__pycache__",
+    "migrations",
+    ".venv",
+    "venv"
+]
+ignore = [
+    "E203",  # whitespace before ':'
+    "W503",  # line break before binary operator
+]
