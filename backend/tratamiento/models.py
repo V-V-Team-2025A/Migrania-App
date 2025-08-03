@@ -1,10 +1,10 @@
 from django.db import models
-from django.db.models import JSONField
 from django.utils import timezone
 from collections import deque
 from datetime import datetime, timedelta
 import logging
 
+from usuarios.models import PacienteProfile
 
 logger = logging.getLogger(__name__)
 
@@ -17,57 +17,63 @@ class EstadoNotificacion(models.TextChoices):
     CONFIRMADO_TOMADO_TARDE = 'tomado_tarde'
     CONFIRMADO_TOMADO_MUY_TARDE = 'tomado_muy_tarde'
 
-    class BicolaNotificacion:
-        def __init__(self):
-            self.elementos = deque()
 
-        def agregarFrente(self, elemento):
-            self.elementos.appendleft(elemento)
+class BicolaNotificacion:
+    """Clase separada para manejar la bicola de notificaciones"""
 
-        def agregarFinal(self, elemento):
-            self.elementos.append(elemento)
-            self.ordenar()
+    def __init__(self):
+        self.elementos = deque()
 
-        def eliminarFrente(self):
-            if self.elementos:
-                return self.elementos.popleft()
-            return None
+    def agregarFrente(self, elemento):
+        self.elementos.appendleft(elemento)
 
-        def eliminarFinal(self):
-            if self.elementos:
-                return self.elementos.pop()
-            return None
+    def agregarFinal(self, elemento):
+        self.elementos.append(elemento)
+        self.ordenar()
 
-        def verFrente(self):
-            return self.elementos[0] if self.elementos else None
+    def eliminarFrente(self):
+        if self.elementos:
+            return self.elementos.popleft()
+        return None
 
-        def verFinal(self):
-            return self.elementos[-1] if self.elementos else None
+    def eliminarFinal(self):
+        if self.elementos:
+            return self.elementos.pop()
+        return None
 
-        def estaVacia(self):
-            return len(self.elementos) == 0
+    def verFrente(self):
+        return self.elementos[0] if self.elementos else None
 
-        def ordenar(self):
-            alertas_frente = []
-            while (len(self.elementos) > 0 and
-                   isinstance(self.elementos[0], Alerta) and
-                   self.elementos[0].numero_alerta > 1):
-                alertas_frente.append(self.elementos.popleft())
+    def verFinal(self):
+        return self.elementos[-1] if self.elementos else None
 
-            self.elementos = deque(sorted(self.elementos, key=lambda n: n.fecha_hora))
+    def estaVacia(self):
+        return len(self.elementos) == 0
 
-            for alerta in reversed(alertas_frente):
-                self.elementos.appendleft(alerta)
+    def ordenar(self):
+        # Importación tardía para evitar referencias circulares
+        from .models import Alerta
 
-        def agregar_multiples(self, elementos):
-            self.elementos.extend(elementos)
-            self.ordenar()
+        alertas_frente = []
+        while (len(self.elementos) > 0 and
+               isinstance(self.elementos[0], Alerta) and
+               self.elementos[0].numero_alerta > 1):
+            alertas_frente.append(self.elementos.popleft())
 
-        def __len__(self):
-            return len(self.elementos)
+        self.elementos = deque(sorted(self.elementos, key=lambda n: n.fecha_hora))
 
-        def listar_elementos(self):
-            return list(self.elementos)
+        for alerta in reversed(alertas_frente):
+            self.elementos.appendleft(alerta)
+
+    def agregar_multiples(self, elementos):
+        self.elementos.extend(elementos)
+        self.ordenar()
+
+    def __len__(self):
+        return len(self.elementos)
+
+    def listar_elementos(self):
+        return list(self.elementos)
 
 
 class Notificacion(models.Model):
@@ -122,7 +128,7 @@ class Alerta(Notificacion):
 
         nueva_alerta = Alerta(
             mensaje=f"{self.mensaje} (Alerta #{siguiente_numero})",
-            fecha_hora=datetime.now(),
+            fecha_hora=timezone.now(),
             estado=EstadoNotificacion.ACTIVO,
             numero_alerta=siguiente_numero,
             duracion=self.duracion,
@@ -135,7 +141,7 @@ class Alerta(Notificacion):
         return nueva_alerta
 
     def haExcedidoHoraDeConfirmacion(self):
-        ahora = datetime.now()
+        ahora = timezone.now()
         tiempo_transcurrido = (ahora - self.fecha_hora).total_seconds() / 60
         return tiempo_transcurrido > self.duracion
 
@@ -161,150 +167,114 @@ class Recordatorio(Notificacion):
         return False
 
 
-class Recomendacion(models.Model):
-    GENERO_CHOICES = [
-        ('both', 'Hombre y Mujer'),
-        ('female', 'Mujer'),
-        ('male', 'Hombre'),
-    ]
+class Recomendacion(models.TextChoices):
+    RUTINA_SUENO = "rutina_sueno", "Mantener una rutina regular de sueño"
+    EJERCICIO_MODERADO = "ejercicio_moderado", "Realizar ejercicio de forma moderada"
+    CONTROL_ESTRES = "control_estres", "Controlar los niveles de estrés"
+    HIDRATACION = "hidratacion", "Mantener una hidratación adecuada"
+    AMBIENTE_OSCURO = "ambiente_oscuro", "Buscar un ambiente oscuro y silencioso"
+    COMPRESION = "compresion", "Aplicar compresión fría o tibia"
+    EVITAR_ESFUERZO = "evitar_esfuerzo", "Evitar esfuerzo físico durante el episodio"
+    NAUSEAS_VOMITOS = "nauseas_vomitos", "Líquidos en pequeñas cantidades y evitar alimentos pesados"
 
-    clave = models.CharField(max_length=50, unique=True)
-    descripcion = models.TextField()
-    aplicable_a = models.CharField(max_length=6, choices=GENERO_CHOICES, default='both')
-
-    @classmethod
-    def obtener_por_genero(cls, genero_paciente):
-        """
-        Obtiene las recomendaciones aplicables según el género del paciente.
-
-        Args:
-            genero_paciente: 'male', 'female', o None
-
-        Returns:
-            QuerySet de recomendaciones aplicables
-        """
-        if genero_paciente == 'male':
-            return cls.objects.filter(aplicable_a__in=['both', 'male'])
-        elif genero_paciente == 'female':
-            return cls.objects.filter(aplicable_a__in=['both', 'female'])
-        else:
-            # Si no se especifica género, devolver solo las generales
-            return cls.objects.filter(aplicable_a='both')
-
-    class Meta:
-        verbose_name = 'Recomendación'
-        verbose_name_plural = 'Recomendaciones'
+    # Exclusivas para mujeres
+    MENSTRUACION = "menstruacion", "Usar analgésicos adecuados durante la menstruación"
+    ANTICONCEPTIVOS = "anticonceptivos", "Consultar con un ginecólogo sobre anticonceptivos hormonales"
 
     def __str__(self):
         return f"{self.descripcion} ({self.get_aplicable_a_display()})"
 
 
-class Medicacion(models.Model):
+class Medicamento(models.Model):
     nombre = models.CharField(max_length=100)
-    cantidad = models.CharField(max_length=50)
-    caracteristica = models.TextField(blank=True)
-    frecuencia = models.IntegerField(default=8)  # cada cuántas horas
-    duracion = models.IntegerField()  # en días
+    dosis = models.CharField(max_length=50)
+    caracteristica = models.CharField(blank=True)
+    frecuencia_horas = models.IntegerField(default=8)
+    duracion_dias = models.IntegerField()
     hora_de_inicio = models.TimeField()
 
     def calcularFechasDeTomas(self, fecha_inicio=None):
         if fecha_inicio is None:
             fecha_inicio = datetime.today().date()
-
         fechas_tomas = []
-        for dia in range(self.duracion):
+        for dia in range(self.duracion_dias):
             fecha_actual = fecha_inicio + timedelta(days=dia)
-            tomas_por_dia = 24 // self.frecuencia
+            tomas_por_dia = 24 // self.frecuencia_horas
             for i in range(tomas_por_dia):
                 hora_toma = datetime.combine(fecha_actual, self.hora_de_inicio) + timedelta(
-                    hours=i * self.frecuencia)
+                    hours=i * self.frecuencia_horas)
                 fechas_tomas.append(hora_toma)
-
         return sorted(fechas_tomas)
 
     def calcularRecordatorios(self, fechas_tomas):
         return [fecha_toma - timedelta(minutes=30) for fecha_toma in fechas_tomas]
 
     def __str__(self):
-        return f"{self.nombre} ({self.cantidad})"
-
-    class Meta:
-        verbose_name = 'Medicación'
-        verbose_name_plural = 'Medicaciones'
-        db_table = 'Medicacion'
+        return f"{self.nombre} ({self.dosis})"
 
 
 class Tratamiento(models.Model):
-    """Tratamiento médico prescrito por un médico para un paciente."""
-    medico = models.ForeignKey('usuarios.MedicoProfile', on_delete=models.CASCADE)
-    paciente = models.ForeignKey('usuarios.PacienteProfile', on_delete=models.CASCADE)
+    paciente = models.ForeignKey(
+        PacienteProfile,
+        on_delete=models.CASCADE,
+        related_name='tratamientos',  # 'related_name' permite acceder a los tratamientos desde el paciente
+        verbose_name='Paciente'
+    )
+    medicamentos = models.ManyToManyField('Medicamento', blank=True, related_name='tratamientos')
+    recomendaciones = models.JSONField(default=list)
     fecha_inicio = models.DateField(default=timezone.now)
-
-    medicaciones = models.ManyToManyField('Medicacion', blank=True, related_name='tratamientos')
-    recomendaciones = models.ManyToManyField('Recomendacion', blank=True, related_name='tratamientos')
-
     activo = models.BooleanField(default=True)
     cumplimiento = models.FloatField(default=0.0)
     motivo_cancelacion = models.TextField(blank=True, null=True)
 
-    notificaciones_generadas = JSONField(default=list, blank=True)
-
-    def __init__(self, *args: Any, **kwargs: Any):
-        super().__init__(args, kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.id_tratamiento = None
 
     def _get_bicola(self):
         if not hasattr(self, '_bicola_notificacion'):
-            # usa la clase ya definida en EstadoNotificacion
-            self._bicola_notificacion = EstadoNotificacion.BicolaNotificacion()
+            self._bicola_notificacion = BicolaNotificacion()
         return self._bicola_notificacion
+
 
     @property
     def bicola_notificacion(self):
         return self._get_bicola()
 
-    def agregar_medicacion(self, medicacion):
-        """Asocia una medicación existente al tratamiento y la guarda."""
-        medicacion.tratamiento = self
-        medicacion.save()
+    def asignar_recomendaciones_generales(self):
+        self.recomendaciones = [
+            Recomendacion.RUTINA_SUENO,
+            Recomendacion.EJERCICIO_MODERADO,
+            Recomendacion.CONTROL_ESTRES,
+            Recomendacion.HIDRATACION,
+            Recomendacion.AMBIENTE_OSCURO,
+            Recomendacion.COMPRESION,
+            Recomendacion.EVITAR_ESFUERZO,
+            Recomendacion.NAUSEAS_VOMITOS,
+        ]
 
-    def agregar_recomendacion(self, recomendacion):
-        """Asocia una recomendación existente al tratamiento y la guarda."""
-        recomendacion.tratamiento = self
-        recomendacion.save()
 
-    def cancelar_tratamiento(self, motivo):
-        """Cancela el tratamiento y registra el motivo."""
-        self.activo = False
-        self.motivo_cancelacion = motivo
-        self.save()
-
-    def modificar_tratamiento(self, nuevas_medicaciones, nuevas_recomendaciones):
-        """Reemplaza las medicaciones y recomendaciones actuales."""
-        self.medicaciones.clear()
-        self.recomendaciones.clear()
-        for m in nuevas_medicaciones:
-            self.agregar_medicacion(m)
-        for r in nuevas_recomendaciones:
-            self.agregar_recomendacion(r)
+    def agregar_recomendaciones_para_mujer(self):
+        self.recomendaciones.append(Recomendacion.MENSTRUACION)
+        self.recomendaciones.append(Recomendacion.ANTICONCEPTIVOS)
 
     def generarNotificaciones(self, dias_anticipacion=7):
         todas_notificaciones = []
         fecha_limite = None
 
         if dias_anticipacion > 0:
-            fecha_limite = datetime.now() + timedelta(days=dias_anticipacion)
+            fecha_limite = timezone.now() + timedelta(days=dias_anticipacion)
 
-        for medicacion in self.medicaciones.all():
-            fechas_tomas = medicacion.calcularFechasDeTomas(self.fecha_inicio)
+        for medicamento in self.medicamentos.all():
+            fechas_tomas = medicamento.calcularFechasDeTomas(self.fecha_inicio)
             if fecha_limite:
                 fechas_tomas = [f for f in fechas_tomas if f <= fecha_limite]
 
-            recordatorios = medicacion.calcularRecordatorios(fechas_tomas)
+            recordatorios = medicamento.calcularRecordatorios(fechas_tomas)
 
             for fr in recordatorios:
                 r = Recordatorio(
-                    mensaje=f"Recordatorio para tomar {medicacion.nombre} ({medicacion.cantidad})",
+                    mensaje=f"Recordatorio para tomar {medicamento.nombre} ({medicamento.dosis})",
                     fecha_hora=fr,
                     estado=EstadoNotificacion.ACTIVO
                 )
@@ -313,7 +283,7 @@ class Tratamiento(models.Model):
 
             for ft in fechas_tomas:
                 a = Alerta(
-                    mensaje=f"Es hora de tomar {medicacion.nombre} ({medicacion.cantidad})",
+                    mensaje=f"Es hora de tomar {medicamento.nombre} ({medicamento.dosis})",
                     fecha_hora=ft,
                     estado=EstadoNotificacion.ACTIVO,
                     numero_alerta=1,
@@ -335,8 +305,13 @@ class Tratamiento(models.Model):
                 r.save()
                 todas_notificaciones.append(r)
 
+        # Guardar los IDs de las notificaciones generadas
+        self.notificaciones_generadas = [n.id for n in todas_notificaciones]
+        self.save()
+
         logger.info(f"Generadas {len(todas_notificaciones)} notificaciones para el tratamiento.")
         return todas_notificaciones
+
 
     def confirmarToma(self, notificacion, estado):
         if not isinstance(notificacion, Alerta):
@@ -345,13 +320,15 @@ class Tratamiento(models.Model):
         notificacion.estado = estado
         notificacion.save()
         # actualizar cumplimiento al confirmar
-        self.actualizar_cumplimiento()
+        self.calcular_cumplimiento()
         return True
 
+
     def calcularDuracion(self):
-        if self.medicaciones.exists():
-            return max(m.duracion for m in self.medicaciones.all())
+        if self.medicamentos.exists():
+            return max(m.duracion for m in self.medicamentos.all())
         return 0
+
 
     def estaActivo(self):
         if not self.activo:
@@ -362,18 +339,21 @@ class Tratamiento(models.Model):
             return timezone.now().date() <= fecha_fin
         return True
 
+
     def obtenerSiguienteNotificacion(self):
         return self.bicola_notificacion.verFrente()
 
+
     def obtenerNotificacionesPendientes(self):
         return self.bicola_notificacion.listar_elementos()
+
 
     def procesarNotificacionesPendientes(self):
         if not self.estaActivo():
             logger.info(f"No se procesaron notificaciones porque el tratamiento no está activo")
             return []
 
-        ahora = datetime.now()
+        ahora = timezone.now()
         notificaciones_procesadas = []
 
         while not self.bicola_notificacion.estaVacia():
@@ -393,34 +373,33 @@ class Tratamiento(models.Model):
 
         return notificaciones_procesadas
 
-    def actualizar_cumplimiento(self):
-        # Estados que se consideran como tomados (incluye tardíos)
-        estados_confirmados = {
+    def calcular_cumplimiento(self):
+        alertas_tratamiento = Alerta.objects.filter(id__in=self.notificaciones_generadas        )
+
+        if not alertas_tratamiento.exists():
+            return 0.0
+
+        total_alertas = alertas_tratamiento.count()
+
+        # Estados que consideramos como "cumplimiento positivo"
+        estados_cumplimiento = [
             EstadoNotificacion.CONFIRMADO_TOMADO,
             EstadoNotificacion.CONFIRMADO_TOMADO_TARDE,
-            EstadoNotificacion.CONFIRMADO_TOMADO_MUY_TARDE,
-        }
+            EstadoNotificacion.CONFIRMADO_TOMADO_MUY_TARDE
+        ]
 
-        # Traer alertas entre las notificaciones que este tratamiento generó
-        alertas = Alerta.objects.filter(pk__in=self.notificaciones_generadas)
+        # Contar alertas confirmadas como tomadas (en cualquier momento)
+        alertas_cumplidas = alertas_tratamiento.filter(estado__in=estados_cumplimiento).count()
 
-        if not alertas.exists():
-            self.cumplimiento = 0.0
-            self.save()
-            return self.cumplimiento
+        # Calcular porcentaje
+        porcentaje_cumplimiento = (alertas_cumplidas / total_alertas) * 100
 
-        total = alertas.count()
-        confirmadas = alertas.filter(estado__in=estados_confirmados).count()
+        # Actualizar el campo cumplimiento del modelo
+        self.cumplimiento = round(porcentaje_cumplimiento, 2)
+        self.save(update_fields=['cumplimiento'])
 
-        cumplimiento = (confirmadas / total) * 100
-        self.cumplimiento = round(cumplimiento, 2)
-        self.save()
         return self.cumplimiento
 
     def __str__(self):
-        return f"Tratamiento de {self.paciente} indicado por {self.medico} el {self.fecha_inicio}"
+        return f"Tratamiento {self.id} - Medicamentos: {self.medicamentos.count()}"
 
-    class Meta:
-        verbose_name = 'Tratamiento'
-        verbose_name_plural = 'Tratamientos'
-        db_table = 'tratamiento'
