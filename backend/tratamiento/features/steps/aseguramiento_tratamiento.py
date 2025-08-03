@@ -9,10 +9,12 @@ from tratamiento.models import Recordatorio, Alerta, EstadoNotificacion, Recomen
 from tratamiento.repositories import FakeRepository
 from tratamiento.services import TratamientoService
 import logging
+import warnings
+
+warnings.filterwarnings("ignore", category=RuntimeWarning, message="DateTimeField .* received a naive datetime")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 use_step_matcher("re")
 
 @step("que el paciente tiene una medicina prescrita para la migraña")
