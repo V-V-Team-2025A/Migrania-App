@@ -74,3 +74,6 @@
 .dashboard__medico-info p {
     color: var(--color-secondary-dark);
 }
+.dashboard__medico-info svg{
+    margin-bottom: var(--spacing-m);
+}

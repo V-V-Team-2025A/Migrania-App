@@ -1,5 +1,5 @@
 import styles from "../../common/styles/dashboardPaciente.module.css";
-import { BellIcon, ChartLineIcon, FilesIcon, PillIcon, PlusIcon } from "@phosphor-icons/react";
+import { BellIcon,StethoscopeIcon, ChartLineIcon, FilesIcon, PillIcon, PlusIcon } from "@phosphor-icons/react";
 
 export default function Dashboard() {
     return (
@@ -31,8 +31,8 @@ export default function Dashboard() {
                         }}>
                         <FilesIcon size={32} color={"#a555ebff"} />
                     </div>
-                    <h4>Registrar episodio</h4>
-                    <p>Documenta un nuevo episodio de migraña.</p>
+                    <h4>Evaluación MIDAS</h4>
+                    <p>Evalúa el impacto de la migraña en tu vida diaria.</p>
                 </div>
                 <div className={styles["dashboard__tarjeta"]}>
                     <div
@@ -42,8 +42,8 @@ export default function Dashboard() {
                         }}>
                         <PillIcon size={32} color={"#4c84f3ff"} />
                     </div>
-                    <h4>Registrar episodio</h4>
-                    <p>Documenta un nuevo episodio de migraña.</p>
+                    <h4>Mis tratamientos</h4>
+                    <p>Revisa tus tratamientos actuales.</p>
                 </div>
                 <div className={styles["dashboard__tarjeta"]}>
                     <div
@@ -54,7 +54,7 @@ export default function Dashboard() {
                         <ChartLineIcon size={32} color={"#42b668ff"} />
                     </div>
                     <h4>Mi progreso</h4>
-                    <p>Visualiza tu progreso a lo largo del tiempo.</p>
+                    <p>Visualiza tendencias y estadísticas.</p>
                 </div>
             </section>
 
@@ -68,8 +68,7 @@ export default function Dashboard() {
                     <h4>Mi médico</h4>
 
                     <div className={styles["dashboard__medico-info"]}>
-                        <img height={64} width={64} src="https://media.istockphoto.com/id/177373093/photo/indian-male-doctor.jpg?s=612x612&w=0&k=20&c=5FkfKdCYERkAg65cQtdqeO_D0JMv6vrEdPw3mX1Lkfg="
-                            alt="Doctor" />
+                        <StethoscopeIcon size={64} />
                         <h4>Dr. Juan Pérez</h4>
                         <p>Especialista en Neurología</p>
                     </div>
