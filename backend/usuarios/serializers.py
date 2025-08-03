@@ -3,7 +3,9 @@ from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer
 from djoser.serializers import UserSerializer as BaseUserSerializer
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from .models import MedicoProfile, PacienteProfile, EnfermeraProfile
+from .services import usuario_service
 from datetime import date
 
 Usuario = get_user_model()
@@ -62,35 +64,35 @@ class RegistroMedicoSerializer(BaseUserCreateSerializer):
         )
     
     def validate(self, attrs):
+        # Separar datos del usuario y del perfil
         perfil_data = {
             'numero_licencia': attrs.pop('numero_licencia'),
             'especializacion': attrs.pop('especializacion'),
             'anos_experiencia': attrs.pop('anos_experiencia')
         }
         
+        # Validar datos base del usuario con DRF
         validated_attrs = super().validate(attrs)
-        validated_attrs.update(perfil_data)
+        
+        # Almacenar datos del perfil para usar en create()
+        validated_attrs['_perfil_data'] = perfil_data
         
         return validated_attrs
 
     def create(self, validated_data):
-        # Separamos los datos del perfil de los datos del usuario
-        perfil_data = {
-            'numero_licencia': validated_data.pop('numero_licencia'),
-            'especializacion': validated_data.pop('especializacion'),
-            'anos_experiencia': validated_data.pop('anos_experiencia'),
-        }
+        # Extraer datos del perfil
+        perfil_data = validated_data.pop('_perfil_data')
         
-        # Asignamos el tipo de usuario
-        validated_data['tipo_usuario'] = 'medico'
-        
-        # Creamos el usuario usando el manager, que maneja el hash de la contraseña.
-        usuario = Usuario.objects.create_user(**validated_data)
-        
-        # Creamos el perfil del médico asociado
-        MedicoProfile.objects.create(usuario=usuario, **perfil_data)
-        
-        return usuario
+        # Usar el servicio para crear el médico
+        try:
+            usuario = usuario_service.crear_medico(validated_data, perfil_data)
+            return usuario
+        except ValidationError as e:
+            # Convertir ValidationError de Django a errores de DRF
+            if hasattr(e, 'error_dict'):
+                raise serializers.ValidationError(e.error_dict)
+            else:
+                raise serializers.ValidationError({'error': str(e)})
 
 class RegistroPacienteSerializer(BaseUserCreateSerializer):
     # Campos del perfil paciente
@@ -112,35 +114,38 @@ class RegistroPacienteSerializer(BaseUserCreateSerializer):
         )
 
     def validate(self, attrs):
+        # Separar datos del usuario y del perfil
         perfil_data = {
-            'numero_seguro': attrs.pop('numero_seguro', None),
+            'numero_seguro': attrs.pop('numero_seguro', ''),
             'contacto_emergencia_nombre': attrs.pop('contacto_emergencia_nombre'),
             'contacto_emergencia_telefono': attrs.pop('contacto_emergencia_telefono'),
             'contacto_emergencia_relacion': attrs.pop('contacto_emergencia_relacion'),
-            'alergias': attrs.pop('alergias', None),
-            'grupo_sanguineo': attrs.pop('grupo_sanguineo', None)
+            'alergias': attrs.pop('alergias', ''),
+            'grupo_sanguineo': attrs.pop('grupo_sanguineo', '')
         }
         
+        # Validar datos base del usuario con DRF
         validated_attrs = super().validate(attrs)
-        validated_attrs.update(perfil_data)
+        
+        # Almacenar datos del perfil para usar en create()
+        validated_attrs['_perfil_data'] = perfil_data
+        
         return validated_attrs
 
     def create(self, validated_data):
-        perfil_data = {
-            'numero_seguro': validated_data.pop('numero_seguro', ''),
-            'contacto_emergencia_nombre': validated_data.pop('contacto_emergencia_nombre'),
-            'contacto_emergencia_telefono': validated_data.pop('contacto_emergencia_telefono'),
-            'contacto_emergencia_relacion': validated_data.pop('contacto_emergencia_relacion'),
-            'alergias': validated_data.pop('alergias', ''),
-            'grupo_sanguineo': validated_data.pop('grupo_sanguineo', ''),
-        }
+        # Extraer datos del perfil
+        perfil_data = validated_data.pop('_perfil_data')
         
-        validated_data['tipo_usuario'] = 'paciente'
-        usuario = Usuario.objects.create_user(**validated_data)
-        
-        PacienteProfile.objects.create(usuario=usuario, **perfil_data)
-        
-        return usuario
+        # Usar el servicio para crear el paciente
+        try:
+            usuario = usuario_service.crear_paciente(validated_data, perfil_data)
+            return usuario
+        except ValidationError as e:
+            # Convertir ValidationError de Django a errores de DRF
+            if hasattr(e, 'error_dict'):
+                raise serializers.ValidationError(e.error_dict)
+            else:
+                raise serializers.ValidationError({'error': str(e)})
 
 class RegistroEnfermeraSerializer(BaseUserCreateSerializer):
     # Campos del perfil enfermera
@@ -157,27 +162,34 @@ class RegistroEnfermeraSerializer(BaseUserCreateSerializer):
         )
 
     def validate(self, attrs):
+        # Separar datos del usuario y del perfil
         perfil_data = {
             'numero_registro': attrs.pop('numero_registro'),
-            'departamento': attrs.pop('departamento', None)
+            'departamento': attrs.pop('departamento', '')
         }
         
+        # Validar datos base del usuario con DRF
         validated_attrs = super().validate(attrs)
-        validated_attrs.update(perfil_data)
+        
+        # Almacenar datos del perfil para usar en create()
+        validated_attrs['_perfil_data'] = perfil_data
+        
         return validated_attrs
 
     def create(self, validated_data):
-        perfil_data = {
-            'numero_registro': validated_data.pop('numero_registro'),
-            'departamento': validated_data.pop('departamento', ''),
-        }
+        # Extraer datos del perfil
+        perfil_data = validated_data.pop('_perfil_data')
         
-        validated_data['tipo_usuario'] = 'enfermera'
-        usuario = Usuario.objects.create_user(**validated_data)
-        
-        EnfermeraProfile.objects.create(usuario=usuario, **perfil_data)
-        
-        return usuario
+        # Usar el servicio para crear la enfermera
+        try:
+            usuario = usuario_service.crear_enfermera(validated_data, perfil_data)
+            return usuario
+        except ValidationError as e:
+            # Convertir ValidationError de Django a errores de DRF
+            if hasattr(e, 'error_dict'):
+                raise serializers.ValidationError(e.error_dict)
+            else:
+                raise serializers.ValidationError({'error': str(e)})
 
 # =================================================
 # OTROS SERIALIZERS
