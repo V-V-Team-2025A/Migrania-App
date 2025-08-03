@@ -113,7 +113,6 @@ button {
 button.create-treatment {
     background-color: var(--color-action);
     width: 300px;
-
 }
 
 button.create-treatment:hover {

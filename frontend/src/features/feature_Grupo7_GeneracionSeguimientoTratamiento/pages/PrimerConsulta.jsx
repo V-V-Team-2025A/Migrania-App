@@ -57,20 +57,20 @@ function PrimerConsulta() {
                     <div className="table-container">
                         <table>
                             <thead>
-                                <tr>
-                                    <th>Num. Episodio</th>
-                                    <th>Tipo Episodio</th>
-                                    <th>Fecha</th>
-                                </tr>
+                            <tr>
+                                <th>Num. Episodio</th>
+                                <th>Tipo Episodio</th>
+                                <th>Fecha</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                {episodeData.map((episode) => (
-                                    <tr key={episode.num}>
-                                        <td>{episode.num}</td>
-                                        <td>{episode.tipo}</td>
-                                        <td>{episode.fecha}</td>
-                                    </tr>
-                                ))}
+                            {episodeData.map((episode) => (
+                                <tr key={episode.num}>
+                                    <td>{episode.num}</td>
+                                    <td>{episode.tipo}</td>
+                                    <td>{episode.fecha}</td>
+                                </tr>
+                            ))}
                             </tbody>
                         </table>
                     </div>
