@@ -44,22 +44,6 @@ class CrearEpisodioCefaleaSerializer(serializers.ModelSerializer):
             if 'anticonceptivos' in self.fields:
                 del self.fields['anticonceptivos']
 
-    def validate(self, data):
-        """
-        Validaciones a nivel de objeto para asegurar la coherencia de los datos.
-        """
-        if data.get('presencia_aura') and data.get('duracion_aura_minutos', 0) == 0:
-            raise serializers.ValidationError({
-                'duracion_aura_minutos': 'Si hay presencia de aura, la duración debe ser mayor a 0.'
-            })
-
-        if not data.get('presencia_aura') and data.get('duracion_aura_minutos', 0) > 0:
-            raise serializers.ValidationError({
-                'duracion_aura_minutos': 'Si no hay aura, la duración debe ser 0.'
-            })
-
-        return data
-
 
 class EpisodioCefaleaSerializer(serializers.ModelSerializer):
     """

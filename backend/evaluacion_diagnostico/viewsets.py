@@ -5,6 +5,7 @@ from .serializers import EpisodioCefaleaSerializer, CrearEpisodioCefaleaSerializ
 from .permissions import EsPaciente, EsPropietarioDelEpisodioOPersonalMedico
 from .episodio_cefalea_service import episodio_cefalea_service
 
+
 class EpisodioCefaleaViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
@@ -81,13 +82,7 @@ class EpisodioCefaleaViewSet(
         """
         Personaliza el proceso de guardado de un nuevo episodio.
         """
-        validated_data = serializer.validated_data
-
-        # 1. Usar el servicio para obtener la categoría diagnóstica
-        categoria = episodio_cefalea_service.categorizar_episodio(validated_data)
-
-        # 2. Guardar el episodio, inyectando los datos automáticos:
-        serializer.save(
+        episodio_cefalea_service.registrar_nuevo_episodio(
             paciente=self.request.user,
-            categoria_diagnostica=categoria
+            datos_validados=serializer.validated_data
         )

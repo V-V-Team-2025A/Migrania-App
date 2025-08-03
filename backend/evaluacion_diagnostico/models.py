@@ -156,19 +156,19 @@ class EpisodioCefalea(models.Model):
 
     def clean(self):
         """
-        Validaciones básicas del modelo según convenciones Django
+        Validaciones de integridad a nivel de modelo.
         """
         super().clean()
 
         # Validar coherencia de datos de aura
         if self.presencia_aura and self.duracion_aura_minutos == 0:
             raise ValidationError({
-                'duracion_aura_minutos': 'Si hay presencia de aura, la duración debe ser mayor a 0 minutos'
+                'duracion_aura_minutos': 'Si hay presencia de aura, la duración debe ser mayor a 0.'
             })
 
         if not self.presencia_aura and self.duracion_aura_minutos > 0:
             raise ValidationError({
-                'duracion_aura_minutos': 'Si no hay aura, la duración debe ser 0'
+                'duracion_aura_minutos': 'Si no hay aura, la duración debe ser 0.'
             })
 
     @property

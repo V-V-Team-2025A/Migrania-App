@@ -13,9 +13,6 @@ class EpisodioCefaleaService:
     def __init__(self, repository=None):
         """
         Inicializar servicio con repositorio inyectable.
-
-        Args:
-            repository: Repositorio a usar. Si es None, usa el repositorio Django por defecto
         """
         # Importar aquí para evitar dependencias circulares
         from .models import EpisodioCefalea
@@ -107,6 +104,28 @@ class EpisodioCefaleaService:
 
         return 'Cefalea de tipo tensional'
 
+    @transaction.atomic
+    def registrar_nuevo_episodio(self, paciente: Usuario, datos_validados: dict):
+        """
+        Registra un nuevo episodio de cefalea con la API Rest
+        y garantiza la integridad de los datos.
+        """
+        # 1. Lógica de negocio: Categorización
+        categoria = self.categorizar_episodio(datos_validados)
+        datos_validados['categoria_diagnostica'] = categoria
+
+        # 2. Creación de la instancia del modelo
+        from .models import EpisodioCefalea
+        episodio = EpisodioCefalea(paciente=paciente, **datos_validados)
+
+        # 3. Garantía de integridad: Llama a las validaciones del modelo.
+        episodio.full_clean()
+
+        # 4. Persistencia final en la base de datos real.
+        episodio.save()
+
+        return episodio
+
     def crear_episodio(self, paciente: Usuario, datos_episodio: Dict[str, Any]):
         """Crear episodio usando el repositorio inyectado."""
         # Validaciones
@@ -144,43 +163,6 @@ class EpisodioCefaleaService:
             if sintoma not in sintomas_validos:
                 return False
         return True
-
-    def obtener_estadisticas_paciente(self, paciente: Usuario) -> Dict[str, Any]:
-        """
-        Genera estadísticas básicas de episodios de un paciente usando el repositorio.
-        """
-        episodios = self.repository.obtener_episodios_paciente(paciente)
-
-        if not episodios:
-            return {
-                'total_episodios': 0,
-                'categoria_mas_frecuente': None,
-                'severidad_promedio': None,
-                'tiene_aura_frecuente': False
-            }
-
-        # Calcular estadísticas
-        total = len(episodios)
-        categorias = [ep.categoria_diagnostica for ep in episodios if ep.categoria_diagnostica]
-        severidades = [ep.severidad for ep in episodios]
-        episodios_con_aura = [ep for ep in episodios if ep.presencia_aura]
-
-        # Categoria más frecuente
-        categoria_mas_frecuente = max(set(categorias), key=categorias.count) if categorias else None
-
-        # Severidad promedio (aproximada)
-        severidad_valores = {'Leve': 1, 'Moderada': 2, 'Severa': 3}
-        promedio_severidad = sum(severidad_valores.get(s, 0) for s in severidades) / len(
-            severidades) if severidades else 0
-
-        return {
-            'total_episodios': total,
-            'categoria_mas_frecuente': categoria_mas_frecuente,
-            'severidad_promedio': promedio_severidad,
-            'tiene_aura_frecuente': len(episodios_con_aura) / total > 0.3 if total > 0 else False,
-            'porcentaje_con_aura': (len(episodios_con_aura) / total * 100) if total > 0 else 0
-        }
-
 
 # Instancias para usar en la aplicación
 episodio_cefalea_service = EpisodioCefaleaService()  # Con repositorio Django por defecto
