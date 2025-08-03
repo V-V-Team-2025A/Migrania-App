@@ -244,11 +244,14 @@ class EpisodioCefalea(models.Model):
     # Datos específicos para mujeres
     en_menstruacion = models.BooleanField(
         verbose_name='En menstruación',
-        help_text='¿El episodio ocurrió durante la menstruación?'
+        help_text='¿El episodio ocurrió durante la menstruación?',
+        default=False
     )
     anticonceptivos = models.BooleanField(
         verbose_name='Uso de Anticonceptivos',
-        help_text='¿La paciente usa anticonceptivos hormonales?'
+        help_text='¿La paciente usa anticonceptivos hormonales?',
+        default=False
+
     )
 
     # Categorización diagnóstica
