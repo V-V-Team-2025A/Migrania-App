@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import logging
 
 from usuarios.models import PacienteProfile
+from evaluacion_diagnostico.models import  EpisodioCefalea
 
 logger = logging.getLogger(__name__)
 
@@ -214,14 +215,22 @@ class Medicamento(models.Model):
 
 
 class Tratamiento(models.Model):
+    episodio = models.OneToOneField(
+        EpisodioCefalea,
+        on_delete=models.CASCADE,
+        related_name='tratamiento',
+        verbose_name='Episodio de Cefalea'
+    )
     paciente = models.ForeignKey(
         PacienteProfile,
         on_delete=models.CASCADE,
-        related_name='tratamientos',  # 'related_name' permite acceder a los tratamientos desde el paciente
+        related_name='tratamientos',
         verbose_name='Paciente'
     )
+
     medicamentos = models.ManyToManyField('Medicamento', blank=True, related_name='tratamientos')
     recomendaciones = models.JSONField(default=list)
+    notificaciones_generadas = models.JSONField(default=list, verbose_name='IDs de Notificaciones')
     fecha_inicio = models.DateField(default=timezone.now)
     activo = models.BooleanField(default=True)
     cumplimiento = models.FloatField(default=0.0)
@@ -236,6 +245,9 @@ class Tratamiento(models.Model):
             self._bicola_notificacion = BicolaNotificacion()
         return self._bicola_notificacion
 
+    @property
+    def tipo_migraña(self):
+        return self.episodio.categoria_diagnostica if self.episodio else "Sin episodio"
 
     @property
     def bicola_notificacion(self):
