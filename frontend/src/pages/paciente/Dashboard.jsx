@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from "../../common/styles/dashboardPaciente.module.css";
 import { BellIcon, StethoscopeIcon, ChartLineIcon, FilesIcon, PillIcon, PlusIcon } from "@phosphor-icons/react";
 import { fetchEpisodiosPaciente } from "../../utils/apiUtils.js";
@@ -14,8 +15,8 @@ const TARJETAS_DASHBOARD = [
         icono: PlusIcon,
         color: "#c9525aff",
         backgroundColor: "#c42d3750",
-        titulo: "Registrar episodio",
-        descripcion: "Documenta un nuevo episodio de migraña."
+        titulo: "Bitácora",
+        descripcion: "Mira y registra un nuevo episodio de migraña."
     },
     {
         icono: FilesIcon,
@@ -41,6 +42,7 @@ const TARJETAS_DASHBOARD = [
 ];
 
 export default function Dashboard() {
+    const navigate = useNavigate();
     const [episodiosRecientes, setEpisodiosRecientes] = useState([]);
     const [cargandoEpisodios, setCargandoEpisodios] = useState(true);
     const [errorEpisodios, setErrorEpisodios] = useState(null);
@@ -76,9 +78,18 @@ export default function Dashboard() {
         cargarEpisodiosRecientes();
     }, []);
 
+    // Funciones de navegación
+    const handleNavegacion = (ruta) => {
+        navigate(ruta);
+    };
+
     // Componentes de renderizado
-    const TarjetaDashboard = ({ icono: Icono, color, backgroundColor, titulo, descripcion }) => (
-        <div className={styles["dashboard__tarjeta"]}>
+    const TarjetaDashboard = ({ icono: Icono, color, backgroundColor, titulo, descripcion, onClick }) => (
+        <div
+            className={styles["dashboard__tarjeta"]}
+            onClick={onClick}
+            style={{ cursor: onClick ? 'pointer' : 'default' }}
+        >
             <div
                 className={styles["dashboard__icono"]}
                 style={{ backgroundColor }}
@@ -173,9 +184,22 @@ export default function Dashboard() {
             </div>
 
             <section className={styles["dashboard__contenedor-tarjetas"]}>
-                {TARJETAS_DASHBOARD.map((tarjeta, index) => (
-                    <TarjetaDashboard key={index} {...tarjeta} />
-                ))}
+                <TarjetaDashboard
+                    {...TARJETAS_DASHBOARD[0]}
+                    onClick={() => handleNavegacion('/bitacora-paciente')}
+                />
+                <TarjetaDashboard
+                    {...TARJETAS_DASHBOARD[1]}
+                    onClick={() => handleNavegacion('/midas')}
+                />
+                <TarjetaDashboard
+                    {...TARJETAS_DASHBOARD[2]}
+                    onClick={() => console.log('Navegando a tratamientos')}
+                />
+                <TarjetaDashboard
+                    {...TARJETAS_DASHBOARD[3]}
+                    onClick={() => console.log('Navegando a progreso')}
+                />
             </section>
 
             <div className={styles["dashboard__seccion-inferior"]}>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/common/components/Header.jsx';
 import classes from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/styles/bitacora.module.css';
 import { INITIAL_FORM_DATA } from '../utils/constants.js';
@@ -6,6 +7,7 @@ import { fetchUserInfoPaciente, createEpisodioPaciente, getErrorMessage } from '
 import { transformFormDataForAPI, validateEpisodioForm } from '../utils/episodioUtils.js';
 
 export default function IngresarCefalea() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState(INITIAL_FORM_DATA);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -79,8 +81,7 @@ export default function IngresarCefalea() {
     };
 
     const handleCancel = () => {
-        console.log('Cancelar registro');
-        // TODO: Implementar navegación de vuelta
+        navigate('/bitacora-paciente');
     };
 
     const renderLoadingState = () => (
@@ -131,7 +132,7 @@ export default function IngresarCefalea() {
         <div>
             <Header
                 title="Bitácora"
-                onBack={() => console.log('Volver')}
+                onBack={() => navigate('/bitacora-paciente')}
             />
 
             <div className="form-container">
