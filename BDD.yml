@@ -1,0 +1,121 @@
+name: Behave BDD Tests
+
+on:
+  push:
+    branches: [ main, develop, feature_* ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  behave-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: migrania_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/migrania_test
+      SECRET_KEY: django-insecure-test-key-for-ci
+      DEBUG: False
+      ENVIRONMENT: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        cd backend
+        pip install -r requirements.txt
+
+    - name: Wait for PostgreSQL
+      run: |
+        until pg_isready -h localhost -p 5432 -U postgres; do
+          echo "Waiting for PostgreSQL..."
+          sleep 2
+        done
+
+    - name: Setup Django environment
+      run: |
+        cd backend
+        python manage.py migrate --noinput
+        python manage.py collectstatic --noinput
+
+    - name: Run Behave tests for all features
+      run: |
+        cd backend
+        echo "Running BDD tests with Behave..."
+        
+        # Ejecutar tests de evaluacion_diagnostico
+        echo "🧠 Testing Evaluacion y Diagnostico features..."
+        behave evaluacion_diagnostico/features/ --format pretty --no-capture --tags=~@skip
+        
+        # Ejecutar tests de agendamiento_citas
+        echo "📅 Testing Agendamiento de Citas features..."
+        behave agendamiento_citas/features/ --format pretty --no-capture --tags=~@skip
+        
+        # Ejecutar tests de tratamiento
+        echo "💊 Testing Tratamiento features..."
+        behave tratamiento/features/ --format pretty --no-capture --tags=~@skip
+        
+        # Ejecutar tests de analiticas
+        echo "📊 Testing Analiticas features..."
+        behave analiticas/features/ --format pretty --no-capture --tags=~@skip
+
+    - name: Generate Behave HTML Report
+      if: always()
+      run: |
+        cd backend
+        mkdir -p reports
+        behave evaluacion_diagnostico/features/ agendamiento_citas/features/ tratamiento/features/ analiticas/features/ \
+          --format html --outfile reports/behave-report.html --tags=~@skip || true
+
+    - name: Upload Behave Reports
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: behave-reports
+        path: backend/reports/
+        retention-days: 30
+
+    - name: Generate Test Summary
+      if: always()
+      run: |
+        cd backend
+        echo "## 🧪 Behave BDD Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Features Tested:" >> $GITHUB_STEP_SUMMARY
+        echo "- 🧠 Evaluación y Diagnóstico" >> $GITHUB_STEP_SUMMARY
+        echo "- 📅 Agendamiento de Citas" >> $GITHUB_STEP_SUMMARY
+        echo "- 💊 Tratamiento" >> $GITHUB_STEP_SUMMARY
+        echo "- 📊 Analíticas" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Archivos de Features:" >> $GITHUB_STEP_SUMMARY
+        find . -name "*.feature" | sort >> $GITHUB_STEP_SUMMARY
