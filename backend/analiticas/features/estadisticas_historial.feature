@@ -67,7 +67,7 @@ Esquema del escenario: Evolución de la autoevaluación MIDAS
     | 15                  | 22                | -7                      | "Empeorado"              |
 
 
-Esquema del escenario: Evolución semanal de episodios registrados en la bitácora digital
+Escenario: Evolución semanal de episodios registrados en la bitácora digital
   Dado que el paciente tiene episodios registrados en su bitácora digital
   Y los episodios están distribuidos a lo largo de varias semanas entre las fechas "<fecha_inicio>" y "<fecha_fin>"
   Cuando solicito el análisis semanal de episodios
