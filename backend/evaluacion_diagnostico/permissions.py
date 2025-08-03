@@ -40,3 +40,27 @@ class EsPropietarioDeLaAutoevaluacionOPersonalMedico(permissions.BasePermission)
 
         # Si no cumple ninguna de las condiciones anteriores, no tiene permiso.
         return False
+
+class EsPropietarioDelEpisodioOPersonalMedico(permissions.BasePermission):
+    """
+    Permiso a nivel de objeto para permitir el acceso a un episodio
+    solo si el solicitante es el paciente propietario o si es personal médico
+    (Médico o Enfermera).
+    """
+    message = "No tienes permiso para ver o modificar este episodio."
+
+    def has_object_permission(self, request, view, obj):
+        # Primero, verificamos que el usuario esté autenticado.
+        if not (request.user and request.user.is_authenticated):
+            return False
+
+        # El personal médico (Médicos y Enfermeras) tiene permiso para ver cualquier episodio.
+        if request.user.es_medico or request.user.es_enfermera:
+            return True
+
+        # Si el usuario es un paciente, verificamos si es el propietario del episodio.
+        if request.user.es_paciente:
+            return obj.paciente == request.user
+
+        # Si no cumple ninguna de las condiciones anteriores, no tiene permiso.
+        return False
