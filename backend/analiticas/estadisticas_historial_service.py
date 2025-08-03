@@ -263,3 +263,135 @@ class EstadisticaHistorialService:
                 recomendaciones.append("Considerar tratamiento hormonal preventivo")
         
         return recomendaciones
+    
+    def obtener_desencadenantes_frecuentes(self) -> str:
+        """
+        Método que obtiene los desencadenantes más frecuentes
+        """
+        from .models import DesencadenantesComunes
+        return DesencadenantesComunes.obtener_desencadenantes_mas_frecuentes()
+    
+    def generar_estadisticas_desde_bitacora(self, paciente_id: int) -> Dict[str, Any]:
+        """
+        Método principal que simula el consumo de la API de bitácora digital
+        y genera estadísticas en memoria sin guardar en BD.
+        
+        En producción, aquí se haría:
+        1. requests.get() a evaluacion_diagnostico/episodios/?paciente_id=X
+        2. Procesar los episodios recibidos
+        3. Calcular estadísticas usando los modelos
+        4. Retornar el resumen
+        """
+        # Para BDD, simulamos que obtenemos episodios de la API
+        episodios = self.repository.simular_episodios_desde_api_bitacora(paciente_id)
+        
+        # Calcular estadísticas a partir de los episodios simulados
+        total_episodios = len(episodios)
+        suma_duracion = sum(ep['duracion_cefalea_horas'] for ep in episodios)
+        episodios_menstruacion = sum(1 for ep in episodios if ep['en_menstruacion'])
+        episodios_anticonceptivos = sum(1 for ep in episodios if ep['anticonceptivos'])
+        
+        # Calcular fechas de inicio y fin
+        fechas = [ep['creado_en'] for ep in episodios]
+        fecha_inicio = min(fechas) if fechas else None
+        fecha_fin = max(fechas) if fechas else None
+        
+        # Preparar datos para procesar
+        datos_estadistica = {
+            'total_episodios': total_episodios,
+            'suma_duracion_total': suma_duracion,
+            'fecha_inicio': fecha_inicio,
+            'fecha_fin': fecha_fin,
+            'episodios_menstruacion': episodios_menstruacion,
+            'episodios_anticonceptivos': episodios_anticonceptivos
+        }
+        
+        # Procesar usando el método coordinador
+        return self.procesar_datos_estadistica(datos_estadistica)
+    
+    def generar_estadisticas_desde_midas(self, paciente_id: int) -> Dict[str, Any]:
+        """
+        Método que simula el consumo de la API de evaluaciones MIDAS
+        y genera estadísticas en memoria.
+        
+        En producción, aquí se haría:
+        1. requests.get() a evaluacion_diagnostico/evaluaciones-midas/?paciente_id=X
+        2. Procesar las evaluaciones recibidas
+        3. Calcular evolución usando los modelos
+        4. Retornar el análisis
+        """
+        # Para BDD, simulamos que obtenemos evaluaciones MIDAS de la API
+        evaluaciones = self.repository.simular_evaluaciones_midas_desde_api(paciente_id)
+        
+        if len(evaluaciones) < 2:
+            return {'error': 'Se necesitan al menos 2 evaluaciones MIDAS para calcular evolución'}
+        
+        # Calcular estadísticas MIDAS
+        puntajes = [ev['puntaje_total'] for ev in evaluaciones]
+        puntuacion_promedio = sum(puntajes) / len(puntajes)
+        puntuacion_actual = evaluaciones[-1]['puntaje_total']  # La más reciente
+        
+        datos_midas = {
+            'puntuacion_promedio': puntuacion_promedio,
+            'puntuacion_actual': puntuacion_actual
+        }
+        
+        return self.procesar_datos_estadistica(datos_midas)
+    
+    def procesar_datos_estadistica(self, datos_estadisticas: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Método coordinador que procesa datos estadísticos usando los models
+        Siguiendo la arquitectura del proyecto - NO guarda en BD
+        """
+        from .models import (
+            PromedioSemanalEpisodios, 
+            DuracionPromedioEpisodios, 
+            IntensidadPromedioDolor,
+            AsociacionHormonal, 
+            EvolucionMIDAS, 
+            DesencadenantesComunes
+        )
+        
+        resultado = {}
+        
+        # Procesar promedio semanal si tenemos los datos
+        if all(key in datos_estadisticas for key in ['total_episodios', 'fecha_inicio', 'fecha_fin']):
+            promedio = PromedioSemanalEpisodios.calcular_promedio(
+                datos_estadisticas['total_episodios'],
+                datos_estadisticas['fecha_inicio'], 
+                datos_estadisticas['fecha_fin']
+            )
+            resultado['promedio_semanal'] = promedio
+        
+        # Procesar duración promedio si tenemos los datos
+        if all(key in datos_estadisticas for key in ['total_episodios', 'suma_duracion_total']):
+            duracion = DuracionPromedioEpisodios.calcular_duracion_promedio(
+                datos_estadisticas['total_episodios'],
+                datos_estadisticas['suma_duracion_total']
+            )
+            resultado['duracion_promedio'] = duracion
+        
+        # Procesar intensidad promedio
+        intensidad = IntensidadPromedioDolor.obtener_intensidad_promedio()
+        resultado['intensidad_promedio'] = intensidad
+        
+        # Procesar asociación hormonal si tenemos los datos
+        if all(key in datos_estadisticas for key in ['total_episodios', 'episodios_menstruacion', 'episodios_anticonceptivos']):
+            porcentajes = AsociacionHormonal.calcular_porcentajes(
+                datos_estadisticas['total_episodios'],
+                datos_estadisticas['episodios_menstruacion'],
+                datos_estadisticas['episodios_anticonceptivos']
+            )
+            resultado['porcentaje_menstruacion'] = porcentajes[0]
+            resultado['porcentaje_anticonceptivos'] = porcentajes[1]
+        
+        # Procesar evolución MIDAS si tenemos los datos
+        if all(key in datos_estadisticas for key in ['puntuacion_promedio', 'puntuacion_actual']):
+            evolucion = EvolucionMIDAS.calcular_evolucion(
+                datos_estadisticas['puntuacion_promedio'],
+                datos_estadisticas['puntuacion_actual']
+            )
+            resultado['variacion_puntaje'] = evolucion[0]
+            resultado['tendencia_discapacidad'] = evolucion[1]
+        
+        return resultado
