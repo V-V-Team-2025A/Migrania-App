@@ -28,3 +28,9 @@ export const COLUMNAS_EPISODIOS = [
     { key: 'en_menstruacion', header: 'En menstruación' },
     { key: 'anticonceptivos', header: 'Anticonceptivos' }
 ];
+
+// Columnas específicas para la vista del médico (mismas columnas por ahora)
+export const COLUMNAS_EPISODIOS_MEDICO = COLUMNAS_EPISODIOS;
+
+// Función específica para transformar episodios en la vista del médico
+export const transformEpisodioMedico = transformEpisodio;
