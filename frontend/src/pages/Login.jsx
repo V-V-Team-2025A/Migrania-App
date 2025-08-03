@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Eye, EyeSlash } from '@phosphor-icons/react';
 import styles from '../common/styles/Login.module.css';
 
@@ -7,6 +7,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -32,6 +33,10 @@ export default function Login() {
     } catch (error) {
       console.error("Error al iniciar sesión:", error.message);
     }
+  };
+
+  const handleNavigateToRegister = () => {
+    navigate('/'); 
   };
 
   return (
@@ -76,9 +81,13 @@ export default function Login() {
             Iniciar sesión
           </button>
         </form>
-        <Link to="/dashboard-paciente" className={styles.login__boton}>
+        <button 
+          type="button" 
+          onClick={handleNavigateToRegister} 
+          className={styles.login__boton}
+        >
           Registrarse
-        </Link>
+        </button>
       </div>
     </div>
   );

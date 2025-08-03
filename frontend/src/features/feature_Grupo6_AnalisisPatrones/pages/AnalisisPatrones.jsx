@@ -1,16 +1,24 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import TarjetaResumen from '../components/TarjetaResumen';
 import TarjetaAnalisis from '../components/TarjetaAnalisis';
 import styles from '../styles/AnalisisPatrones.module.css';
 import { ArrowLeft, ChartLineUp, Warning } from '@phosphor-icons/react';
 
 export default function AnalisisPatrones() {
+    const navigate = useNavigate();
+
+
+    const handleVolver = () => {
+
+        navigate(-1);
+    };
     return (
         <div className={styles.patrones}>
-            {}
-            {}
+            { }
+            { }
             <div className={styles.patrones__cabecera}>
-                <button className={styles.patrones__botonVolver}>
+                <button onClick={handleVolver} className={styles.patrones__botonVolver}>
                     <ArrowLeft size={24} />
                     Volver
                 </button>
@@ -29,7 +37,7 @@ export default function AnalisisPatrones() {
                         titulo="Alertas Preventivas"
                         valor={5}
                         subtitulo="Activas ahora"
-                        icono={<Warning size={48} weight="light" />} 
+                        icono={<Warning size={48} weight="light" />}
                         color="secondary-dark"
                         iconColor="var(--color-error)"
                     />

@@ -167,7 +167,7 @@ export default function Dashboard() {
                 <TarjetaDashboard {...TARJETAS_DASHBOARD[1]} onClick={() => handleNavegacion('/midas')} />
                 <TarjetaDashboard {...TARJETAS_DASHBOARD[2]} onClick={() => console.log('Navegando a tratamientos')} />
                 <TarjetaDashboard {...TARJETAS_DASHBOARD[3]} onClick={() => console.log('Navegando a progreso')} />
-                <TarjetaDashboard {...TARJETAS_DASHBOARD[4]} />
+                <TarjetaDashboard {...TARJETAS_DASHBOARD[4]} onClick={() =>  handleNavegacion('/analisis-patrones')} />
             </section>
 
             <div className={styles["dashboard__seccion-inferior"]}>
