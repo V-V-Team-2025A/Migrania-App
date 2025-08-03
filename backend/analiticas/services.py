@@ -18,11 +18,24 @@ class AnalisisPatronesService:
         return str(valor).lower() in ['sí', 'si', 'true']
 
     def analizar_patrones_clinicos(self, paciente_id: int) -> str:
-        """Analiza las características clave (localización, carácter, etc.) y genera una conclusión."""
+        """
+        Analiza las características clave. Si hay pocos datos, los describe.
+        Si hay suficientes, busca patrones estadísticos.
+        """
         episodios = self.repository.obtener_episodios_por_paciente(paciente_id)
-        if not episodios or len(episodios) < 5:
-            return "No hay suficientes datos para un análisis."
+        if not episodios:
+            return "Aún no has registrado ningún episodio. ¡Empieza tu bitácora para descubrir tus patrones!"
 
+        # Modo Descriptivo para nuevos usuarios
+        if len(episodios) < 5:
+            ultimo = episodios[0]
+            loc = ultimo.localizacion.lower() if ultimo.localizacion else 'no especificada'
+            car = ultimo.caracter_dolor.lower() if ultimo.caracter_dolor else 'no especificado'
+            act = "se agravó con la actividad" if ultimo.empeora_actividad else "no se agravó con la actividad"
+            return (f"Tu último episodio tuvo una localización {loc}, fue de carácter {car} y {act}. "
+                    "Registra al menos 5 episodios para que podamos detectar patrones.")
+
+        # Modo Estadístico para usuarios con historial
         total = len(episodios)
         loc_counts = Counter(e.localizacion for e in episodios)
         car_counts = Counter(e.caracter_dolor for e in episodios)
@@ -31,7 +44,6 @@ class AnalisisPatronesService:
         loc_mas_comun, freq_loc = loc_counts.most_common(1)[0]
         car_mas_comun, freq_car = car_counts.most_common(1)[0]
 
-        # Umbrales ajustados para que coincidan con los datos de prueba
         if (freq_loc / total >= 0.7 and
                 freq_car / total >= 0.7 and
                 act_counts.get(True, 0) / total > 0.6):
@@ -41,13 +53,14 @@ class AnalisisPatronesService:
                         "unilaterales, de carácter pulsátil y se agravan con la actividad física. "
                         "Estas son características típicas de la migraña.")
 
-        return "No se ha detectado un patrón clínico dominante."
+        return "Aún no se ha detectado un patrón clínico dominante. Sigue registrando tus episodios para un análisis más preciso."
 
     def analizar_frecuencia_sintomas(self, paciente_id: int) -> Dict[str, str]:
-        """Analiza síntomas asociados y su correlación con la severidad."""
         episodios = self.repository.obtener_episodios_por_paciente(paciente_id)
-        conclusiones = {}
+        if not episodios:
+            return {}
 
+        conclusiones = {}
         sintomas = []
         for e in episodios:
             if e.nauseas_vomitos: sintomas.append("náuseas y/o vómitos")
@@ -56,9 +69,12 @@ class AnalisisPatronesService:
 
         if sintomas:
             sintoma_frecuente, freq = Counter(sintomas).most_common(1)[0]
-            if "fonofobia" in sintoma_frecuente:
-                conclusiones[
-                    'sintoma_frecuente'] = "Se observa que la fonofobia (sensibilidad al sonido) es un síntoma constante en tus crisis."
+            if len(episodios) < 5:
+                conclusiones['sintoma_frecuente'] = f"En tu último episodio experimentaste {sintoma_frecuente}."
+            else:
+                if "fonofobia" in sintoma_frecuente:
+                    conclusiones[
+                        'sintoma_frecuente'] = "Se observa que la fonofobia (sensibilidad al sonido) es un síntoma constante en tus crisis."
 
         episodios_severos = [e for e in episodios if e.severidad == "Severa"]
         if episodios_severos:
@@ -70,16 +86,25 @@ class AnalisisPatronesService:
         return conclusiones
 
     def analizar_patrones_aura(self, paciente_id: int) -> str:
-        """Analiza la frecuencia, tipo y duración del aura."""
         episodios = self.repository.obtener_episodios_por_paciente(paciente_id)
+        if not episodios:
+            return "No hay datos de episodios para analizar el aura."
+
         episodios_con_aura = [e for e in episodios if e.presencia_aura]
 
         if not episodios_con_aura:
-            return "No se han registrado episodios con aura."
+            return "En tu historial no se han registrado episodios con aura."
 
+        # Modo Descriptivo
+        if len(episodios) < 5:
+            ultimo_aura = episodios_con_aura[0]
+            tipo_aura = ultimo_aura.sintomas_aura.lower()
+            duracion = ultimo_aura.duracion_aura_minutos
+            return f"En tu último episodio con aura, los síntomas fueron de tipo {tipo_aura} y duraron {duracion} minutos."
+
+        # Modo Estadístico
         tipos_aura_set = {e.sintomas_aura.lower() for e in episodios_con_aura if
                           e.sintomas_aura and e.sintomas_aura != "Ninguno"}
-        # Formato de texto ajustado para coincidir exactamente con el feature
         tipos_str = "visual (o sensorial)" if "visuales" in tipos_aura_set and "sensoriales" in tipos_aura_set else " o ".join(
             sorted(list(tipos_aura_set)))
 
@@ -90,8 +115,10 @@ class AnalisisPatronesService:
                 f"Cuando tienes un aura, suele ser de tipo {tipos_str} y durar aproximadamente entre {min_dur} y {max_dur} minutos.")
 
     def analizar_recurrencia_semanal(self, paciente_id: int) -> List[str]:
-        """Detecta si los episodios se repiten en días específicos de la semana."""
         episodios = self.repository.obtener_episodios_por_paciente(paciente_id)
+        if not episodios:
+            return []
+
         dias_semana = [e.dia for e in episodios if e.dia]
 
         counts = Counter(dias_semana)
@@ -104,18 +131,23 @@ class AnalisisPatronesService:
         return dias_recurrentes_ordenados
 
     def analizar_patron_menstrual(self, paciente_id: int) -> str:
-        """Detecta un posible patrón de migraña menstrual."""
         episodios = self.repository.obtener_episodios_por_paciente(paciente_id)
+        if not episodios:
+            return "No hay datos para analizar patrones menstruales."
+
         episodios_menstruales = [e for e in episodios if e.en_menstruacion]
 
         if not episodios_menstruales:
-            return "No hay episodios registrados durante la menstruación."
+            return "En tu historial no se han registrado episodios durante la menstruación."
 
         migranas_menstruales = sum(1 for e in episodios_menstruales if "Migraña" in e.categoria_diagnostica)
+
+        if len(episodios) < 5:
+            return "Se ha detectado un episodio durante tu menstruación. Sigue registrando para ver si se trata de un patrón."
 
         if episodios_menstruales and (migranas_menstruales / len(episodios_menstruales) > 0.7):
             return (
                 "Hemos detectado que una parte significativa de tus episodios de migraña ocurren durante tu menstruación. "
                 "Esto podría indicar un patrón de 'migraña menstrual'. Te recomendamos conversar sobre este patrón con tu médico.")
 
-        return "No se detecta un patrón claro de migraña menstrual."
+        return "No se ha detectado un patrón claro de migraña menstrual en tu historial."
