@@ -10,6 +10,7 @@ import Dashboard from './pages/paciente/Dashboard.jsx'
 import Login from './pages/Login.jsx'
 import BDoctor from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/pages/Bitacora-Medico.jsx'
 import BPaciente from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/pages/Bitacora-Paciente.jsx'
+import Registro from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/pages/Registro-cefalea.jsx'
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>
@@ -18,10 +19,10 @@ createRoot(document.getElementById('root')).render(
                 <Route path="/" element={<Login />} />
                 <Route path="/bitacora-medico/:pacienteId" element={<BDoctor />} />
                 <Route path="/bitacora-paciente" element={<BPaciente />} />
-        <Route path="/dashboard-paciente" element={<Dashboard />}/>
-        <Route path="/midas" element={<Midas />}/>
-        <Route path="/midas/resultados" element={<Resultados />}/>
-      </Routes>
-    </Router>
-  </StrictMode>,
+                <Route path="/dashboard-paciente" element={<Dashboard />} />
+                <Route path="/midas" element={<Midas />} />
+                <Route path="/midas/resultados" element={<Resultados />} />
+            </Routes>
+        </Router>
+    </StrictMode>,
 )
