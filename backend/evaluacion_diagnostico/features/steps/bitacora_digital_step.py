@@ -5,7 +5,6 @@ from evaluacion_diagnostico.repositories import FakeEpisodioCefaleaRepository
 from evaluacion_diagnostico.episodio_cefalea_service import EpisodioCefaleaService
 from django.core.exceptions import ValidationError
 
-# Usar el comparador de expresiones regulares para los steps
 use_step_matcher("re")
 
 # Instanciar Faker
@@ -47,7 +46,6 @@ def step_impl(context):
 
 @when("todos los datos estén completos,")
 def step_impl(context):
-    # (Este step no necesita cambios)
     try:
         context.episodio_creado = context.episodio_service.crear_episodio( # Usamos el método renombrado para BDD
             paciente=context.paciente,
@@ -69,7 +67,6 @@ def step_impl(context, categoria_esperada):
 
 @then("el episodio se guarda en la bitácora del paciente")
 def step_impl(context):
-    # (Este step no necesita cambios)
     ultimo_episodio_guardado = context.episode_repo.obtener_ultimo_episodio(context.paciente)
     assert ultimo_episodio_guardado is not None, "El episodio no se guardó en la bitácora del paciente."
     assert ultimo_episodio_guardado.pk == context.episodio_creado.pk, \
