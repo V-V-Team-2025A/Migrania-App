@@ -19,7 +19,7 @@ Esquema del escenario: Análisis del promedio semanal de episodios de migraña
 Ejemplos:
   | total_episodios | fecha_inicio | fecha_fin  | promedio_semanal  |
   | 28              | 2024-01-01   | 2024-02-26 | 3.5               |
-  | 14              | 2024-05-01   | 2024-06-12 | 2.0               |
+  | 14              | 2024-05-01   | 2024-06-19 | 2.0               |
 
 Esquema del escenario: Análisis de duración promedio por episodio de migraña
   Dado que el paciente tiene <total_episodios> episodios registrados en su bitácora digital
@@ -52,7 +52,7 @@ Esquema del escenario: Análisis de episodios asociados a menstruación y antico
 Ejemplos:
   | total_episodios | episodios_menstruacion | episodios_anticonceptivos | porcentaje_menstruacion | porcentaje_anticonceptivos |
   | 50              | 20                     | 15                        | 40%                     | 30%                       |
-  | 30              | 10                     | 12                        | 33%                     | 40%                       |
+  | 30              | 10                     | 12                        | 33.3%                   | 40%                       |
 
 Esquema del escenario: Evolución de la autoevaluación MIDAS
   Dado que el paciente tiene un promedio de puntuación MIDAS de <puntuacion_promedio> puntos
@@ -61,9 +61,9 @@ Esquema del escenario: Evolución de la autoevaluación MIDAS
   Entonces el sistema mostrará que la variación en la puntuación MIDAS es de <variacion_puntaje_midas> puntos
   Y mostrará que la discapacidad del paciente ha <tendencia_de_discapacidad>
   Ejemplos:
-    | puntuacion_promedio | puntuacion_actuaßßl | variacion_puntaje_midas | tendencia_de_discapacidad|
+    | puntuacion_promedio | puntuacion_actual | variacion_puntaje_midas | tendencia_de_discapacidad|
     | 20                  | 15                | -5                      | "Mejorado"               |
-    | 15                  | 22                | -7                      | "Empeorado"              |
+    | 15                  | 22                | 7                       | "Empeorado"              |
 
 Escenario: Identificacion de desencadentantes comunes
   Dado que el paciente tiene episodios registrados en su bitácora digital
