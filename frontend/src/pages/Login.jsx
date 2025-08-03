@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeSlash } from '@phosphor-icons/react';
+import { jwtDecode } from 'jwt-decode';
 import styles from '../common/styles/Login.module.css';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
@@ -22,7 +24,7 @@ export default function Login() {
       });
 
       if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+        throw new Error('Las credenciales proporcionadas son incorrectas.');
       }
 
       const data = await response.json();
@@ -30,13 +32,31 @@ export default function Login() {
       localStorage.setItem("access", data.access);
       localStorage.setItem("refresh", data.refresh);
 
+      const decodedToken = jwtDecode(data.access);
+
+      console.log('Token decodificado:', decodedToken);
+
+      const userType = decodedToken.tipo_usuario;
+
+      if (userType === 'paciente') {
+        navigate('/dashboard-paciente');
+      } else if (userType === 'medico') {
+        navigate('/dashboard-medico');
+      } else if (userType === 'enfermera') {
+        navigate('/dashboard-enfermera');
+      } else {
+
+        console.error('Tipo de usuario no reconocido:', userType);
+        navigate('/');
+      }
+
     } catch (error) {
       console.error("Error al iniciar sesión:", error.message);
     }
   };
 
   const handleNavigateToRegister = () => {
-    navigate('/'); 
+    navigate('/');
   };
 
   return (
@@ -80,10 +100,11 @@ export default function Login() {
           <button type="submit" className={styles["login__boton"]}>
             Iniciar sesión
           </button>
+          {error && <p className={styles.login__mensaje_error}>{error}</p>}
         </form>
-        <button 
-          type="button" 
-          onClick={handleNavigateToRegister} 
+        <button
+          type="button"
+          onClick={handleNavigateToRegister}
           className={styles.login__boton}
         >
           Registrarse
