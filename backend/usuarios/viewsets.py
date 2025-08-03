@@ -3,6 +3,9 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiExample
+from drf_spectacular.types import OpenApiTypes
+
 from .models import MedicoProfile, PacienteProfile, EnfermeraProfile
 from .serializers import (
     UsuarioCompletoSerializer, 
@@ -15,7 +18,9 @@ from .services import usuario_service
 
 Usuario = get_user_model()
 
+
 #  VIEWSET PROTEGIDO - Solo para usuarios autenticados
+@extend_schema_view(tags=["Usuarios"])
 class UsuarioViewSet(viewsets.ReadOnlyModelViewSet):
     """Gestión de usuarios - Solo lectura y acciones específicas"""
     serializer_class = UsuarioCompletoSerializer
@@ -62,6 +67,7 @@ class UsuarioViewSet(viewsets.ReadOnlyModelViewSet):
 
 # VIEWSETS PÚBLICOS DE REGISTRO (sin autenticación)
 
+@extend_schema_view(tags=["Registro"])
 class RegistroMedicoViewSet(viewsets.GenericViewSet):
     """ Registro de médicos - Público con formulario DRF"""
     serializer_class = RegistroMedicoSerializer
@@ -101,6 +107,7 @@ class RegistroMedicoViewSet(viewsets.GenericViewSet):
             'errors': serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
 
+@extend_schema_view(tags=["Registro"])
 class RegistroPacienteViewSet(viewsets.GenericViewSet):
     """ Registro de pacientes - Público con formulario DRF"""
     serializer_class = RegistroPacienteSerializer
@@ -140,6 +147,7 @@ class RegistroPacienteViewSet(viewsets.GenericViewSet):
             'errors': serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
 
+@extend_schema_view(tags=["📝 Registro"])
 class RegistroEnfermeraViewSet(viewsets.GenericViewSet):
     """ Registro de enfermeras - Público con formulario DRF"""
     serializer_class = RegistroEnfermeraSerializer
