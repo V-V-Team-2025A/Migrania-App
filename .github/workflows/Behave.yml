@@ -1,173 +1,52 @@
-name: Behave BDD Tests
+name: BDD Tests
 
 on:
   push:
-    branches: [ main, develop, feature_* ]
   pull_request:
-    branches: [ main, develop ]
-  workflow_dispatch:
+    branches: [ main, master ]
 
 jobs:
-  behave-tests:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout código
       uses: actions/checkout@v4
 
-    - name: Set up Python
+    - name: Configurar Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: 3.11
 
-    - name: Install Behave and dependencies
+    - name: Verificar estructura del proyecto
+      run: |
+        echo "Estructura del proyecto:"
+        ls -la
+        echo "Contenido de test/:"
+        ls -la test/ || echo "Directorio test/ no encontrado"
+        echo "Contenido de test/features/:"
+        ls -la test/features/ || echo "Directorio test/features/ no encontrado"
+        echo "Contenido de test/features/steps/:"
+        ls -la test/features/steps/ || echo "Directorio test/features/steps/ no encontrado"
+        echo "Contenido de src/:"
+        ls -la src/ || echo "Directorio src/ no encontrado"
+
+    - name: Instalar dependencias
       run: |
         python -m pip install --upgrade pip
-        pip install behave faker
-        # Instalar dependencias necesarias
-        pip install django python-dotenv
-        # Solo instalar las dependencias mínimas necesarias
-        pip install attrs parse parse-type
+        pip install -r requirements-dev.txt
 
-    - name: Create mock modules for tests
+    - name: Ejecutar tests BDD
       run: |
-        cd backend
-        echo "Creating mock modules to avoid Django dependencies..."
-        
-        # 1. Create mock environment files
-        echo 'def before_all(context): pass' > environment.py
-        echo 'def before_all(context): pass' > evaluacion_diagnostico/features/environment.py
-        
-        # 2. Create mock for EpisodioCefaleaService
-        mkdir -p mocks/evaluacion_diagnostico
-        cat > mocks/evaluacion_diagnostico/episodio_cefalea_service.py << 'EOL'
-        # Mock de EpisodioCefaleaService para tests
-        class EpisodioCefaleaService:
-            def __init__(self, repo=None):
-                self.repo = repo or {}
-            def registrar_episodio(self, *args, **kwargs):
-                return {"id": 1, "success": True}
-            def buscar_por_id(self, id):
-                return {"id": id, "intensidad": 5}
-        EOL
-        
-        # 3. Create mock for tratamiento steps
-        mkdir -p mocks/tratamiento/features/steps
-        cat > mocks/tratamiento/features/steps/generacion_seguimiento_tratamiento.py << 'EOL'
-        from behave import *
-        from datetime import datetime
-        from faker import Faker
-        
-        use_step_matcher("re")
-        fake = Faker('es_ES')
-        
-        @step("que el paciente tiene al menos un historial de migrañas")
-        def step_impl(context):
-            pass
-            
-        @step("se ingresa la siguiente información para la generación de un tratamiento")
-        def step_impl(context):
-            pass
-            
-        @step("se generan recomendaciones basadas en la información proporcionada")
-        def step_impl(context):
-            pass
-        EOL
-        
-        # 4. Create mock for bitacora_digital_step.py
-        mkdir -p mocks/evaluacion_diagnostico/features/steps
-        cat > mocks/evaluacion_diagnostico/features/steps/bitacora_digital_step.py << 'EOL'
-        from behave import *
-        from faker import Faker
-        
-        use_step_matcher("re")
-        fake = Faker('es_ES')
-        
-        @given("que un paciente ha ingresado datos para un nuevo episodio de cefalea con las siguientes características")
-        def step_impl(context):
-            pass
-            
-        @when("el sistema registra el nuevo episodio de cefalea")
-        def step_impl(context):
-            pass
-            
-        @then("el sistema debe confirmar el registro exitoso del episodio")
-        def step_impl(context):
-            pass
-        EOL
+        behave test/features/ --format=pretty
 
-    - name: Run Behave tests with mocks
+    - name: Run BDD tests and generate HTML report
       run: |
-        cd backend
-        echo "Running BDD tests with mocks..."
-        
-        # Crear un directorio para los steps
-        mkdir -p temp_steps/evaluacion_diagnostico/features/steps
-        mkdir -p temp_steps/tratamiento/features/steps
-        
-        # Crear archivos de steps vacíos para satisfacer a Behave
-        cat > temp_steps/evaluacion_diagnostico/features/steps/bitacora_digital_steps.py << 'EOL'
-        from behave import *
-        @given('.*') 
-        def step_impl(context): pass
-        @when('.*')
-        def step_impl(context): pass
-        @then('.*') 
-        def step_impl(context): pass
-        EOL
-        
-        cat > temp_steps/tratamiento/features/steps/generacion_seguimiento_tratamiento_steps.py << 'EOL'
-        from behave import *
-        @given('.*') 
-        def step_impl(context): pass
-        @when('.*')
-        def step_impl(context): pass
-        @then('.*') 
-        def step_impl(context): pass
-        EOL
-        
-        # Usar los steps genéricos para validar la sintaxis de las features
-        echo "🧠 Testing Evaluacion y Diagnostico - Bitacora Digital..."
-        python -m behave evaluacion_diagnostico/features/bitacora_digital.feature --dry-run --format pretty --tags=~@skip || echo "Tests syntax check completed for bitacora_digital"
-        
-        echo "💊 Testing Tratamiento - Generacion y Seguimiento..."
-        python -m behave tratamiento/features/generacion_seguimiento_tratamiento.feature --dry-run --format pretty --tags=~@skip || echo "Tests syntax check completed for generacion_seguimiento_tratamiento"
-        
-        echo "✅ Only testing features with implemented step files"
-        echo "� Features pendientes de implementación: autoevaluacion_midas, agendamiento_citas, aseguramiento_tratamiento, estadisticas_historial, analisis_factores_desencadenantes"
-
-    - name: Generate Behave Report
-      if: always()
-      run: |
-        cd backend
         mkdir -p reports
-        echo "Behave tests execution completed for implemented features" > reports/behave-summary.txt
-        python -m behave --help > reports/behave-help.txt 2>&1 || true
+        behave test/features/ -f behave_html_formatter:HTMLFormatter -o reports/report.html
 
-    - name: Upload Behave Reports
-      if: always()
+    - name: Upload HTML test report
       uses: actions/upload-artifact@v4
       with:
-        name: behave-reports
-        path: backend/reports/
-        retention-days: 30
-
-    - name: Generate Test Summary
-      if: always()
-      run: |
-        cd backend
-        echo "## 🧪 Behave BDD Test Results" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Features Implemented y Probadas (2 de 7):" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ 🧠 Evaluación y Diagnóstico: Bitácora Digital" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ 💊 Tratamiento: Generación y Seguimiento" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Features Pendientes (5 de 7):" >> $GITHUB_STEP_SUMMARY
-        echo "- ⏳ 🧠 Evaluación y Diagnóstico: Autoevaluación MIDAS" >> $GITHUB_STEP_SUMMARY
-        echo "- ⏳ 📅 Agendamiento de Citas" >> $GITHUB_STEP_SUMMARY
-        echo "- ⏳ 💊 Tratamiento: Aseguramiento" >> $GITHUB_STEP_SUMMARY
-        echo "- ⏳ 📊 Analíticas: Estadísticas Historial" >> $GITHUB_STEP_SUMMARY
-        echo "- ⏳ 📊 Analíticas: Análisis Factores Desencadenantes" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Archivos de Features encontrados:" >> $GITHUB_STEP_SUMMARY
-        find . -name "*.feature" | sort >> $GITHUB_STEP_SUMMARY
+        name: bdd-report
+        path: reports/report.html
