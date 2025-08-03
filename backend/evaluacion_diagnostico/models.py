@@ -12,8 +12,22 @@ class AutoevaluacionMidas(models.Model):
     puntaje_total = models.PositiveIntegerField(default=0, verbose_name='Puntaje Total',
                                                 help_text='Puntaje total de la autoevaluación MIDAS')
 
+    GRADO_DISCAPACIDAD_CHOICES = [
+        ('I', 'Grado I - Discapacidad mínima'),
+        ('II', 'Grado II - Discapacidad leve'),
+        ('III', 'Grado III - Discapacidad moderada'),
+        ('IV', 'Grado IV - Discapacidad severa'),
+    ]
+
+    grado_discapacidad = models.CharField(
+        max_length=5,
+        choices=GRADO_DISCAPACIDAD_CHOICES,
+        blank=True,
+        verbose_name='Grado de Discapacidad'
+    )
+
     class Meta:
-        db_table = 'evaluacion_diagnostico_evaluacion_midas'
+        db_table = 'evaluacion_midas'
         ordering = ['-fecha_autoevaluacion']
         unique_together = ('paciente', 'fecha_autoevaluacion')
         verbose_name = 'Evaluación MIDAS'
@@ -40,7 +54,20 @@ class AutoevaluacionMidas(models.Model):
         Llama al método calcular_puntaje_total y guarda el resultado en el campo puntaje_total.
         """
         self.puntaje_total = self.calcular_puntaje_total()
-        self.save(update_fields=['puntaje_total'])
+        self.grado_discapacidad = self.calcular_grado_discapacidad()
+        self.save(update_fields=['puntaje_total', 'grado_discapacidad'])
+
+    def calcular_grado_discapacidad(self):
+        puntaje = self.calcular_puntaje_total()
+
+        if puntaje <= 5:
+            return 'I'
+        elif puntaje <= 10:
+            return 'II'
+        elif puntaje <= 20:
+            return 'III'
+        else:
+            return 'IV'
 
 
 class Pregunta(models.Model):

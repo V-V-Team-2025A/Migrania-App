@@ -16,7 +16,7 @@ Característica: Autoevaluación MIDAS
       | 2025-03-01                  | 2025-06-01                 |
 
 
-  Esquema del escenario: La evaluación está disponible si no han pasado al menos 3 meses
+  Esquema del escenario: La evaluación no está disponible si no han pasado al menos 3 meses
     Dado que el paciente ha realizado una autoevaluación en la fecha "<fecha_ultima_autoevaluacion>"
     Cuando el paciente intenta realizar una nueva autoevaluación en la fecha "<fecha_nueva_autoevaluacion>"
     Entonces la nueva autoevaluación no se registrará
