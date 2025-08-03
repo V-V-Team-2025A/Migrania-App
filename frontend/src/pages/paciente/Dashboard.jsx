@@ -1,5 +1,5 @@
 import styles from "../../common/styles/dashboardPaciente.module.css";
-import { BellIcon,StethoscopeIcon, ChartLineIcon, FilesIcon, PillIcon, PlusIcon } from "@phosphor-icons/react";
+import { BellIcon,StethoscopeIcon, ChartLineIcon, FilesIcon, PillIcon, PlusIcon, BrainIcon } from "@phosphor-icons/react";
 
 export default function Dashboard() {
     return (
@@ -56,6 +56,18 @@ export default function Dashboard() {
                     <h4>Mi progreso</h4>
                     <p>Visualiza tendencias y estadísticas.</p>
                 </div>
+                <div className={styles["dashboard__tarjeta"]}>
+                    <div
+                        className={styles["dashboard__icono"]}
+                        style={{
+                            backgroundColor: "#be713e50",
+                        }}>
+                        <BrainIcon size={32} color={"#f39a4cff"} />
+                    </div>
+                    <h4>Mis patrones</h4>
+                    <p>Revisa tus patrones semanales.</p>
+                </div>
+
             </section>
 
             <div className={styles["dashboard__seccion-inferior"]}>

@@ -8,7 +8,7 @@ import "./common/styles/index.css"
 import Midas from "./features/feature_Grupo1_EvaluacionMidas/pages/Midas.jsx"
 import Resultados from "./features/feature_Grupo1_EvaluacionMidas/pages/Resultados.jsx"
 import Dashboard from './pages/paciente/Dashboard.jsx'
-import Login from './features/feature_Grupo6_AnalisisPatrones/pages/Login'
+import Login from './pages/Login'
 import AnalisisPatrones from './features/feature_Grupo6_AnalisisPatrones/pages/AnalisisPatrones'
 
 createRoot(document.getElementById('root')).render(
