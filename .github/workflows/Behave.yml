@@ -64,6 +64,7 @@ jobs:
     - name: Run Django migrations
       working-directory: ./backend
       run: |
+        python manage.py makemigrations
         python manage.py migrate
     
     - name: Run Behave tests - Agendamiento Citas
