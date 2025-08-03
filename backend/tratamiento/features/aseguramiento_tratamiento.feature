@@ -6,13 +6,14 @@ Característica: Aseguramiento del tratamiento para la migraña
   Quiero recordar las actividades definidas,
   Para cumplirlas y minimizar interrupciones en mi vida diaria.
 
+  Antecedentes:
+    Dado que el paciente tiene una medicina prescrita para la migraña
   # MEDICAMENTOS
     ## Recordatorio
   Escenario: Recordatorio de toma de medicamentos pendientes
-    Dado que el paciente tiene una medicina prescrita para la migraña
     Cuando la hora actual sea 30 minutos antes de la hora de la toma
     Entonces se enviará un recordatorio al paciente indicando que debe tomar su medicación pronto
-    Y el estado de la recordatorio será "activo"
+    Y el estado del recordatorio será "activo"
 
     ## Alerta
   Esquema del escenario: Alerta de toma de medicamentos sin confirmar
@@ -36,11 +37,11 @@ Característica: Aseguramiento del tratamiento para la migraña
 
     Ejemplos:
       | numero_alerta | tiempo_transcurrido | estado_toma | estado_resultado |
-      | primera       | 0                   | sí          | tomado           |
+      | primera       | 0                   | si          | tomado           |
       | primera       | 0                   | no          | no tomado        |
-      | segunda       | 30                  | sí          | tomado tarde     |
+      | segunda       | 30                  | si          | tomado tarde     |
       | segunda       | 30                  | no          | no tomado        |
-      | tercera       | 45                  | sí          | tomado muy tarde |
+      | tercera       | 45                  | si          | tomado muy tarde |
       | tercera       | 45                  | no          | no tomado        |
 
   # RECOMENDACIONES
