@@ -1,138 +1,176 @@
-name: Verificación de Features BDD Migrania-App
+name: CI - Tests with Behave
 
 on:
   push:
-    branches: [ main, develop, feature_* ]
+    branches: [ "main", "develop", "feature" ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ "main", "develop" ]
+  # Opcional: ejecutar manualmente
   workflow_dispatch:
 
 jobs:
-  validate-features:
+  test:
     runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: test_migraine_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
-    - name: Checkout código
-      uses: actions/checkout@v4
-
-    - name: Configurar Python
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
       uses: actions/setup-python@v4
       with:
-        python-version: 3.11
-
-    - name: Verificar estructura del proyecto
+        python-version: '3.11'
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install system dependencies
       run: |
-        echo "Estructura del proyecto:"
-        ls -la
-        echo "Contenido de backend/:"
-        ls -la backend/ || echo "Directorio backend/ no encontrado"
-        echo "Contenido de las apps con features:"
-        echo "- evaluacion_diagnostico/features/:"
-        ls -la backend/evaluacion_diagnostico/features/ || echo "Directorio no encontrado"
-        echo "- tratamiento/features/:"
-        ls -la backend/tratamiento/features/ || echo "Directorio no encontrado"
-        echo "- agendamiento_citas/features/:"
-        ls -la backend/agendamiento_citas/features/ || echo "Directorio no encontrado"
-        echo "- analiticas/features/:"
-        ls -la backend/analiticas/features/ || echo "Directorio no encontrado"
-
-    - name: Instalar dependencias mínimas
+        sudo apt-get update
+        sudo apt-get install -y libpq-dev
+    
+    - name: Install Python dependencies
+      working-directory: ./backend
       run: |
         python -m pip install --upgrade pip
-        pip install behave parse parse-type
-
-    - name: Crear stubs genéricos para validar features
+        pip install -r requirements.txt
+        pip install behave
+        pip install behave-django
+    
+    - name: Set environment variables
       run: |
-        cd backend
-        # Crear directorios de steps genéricos
-        mkdir -p features/steps
-        
-        # Crear un step genérico que acepta cualquier definición
-        cat > features/steps/generic_steps.py << 'EOL'
-        from behave import *
-
-        @given('.*')
-        def step_impl(context):
-            pass
-
-        @when('.*')
-        def step_impl(context):
-            pass
-
-        @then('.*')
-        def step_impl(context):
-            pass
-            
-        @step('.*')
-        def step_impl(context):
-            pass
-        EOL
-        
-        # Crear un environment.py genérico
-        cat > features/environment.py << 'EOL'
-        def before_all(context):
-            pass
-        EOL
-
-    - name: Verificar sintaxis de evaluacion_diagnostico features
+        echo "DJANGO_SETTINGS_MODULE=migraine_app.settings" >> $GITHUB_ENV
+        echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/test_migraine_db" >> $GITHUB_ENV
+    
+    - name: Run Django migrations
+      working-directory: ./backend
       run: |
-        cd backend
-        echo "🔎 Verificando sintaxis de evaluacion_diagnostico features..."
-        PYTHONPATH=. python -m behave evaluacion_diagnostico/features/ --dry-run --format=pretty || echo "Syntax check completed with issues"
-
-    - name: Verificar sintaxis de tratamiento features
+        python manage.py migrate
+    
+    - name: Run Behave tests - Agendamiento Citas
+      working-directory: ./backend
       run: |
-        cd backend
-        echo "🔎 Verificando sintaxis de tratamiento features..."
-        PYTHONPATH=. python -m behave tratamiento/features/ --dry-run --format=pretty || echo "Syntax check completed with issues"
-
-    - name: Verificar sintaxis de agendamiento_citas features
+        behave agendamiento_citas/features/ --format=progress --no-capture
+      continue-on-error: true
+    
+    - name: Run Behave tests - Evaluación Diagnóstico
+      working-directory: ./backend
       run: |
-        cd backend
-        echo "🔎 Verificando sintaxis de agendamiento_citas features..."
-        PYTHONPATH=. python -m behave agendamiento_citas/features/ --dry-run --format=pretty || echo "Syntax check completed with issues"
-
-    - name: Verificar sintaxis de analiticas features
+        behave evaluacion_diagnostico/features/ --format=progress --no-capture
+      continue-on-error: true
+    
+    - name: Run Behave tests - Tratamiento
+      working-directory: ./backend
       run: |
-        cd backend
-        echo "🔎 Verificando sintaxis de analiticas features..."
-        PYTHONPATH=. python -m behave analiticas/features/ --dry-run --format=pretty || echo "Syntax check completed with issues"
-
-    - name: Generar reporte de inventario de features
+        behave tratamiento/features/ --format=progress --no-capture
+      continue-on-error: true
+    
+    - name: Run Behave tests - Analíticas
+      working-directory: ./backend
+      run: |
+        behave analiticas/features/ --format=progress --no-capture
+      continue-on-error: true
+    
+    - name: Run All Behave tests (consolidated report)
+      working-directory: ./backend
+      run: |
+        behave --format=json --outfile=behave_results.json
+        behave --format=pretty
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
       if: always()
-      run: |
-        cd backend
-        mkdir -p reports
-        
-        echo "# Inventario de Features BDD" > reports/feature_inventory.md
-        echo "" >> reports/feature_inventory.md
-        echo "## Features encontradas" >> reports/feature_inventory.md
-        echo "" >> reports/feature_inventory.md
-        
-        echo "### 🧠 evaluacion_diagnostico" >> reports/feature_inventory.md
-        find evaluacion_diagnostico/features -name "*.feature" | sort >> reports/feature_inventory.md
-        echo "" >> reports/feature_inventory.md
-        
-        echo "### 💊 tratamiento" >> reports/feature_inventory.md
-        find tratamiento/features -name "*.feature" | sort >> reports/feature_inventory.md
-        echo "" >> reports/feature_inventory.md
-        
-        echo "### 📅 agendamiento_citas" >> reports/feature_inventory.md
-        find agendamiento_citas/features -name "*.feature" | sort >> reports/feature_inventory.md
-        echo "" >> reports/feature_inventory.md
-        
-        echo "### 📊 analiticas" >> reports/feature_inventory.md
-        find analiticas/features -name "*.feature" | sort >> reports/feature_inventory.md
-        echo "" >> reports/feature_inventory.md
-        
-        echo "## Implementaciones de Steps" >> reports/feature_inventory.md
-        echo "" >> reports/feature_inventory.md
-        echo "### Steps implementados:" >> reports/feature_inventory.md
-        find . -path "*/features/steps/*.py" -not -empty -not -path "./features/*" | sort >> reports/feature_inventory.md
-
-    - name: Upload Feature Inventory Report
-      if: always()
-      uses: actions/upload-artifact@v4
       with:
-        name: feature-inventory
-        path: backend/reports/feature_inventory.md
+        name: behave-test-results
+        path: backend/behave_results.json
+
+  lint-and-format:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install linting dependencies
+      working-directory: ./backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 black isort
+    
+    - name: Run Black formatter check
+      working-directory: ./backend
+      run: |
+        black --check .
+      continue-on-error: true
+    
+    - name: Run isort import sorting check
+      working-directory: ./backend
+      run: |
+        isort --check-only .
+      continue-on-error: true
+    
+    - name: Run flake8 linting
+      working-directory: ./backend
+      run: |
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      continue-on-error: true
+
+  frontend-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm ci
+    
+    - name: Run frontend linting
+      working-directory: ./frontend
+      run: npm run lint
+      continue-on-error: true
+    
+    - name: Build frontend
+      working-directory: ./frontend
+      run: npm run build
+    
+    - name: Run frontend tests (if available)
+      working-directory: ./frontend
+      run: |
+        if [ -f "package.json" ] && grep -q '"test"' package.json; then
+          npm test
+        else
+          echo "No frontend tests configured"
+        fi
+      continue-on-error: true
