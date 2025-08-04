@@ -1,6 +1,6 @@
 // src/components/EstadisticasComponents.jsx
 import React from 'react';
-import { Clock, TrendingUp, Zap, ClipboardList, Calendar, User } from 'lucide-react';
+import { FaClock, FaTrendingUp, FaBolt, FaClipboardList, FaCalendar, FaUser } from 'react-icons/fa';
 
 // Componente para mostrar estadísticas generales
 export const EstadisticasGenerales = ({ estadisticas, loading, error }) => {
@@ -228,25 +228,25 @@ export const PacienteSelector = ({
 export const SummaryCards = ({ estadisticas, promedioSemanal }) => {
   const summaryCards = [
     {
-      icon: Clock,
+      icon: FaClock,
       title: 'Frecuencia semanal',
       value: promedioSemanal ? `${promedioSemanal.promedio_semanal}` : '--',
       subtitle: 'promedio'
     },
     {
-      icon: TrendingUp,
+      icon: FaTrendingUp,
       title: 'Duración promedio',
       value: estadisticas?.duracion_promedio ? `${estadisticas.duracion_promedio}h` : '--',
       subtitle: 'por episodio'
     },
     {
-      icon: Zap,
+      icon: FaBolt,
       title: 'Intensidad promedio',
       value: estadisticas?.intensidad_promedio || '--',
       subtitle: 'del dolor'
     },
     {
-      icon: ClipboardList,
+      icon: FaClipboardList,
       title: 'Total episodios',
       value: estadisticas?.total_episodios || '--',
       subtitle: 'registrados'

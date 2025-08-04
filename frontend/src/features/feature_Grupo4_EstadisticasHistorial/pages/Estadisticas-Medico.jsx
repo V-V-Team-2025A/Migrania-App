@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search } from 'lucide-react';
+import { FaSearch } from 'react-icons/fa';
 import Header from '@/common/components/Header.jsx';
 import { 
   useEstadisticas, 
@@ -141,7 +141,7 @@ const EstadisticasMedico = () => {
 
       {/* Search Bar */}
       <div className="search-container">
-        <Search className="search-icon" size={18} />
+        <FaSearch className="search-icon" size={18} />
         <input
           type="text"
           placeholder="Buscar paciente"

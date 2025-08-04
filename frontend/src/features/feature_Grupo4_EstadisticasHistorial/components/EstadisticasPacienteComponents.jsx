@@ -2,40 +2,40 @@
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { 
-  Brain, 
-  Activity, 
-  FileText, 
-  Pill,
-  Clock,
-  Zap
-} from 'lucide-react';
+  FaBrain, 
+  FaActivity, 
+  FaFileText, 
+  FaPills,
+  FaClock,
+  FaBolt
+} from 'react-icons/fa';
 
 // Componente para las tarjetas de resumen del paciente
 export const SummaryCardsPaciente = ({ estadisticas, promedioSemanal, user }) => {
   const summaryCards = [
     {
-      icon: Activity,
+      icon: FaActivity,
       title: 'Total episodios',
       value: estadisticas?.total_episodios || '0',
       subtitle: 'registrados',
       color: 'var(--color-action)'
     },
     {
-      icon: Clock,
+      icon: FaClock,
       title: 'Duración promedio',
       value: estadisticas?.duracion_promedio ? `${estadisticas.duracion_promedio}h` : '--',
       subtitle: 'por episodio',
       color: '#F59E0B'
     },
     {
-      icon: Zap,
+      icon: FaBolt,
       title: 'Intensidad promedio',
       value: estadisticas?.intensidad_promedio || '--',
       subtitle: 'del dolor',
       color: 'var(--color-error)'
     },
     {
-      icon: Activity,
+      icon: FaActivity,
       title: 'Frecuencia semanal',
       value: promedioSemanal?.promedio_semanal || '--',
       subtitle: 'episodios/semana',
@@ -159,7 +159,7 @@ export const BitacoraStatistics = ({ estadisticas, episodios, loading, error }) 
       {/* Episodios por mes */}
       <div className="chart-container">
         <h3 className="chart-title">
-          <Activity size={20} color="var(--color-action)" />
+          <FaActivity size={20} color="var(--color-action)" />
           Episodios por Mes
         </h3>
         <ResponsiveContainer width="100%" height={300}>
@@ -268,7 +268,7 @@ export const PatronesStatistics = ({ analisisPatrones, loading, error }) => {
       {analisisPatrones.conclusion_clinica && (
         <div className="chart-container">
           <h3 className="chart-title">
-            <Brain size={20} color="var(--color-action)" />
+            <FaBrain size={20} color="var(--color-action)" />
             Conclusión Clínica
           </h3>
           <p style={{ color: '#374151', lineHeight: '1.6', fontSize: '14px' }}>
@@ -386,7 +386,7 @@ export const BitacoraHistory = ({ episodios, loading, error }) => {
       <div className="history-header">
         <h3 className="history-title">Historial de Episodios</h3>
         <button className="export-button">
-          <FileText size={16} />
+          <FaFileText size={16} />
           Exportar
         </button>
       </div>
@@ -421,7 +421,7 @@ export const BitacoraHistory = ({ episodios, loading, error }) => {
               {/* Medicación */}
               {episode.medicacion_tomada && (
                 <div className="medication-info">
-                  <Pill size={12} />
+                  <FaPills size={12} />
                   {episode.medicacion_tomada}
                 </div>
               )}
