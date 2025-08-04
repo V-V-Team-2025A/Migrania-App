@@ -77,7 +77,7 @@ export default function AnalisisPatrones() {
             });
         }
         if (patronesData.dias_recurrentes?.length > 0) {
-            // Unimos los días en un solo string
+            
             const dias = patronesData.dias_recurrentes.join(', ');
             tarjetasDeAnalisis.push({
                 id: 'recurrencia',
@@ -99,8 +99,7 @@ export default function AnalisisPatrones() {
     }
 
     return (
-        // El div principal ahora tiene la clase 'paginaCompleta'
-        <div className={styles.paginaCompleta}>
+        <div className={styles.patrones}> 
             <header className={styles.patrones__cabecera}>
                 <button onClick={handleVolver} className={styles.patrones__botonVolver}>
                     <ArrowLeft size={24} />
@@ -108,43 +107,41 @@ export default function AnalisisPatrones() {
                 </button>
             </header>
 
-            <main className={styles.patrones__contenido}>
-                <section className={styles.patrones__resumen}>
-                    <TarjetaResumen
-                        titulo="Factores Identificados"
-                        valor={tarjetasDeAnalisis.length} 
-                        subtitulo="Basado en tus registros"
-                        icono={<ChartLineUp size={48} weight="light" />}
-                        color="secondary-light"
-                    />
-                    <TarjetaResumen
-                        titulo="Alertas Preventivas"
-                        valor={tarjetasDeAnalisis.filter(t => t.id !== 'aura').length} 
-                        subtitulo="Patrones detectados"
-                        icono={<Warning size={48} weight="light" />}
-                        color="secondary-dark"
-                        iconColor="var(--color-error)"
-                    />
-                </section>
+            <section className={styles.patrones__resumen}>
+                <TarjetaResumen
+                    titulo="Patrones Identificados"
+                    valor={tarjetasDeAnalisis.length} 
+                    subtitulo="Basado en tus registros"
+                    icono={<ChartLineUp size={48} weight="light" />}
+                    color="secondary-light"
+                />
+                <TarjetaResumen
+                    titulo="Alertas Preventivas"
+                    valor={tarjetasDeAnalisis.filter(t => t.id !== 'aura').length} 
+                    subtitulo="Patrones detectados"
+                    icono={<Warning size={48} weight="light" />}
+                    color="secondary-dark"
+                    iconColor="var(--color-error)"
+                />
+            </section>
 
-                <section className={styles.patrones__analisis}>
-                    <EstadoCarga cargando={isLoading} error={error}>
-                        {tarjetasDeAnalisis.length > 0 ? (
-                            tarjetasDeAnalisis.map(tarjeta => (
-                                <TarjetaAnalisis
-                                    key={tarjeta.id}
-                                    icono={tarjeta.icono}
-                                    titulo={tarjeta.titulo}
-                                    descripcion={tarjeta.descripcion}
-                                    recomendacion={tarjeta.recomendacion}
-                                />
-                            ))
-                        ) : (
-                            <p>No se han encontrado patrones significativos. ¡Sigue registrando tus episodios!</p>
-                        )}
-                    </EstadoCarga>
-                </section>
-            </main>
+            <section className={styles.patrones__analisis}>
+                <EstadoCarga cargando={isLoading} error={error}>
+                    {tarjetasDeAnalisis.length > 0 ? (
+                        tarjetasDeAnalisis.map(tarjeta => (
+                            <TarjetaAnalisis
+                                key={tarjeta.id}
+                                icono={tarjeta.icono}
+                                titulo={tarjeta.titulo}
+                                descripcion={tarjeta.descripcion}
+                                recomendacion={tarjeta.recomendacion}
+                            />
+                        ))
+                    ) : (
+                        <p>No se han encontrado patrones significativos. ¡Sigue registrando tus episodios!</p>
+                    )}
+                </EstadoCarga>
+            </section>
         </div>
     );
 }
