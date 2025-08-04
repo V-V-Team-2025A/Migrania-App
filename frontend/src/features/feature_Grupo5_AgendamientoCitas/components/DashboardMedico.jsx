@@ -2,6 +2,18 @@ import React from "react";
 import estilos from "../styles/DashboardMedico.module.css";
 import comunes from "../styles/common.module.css";
 import { useNavigate } from "react-router-dom";
+import {
+  Users,
+  Stethoscope,
+  Warning,
+  Clock,
+  Calendar,
+  UserCircle,
+  Siren,
+  FirstAidIcon,
+  CalendarBlankIcon,
+  ClockAfternoonIcon,
+} from "@phosphor-icons/react";
 
 const DashboardMedico = ({ estadisticas, alertasRecientes, citasProximas }) => {
   const navegar = useNavigate();
@@ -25,7 +37,9 @@ const DashboardMedico = ({ estadisticas, alertasRecientes, citasProximas }) => {
 
       <div className={estilos.statsGrid}>
         <div className={estilos.statCard}>
-          <div className={estilos.statIcon}>👥</div>
+          <div className={estilos.statIcon}>
+            <Users size={64} weight="fill" />
+          </div>
           <div>
             <div className={estilos.statNumber}>
               {estadisticas.pacientesTotales}
@@ -34,7 +48,9 @@ const DashboardMedico = ({ estadisticas, alertasRecientes, citasProximas }) => {
           </div>
         </div>
         <div className={estilos.statCardLight}>
-          <div className={estilos.statIcon}>🩺</div>
+          <div className={estilos.statIcon}>
+            <Stethoscope size={64} weight="fill" color="#000" />
+          </div>
           <div>
             <div className={estilos.statNumber}>
               {estadisticas.citasAgendadas}
@@ -43,7 +59,9 @@ const DashboardMedico = ({ estadisticas, alertasRecientes, citasProximas }) => {
           </div>
         </div>
         <div className={estilos.statCardAlert}>
-          <div className={estilos.statIcon}>🚨</div>
+          <div className={estilos.statIcon}>
+            <Siren size={64} weight="fill" color="#cc0000" />
+          </div>
           <div>
             <div className={estilos.statNumber}>
               {estadisticas.casosUrgentes}
@@ -66,7 +84,10 @@ const DashboardMedico = ({ estadisticas, alertasRecientes, citasProximas }) => {
                   </div>
                   <div className={estilos.alertDetalles}>
                     <span>Intensidad {a.intensidad}</span>
-                    <span className={estilos.alertTiempo}>🕘 {a.tiempo}</span>
+                    <span className={estilos.alertTiempo}>
+                      {" "}
+                      <Clock size={16} weight="fill" color="#fff" /> {a.tiempo}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -83,9 +104,23 @@ const DashboardMedico = ({ estadisticas, alertasRecientes, citasProximas }) => {
                   <div className={estilos.nextMes}>{c.mes}</div>
                 </div>
                 <div>
-                  <div className={estilos.nextDoctor}>👨‍⚕️ {c.doctor}</div>
-                  <div className={estilos.nextDetalles}>📅 {c.fecha}</div>
-                  <div className={estilos.nextHora}>🕘 {c.hora}</div>
+                  <div className={estilos.nextDoctor}>
+                    {" "}
+                    <FirstAidIcon
+                      size={16}
+                      weight="fill"
+                      color="#bb0000"
+                    />{" "}
+                    {c.doctor}
+                  </div>
+                  <div className={estilos.nextDetalles}>
+                    <CalendarBlankIcon size={16} weight="fill" color="#fff" />{" "}
+                    {c.fecha}
+                  </div>
+                  <div className={estilos.nextHora}>
+                    <ClockAfternoonIcon size={16} weight="fill" color="#fff" />{" "}
+                    {c.hora}
+                  </div>
                 </div>
               </div>
             ))}
