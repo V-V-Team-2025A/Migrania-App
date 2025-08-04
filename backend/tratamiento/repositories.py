@@ -243,3 +243,7 @@ class FakeRepository(BaseRepository):
         ]
 
         return sorted(alertas + recordatorios, key=lambda x: x.fecha_hora)
+
+    def get_medicamentos_by_tratamiento_id(self, tratamiento_id):
+        ids = self.tratamiento_medicamentos.get(tratamiento_id, set())
+        return [self.medicamentos[mid] for mid in ids if mid in self.medicamentos]

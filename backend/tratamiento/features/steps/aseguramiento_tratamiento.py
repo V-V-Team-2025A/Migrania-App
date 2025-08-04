@@ -1,16 +1,17 @@
 import os, django
-
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'migraine_app.settings')
 django.setup()
-
+from usuarios.models import PacienteProfile
 from behave import step, use_step_matcher
 from datetime import datetime, timedelta
 from tratamiento.models import Recordatorio, Alerta, EstadoNotificacion, Recomendacion
 from tratamiento.repositories import FakeRepository
+from faker import Faker
 from tratamiento.services import TratamientoService
 import logging
 import warnings
 
+fake = Faker('es_ES')
 warnings.filterwarnings("ignore", category=RuntimeWarning, message="DateTimeField .* received a naive datetime")
 
 logging.basicConfig(level=logging.INFO)
@@ -23,9 +24,30 @@ def step_impl(context):
     context.service = TratamientoService(context.repository)
 
     hora_actual = datetime.now().time()
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+
+    context.usuario_paciente = User.objects.create_user(
+        username=fake.user_name(),
+        email=fake.unique.email(),
+        first_name=fake.first_name(),
+        last_name=fake.last_name(),
+        cedula=str(fake.unique.random_number(digits=10, fix_len=True)),
+        tipo_usuario='paciente',
+        genero=fake.random_element(['M', 'F', 'O', 'N']),
+    )
+
+    context.paciente = PacienteProfile.objects.create(
+        usuario=context.usuario_paciente,
+        contacto_emergencia_nombre=fake.name(),
+        contacto_emergencia_telefono=fake.phone_number()[:15],
+        contacto_emergencia_relacion="Padre"
+    )
+
     context.medicamento = context.service.crear_medicamento(
         nombre="Ibuprofeno",
         dosis="400mg",
+        caracteristica="Anti-inflamatorio",
         hora_inicio=hora_actual,
         frecuencia_horas=8,
         duracion_dias=5
@@ -33,6 +55,7 @@ def step_impl(context):
 
     context.tratamiento = context.service.crear_tratamiento(
         fecha_inicio=datetime.now().date(),
+        paciente=context.paciente,
         activo=True
     )
 
@@ -143,6 +166,7 @@ def step_impl(context, estado_resultado):
 @step("que el paciente tiene una recomendación de tratamiento para la migraña")
 def step_impl(context):
     context.tratamiento = context.service.crear_tratamiento(
+        paciente=context.paciente,
         recomendaciones=[Recomendacion.HIDRATACION],
         fecha_inicio=datetime.now().date(),
         activo=True

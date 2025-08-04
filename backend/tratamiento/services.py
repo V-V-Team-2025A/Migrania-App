@@ -6,23 +6,26 @@ class TratamientoService:
     def __init__(self, repository):
         self.repository = repository
 
-    def crear_medicamento(self, nombre, dosis, hora_inicio, frecuencia_horas, duracion_dias):
+    def crear_medicamento(self, nombre, dosis, caracteristica, hora_inicio, frecuencia_horas, duracion_dias):
         """Crear un nuevo medicamento"""
         medicamento = Medicamento(
             nombre=nombre,
             dosis=dosis,
+            caracteristica=caracteristica,
             hora_de_inicio=hora_inicio,
             frecuencia_horas=frecuencia_horas,
             duracion_dias=duracion_dias
         )
         return self.repository.save_medicamento(medicamento)
 
-    def crear_tratamiento(self, recomendaciones=None, fecha_inicio=None, activo=True):
+    def crear_tratamiento(self, paciente, episodio=None, recomendaciones=None, fecha_inicio=None, activo=True):
         """Crear un nuevo tratamiento"""
         if fecha_inicio is None:
             fecha_inicio = timezone.now().date()
 
         tratamiento = Tratamiento(
+            paciente=paciente,
+            episodio=episodio,
             fecha_inicio=fecha_inicio,
             activo=activo,
             recomendaciones=recomendaciones or []

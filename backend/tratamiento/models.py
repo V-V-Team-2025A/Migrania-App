@@ -2,6 +2,8 @@ from django.db import models
 from datetime import datetime, timedelta
 import logging
 from django.utils import timezone
+from usuarios.models import PacienteProfile
+from evaluacion_diagnostico.models import  EpisodioCefalea
 
 logger = logging.getLogger(__name__)
 
@@ -14,14 +16,26 @@ class EstadoNotificacion(models.TextChoices):
     CONFIRMADO_TOMADO_MUY_TARDE = 'tomado_muy_tarde'
 
 class Recomendacion(models.TextChoices):
-    HIDRATACION = 'hidratacion'
-    EJERCICIO_SUAVE = 'ejercicio_suave'
-    DIARIO_DE_DOLOR = 'diario_de_dolor'
-    MEDITACION = 'meditacion'
+    RUTINA_SUENO = "rutina_sueno", "Mantener una rutina regular de sueño"
+    EJERCICIO_MODERADO = "ejercicio_moderado", "Realizar ejercicio de forma moderada"
+    CONTROL_ESTRES = "control_estres", "Controlar los niveles de estrés"
+    HIDRATACION = "hidratacion", "Mantener una hidratación adecuada"
+    AMBIENTE_OSCURO = "ambiente_oscuro", "Buscar un ambiente oscuro y silencioso"
+    COMPRESION = "compresion", "Aplicar compresión fría o tibia"
+    EVITAR_ESFUERZO = "evitar_esfuerzo", "Evitar esfuerzo físico durante el episodio"
+    NAUSEAS_VOMITOS = "nauseas_vomitos", "Líquidos en pequeñas cantidades y evitar alimentos pesados"
+
+    # Exclusivas para mujeres
+    MENSTRUACION = "menstruacion", "Usar analgésicos adecuados durante la menstruación"
+    ANTICONCEPTIVOS = "anticonceptivos", "Consultar con un ginecólogo sobre anticonceptivos hormonales"
+
+    def __str__(self):
+        return f"{self.label} ({self.value})"
 
 class Medicamento(models.Model):
     nombre = models.CharField(max_length=100)
     dosis = models.CharField(max_length=50)
+    caracteristica = models.CharField(blank=True)
     hora_de_inicio = models.TimeField()
     frecuencia_horas = models.IntegerField(default=8)
     duracion_dias = models.IntegerField()
@@ -142,15 +156,54 @@ class Recordatorio(Notificacion):
         return f"Recordatorio: {self.mensaje} - {self.estado}"
 
 class Tratamiento(models.Model):
+    episodio = models.OneToOneField(
+        EpisodioCefalea,
+        on_delete=models.CASCADE,
+        related_name='tratamiento',
+        verbose_name='Episodio de Cefalea'
+    )
+    paciente = models.ForeignKey(
+        PacienteProfile,
+        on_delete=models.CASCADE,
+        related_name='tratamientos',
+        verbose_name='Paciente'
+    )
     medicamentos = models.ManyToManyField(Medicamento)
     recomendaciones = models.JSONField(default=list)
     fecha_inicio = models.DateField(null=True, blank=True)
     activo = models.BooleanField(default=True)
+    cumplimiento = models.FloatField(default=0.0)
+    motivo_cancelacion = models.TextField(blank=True, null=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not self.fecha_inicio and not kwargs.get('fecha_inicio'):
             self.fecha_inicio = datetime.now().date()
+
+    @property
+    def tipo_migraña(self):
+        return self.episodio.categoria_diagnostica if self.episodio else "Sin episodio"
+
+    @property
+    def porcentaje_cumplimiento(self):
+        return self.cumplimiento
+
+    def asignar_recomendaciones_generales(self):
+        self.recomendaciones = [
+            Recomendacion.RUTINA_SUENO,
+            Recomendacion.EJERCICIO_MODERADO,
+            Recomendacion.CONTROL_ESTRES,
+            Recomendacion.HIDRATACION,
+            Recomendacion.AMBIENTE_OSCURO,
+            Recomendacion.COMPRESION,
+            Recomendacion.EVITAR_ESFUERZO,
+            Recomendacion.NAUSEAS_VOMITOS,
+        ]
+
+
+    def agregar_recomendaciones_para_mujer(self):
+        self.recomendaciones.append(Recomendacion.MENSTRUACION)
+        self.recomendaciones.append(Recomendacion.ANTICONCEPTIVOS)
 
     def generarNotificaciones(self, fecha_actual=None):
         if fecha_actual is None:
@@ -353,6 +406,33 @@ class Tratamiento(models.Model):
             notificaciones_procesadas.append(recordatorio)
 
         return notificaciones_procesadas
+
+    def calcular_cumplimiento(self):
+        alertas_tratamiento = Alerta.objects.filter(id__in=self.notificaciones_generadas        )
+
+        if not alertas_tratamiento.exists():
+            return 0.0
+
+        total_alertas = alertas_tratamiento.count()
+
+        # Estados que consideramos como "cumplimiento positivo"
+        estados_cumplimiento = [
+            EstadoNotificacion.CONFIRMADO_TOMADO,
+            EstadoNotificacion.CONFIRMADO_TOMADO_TARDE,
+            EstadoNotificacion.CONFIRMADO_TOMADO_MUY_TARDE
+        ]
+
+        # Contar alertas confirmadas como tomadas (en cualquier momento)
+        alertas_cumplidas = alertas_tratamiento.filter(estado__in=estados_cumplimiento).count()
+
+        # Calcular porcentaje
+        porcentaje_cumplimiento = (alertas_cumplidas / total_alertas) * 100
+
+        # Actualizar el campo cumplimiento del modelo
+        self.cumplimiento = round(porcentaje_cumplimiento, 2)
+        self.save(update_fields=['cumplimiento'])
+
+        return self.cumplimiento
 
     def __str__(self):
         if self.pk:  # Verificar si la instancia tiene un ID asignado
