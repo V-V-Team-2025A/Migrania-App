@@ -253,6 +253,10 @@ class Tratamiento(models.Model):
     def bicola_notificacion(self):
         return self._get_bicola()
 
+    @property
+    def porcentaje_cumplimiento(self):
+        return self.cumplimiento
+
     def asignar_recomendaciones_generales(self):
         self.recomendaciones = [
             Recomendacion.RUTINA_SUENO,
