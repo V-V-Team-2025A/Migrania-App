@@ -1,129 +1,104 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import Header from '@/common/components/Header.jsx';
 import Tabla from '@/common/components/Tabla.jsx';
+import ModalFiltro from '../components/ModalFiltro.jsx';
+import { parseApiResponse, getErrorMessageMedico, fetchPacienteInfo } from '../utils/apiUtils.js';
+import { transformEpisodioMedico, COLUMNAS_EPISODIOS_MEDICO } from '../utils/episodioUtils.js';
+import { BASE_URL, EPISODIOS_ENDPOINT, TEMP_TOKEN_MEDICO } from '../utils/constants.js';
+import '@/features/feature_Grupo2_BitacoraAsistidaCefalea/styles/bitacora.module.css';
 
 export default function BitacoraDigitalMedico() {
-    const [episodios, setEpisodios] = useState([
-        {
-            id: 1,
-            duracion_cefalea_horas: 5,
-            severidad: 'Moderada',
-            localizacion: 'Unilateral',
-            caracter_dolor: 'Pulsátil',
-            empeora_actividad: 'Sí',
-            nauseas_vomitos: 'Sí',
-            fotofobia: 'Sí',
-            fonofobia: 'No',
-            presencia_aura: 'Sí',
-            sintomas_aura: 'Visual',
-            duracion_aura_minutos: 30,
-            en_menstruacion: 'No',
-            anticonceptivos: 'No'
-        },
-        {
-            id: 2,
-            duracion_cefalea_horas: 3,
-            severidad: 'Severa',
-            localizacion: 'Bilateral',
-            caracter_dolor: 'Opresivo',
-            empeora_actividad: 'No',
-            nauseas_vomitos: 'No',
-            fotofobia: 'Sí',
-            fonofobia: 'Sí',
-            presencia_aura: 'No',
-            sintomas_aura: '-',
-            duracion_aura_minutos: 0,
-            en_menstruacion: 'Sí',
-            anticonceptivos: 'Sí'
-        },
-        {
-            id: 3,
-            duracion_cefalea_horas: 8,
-            severidad: 'Moderada',
-            localizacion: 'Unilateral',
-            caracter_dolor: 'Pulsátil',
-            empeora_actividad: 'Sí',
-            nauseas_vomitos: 'Sí',
-            fotofobia: 'Sí',
-            fonofobia: 'No',
-            presencia_aura: 'Sí',
-            sintomas_aura: 'Sensitivo',
-            duracion_aura_minutos: 20,
-            en_menstruacion: 'No',
-            anticonceptivos: 'No'
-        },
-        {
-            id: 4,
-            duracion_cefalea_horas: 2,
-            severidad: 'Leve',
-            localizacion: 'Frontal',
-            caracter_dolor: 'Punzante',
-            empeora_actividad: 'No',
-            nauseas_vomitos: 'No',
-            fotofobia: 'No',
-            fonofobia: 'No',
-            presencia_aura: 'No',
-            sintomas_aura: '-',
-            duracion_aura_minutos: 0,
-            en_menstruacion: 'No',
-            anticonceptivos: 'No'
-        },
-        {
-            id: 5,
-            duracion_cefalea_horas: 6,
-            severidad: 'Severa',
-            localizacion: 'Unilateral',
-            caracter_dolor: 'Pulsátil',
-            empeora_actividad: 'Sí',
-            nauseas_vomitos: 'Sí',
-            fotofobia: 'Sí',
-            fonofobia: 'Sí',
-            presencia_aura: 'Sí',
-            sintomas_aura: 'Visual y Sensitivo',
-            duracion_aura_minutos: 45,
-            en_menstruacion: 'Sí',
-            anticonceptivos: 'Sí'
-        },
-        {
-            id: 6,
-            duracion_cefalea_horas: 4,
-            severidad: 'Moderada',
-            localizacion: 'Bilateral',
-            caracter_dolor: 'Opresivo',
-            empeora_actividad: 'No',
-            nauseas_vomitos: 'No',
-            fotofobia: 'No',
-            fonofobia: 'No',
-            presencia_aura: 'No',
-            sintomas_aura: '-',
-            duracion_aura_minutos: 0,
-            en_menstruacion: 'No',
-            anticonceptivos: 'No'
-        }
-    ]);
+    const { pacienteId } = useParams(); // Obtener el ID del paciente desde la URL
+    const [episodios, setEpisodios] = useState([]);
+    const [episodiosOriginales, setEpisodiosOriginales] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [showModalFiltro, setShowModalFiltro] = useState(false);
+    const [filtroActivo, setFiltroActivo] = useState("");
+    const [nombrePaciente, setNombrePaciente] = useState("");
 
-    const columnasEpisodios = [
-        { key: 'duracion_cefalea_horas', header: 'Duración Cefalea (horas)' },
-        { key: 'severidad', header: 'Severidad del Dolor' },
-        { key: 'localizacion', header: 'Localización del Dolor' },
-        { key: 'caracter_dolor', header: 'Carácter del Dolor' },
-        { key: 'empeora_actividad', header: 'Empeora con Actividad' },
-        { key: 'nauseas_vomitos', header: 'Náuseas o Vómitos' },
-        { key: 'fotofobia', header: 'Sensibilidad a la Luz' },
-        { key: 'fonofobia', header: 'Sensibilidad al Sonido' },
-        { key: 'presencia_aura', header: 'Presencia de Aura' },
-        { key: 'sintomas_aura', header: 'Síntomas del Aura' },
-        { key: 'duracion_aura_minutos', header: 'Duración del Aura (min)' },
-        { key: 'en_menstruacion', header: 'En menstruación' },
-        { key: 'anticonceptivos', header: 'Anticonceptivos' }
-    ];
+    useEffect(() => {
+        const fetchEpisodios = async () => {
+            if (!pacienteId) {
+                setError('ID de paciente no proporcionado');
+                setLoading(false);
+                return;
+            }
+
+            try {
+                setLoading(true);
+                setError(null);
+
+                // Obtener información del paciente
+                const nombrePaciente = await fetchPacienteInfo(pacienteId, BASE_URL, TEMP_TOKEN_MEDICO);
+                setNombrePaciente(nombrePaciente);
+                console.log(nombrePaciente);
+
+
+                // Obtener episodios del paciente
+                const url = `${BASE_URL}${EPISODIOS_ENDPOINT}?paciente_id=${pacienteId}`;
+                console.log('Intentando conectar a:', url);
+                console.log('Base URL configurada:', BASE_URL);
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': TEMP_TOKEN_MEDICO ? `Bearer ${TEMP_TOKEN_MEDICO}` : '',
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Datos recibidos de la API:', data);
+
+                const episodiosArray = parseApiResponse(data);
+                const episodiosTransformados = episodiosArray.map(transformEpisodioMedico);
+
+                setEpisodios(episodiosTransformados);
+                setEpisodiosOriginales(episodiosTransformados);
+            } catch (err) {
+                console.error('Error al cargar episodios:', err);
+                setError(getErrorMessageMedico(err));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEpisodios();
+    }, [pacienteId]);
 
     const handleNuevoEpisodio = () => {
-        console.log('Nuevo episodio clickeado');
+        setShowModalFiltro(true);
     };
 
     const handleVolver = () => {
         console.log('Volver clickeado');
+    };
+
+    const handleConfirmarFiltro = (tipoFiltro) => {
+        setFiltroActivo(tipoFiltro);
+
+        if (tipoFiltro === "") {
+            // Mostrar todos los episodios
+            setEpisodios(episodiosOriginales);
+        } else {
+            // Filtrar por tipo de cefalea
+            const episodiosFiltrados = episodiosOriginales.filter(episodio =>
+                episodio.categoria_diagnostica === tipoFiltro
+            );
+            setEpisodios(episodiosFiltrados);
+        }
+
+        setShowModalFiltro(false);
+    };
+
+    const handleCancelarFiltro = () => {
+        setShowModalFiltro(false);
     };
 
     return (
@@ -133,14 +108,33 @@ export default function BitacoraDigitalMedico() {
                 onBack={handleVolver}
                 primaryButtonText="Filtrar bitácora"
                 onPrimaryClick={handleNuevoEpisodio}
-                patientName="Juan Pérez"
+                patientName={nombrePaciente}
             />
-            <Tabla
-                data={episodios}
-                columns={columnasEpisodios}
-                keyField="id"
-                emptyMessage="No hay episodios de cefalea registrados"
-            />
+            {loading && (
+                <div style={{ padding: '20px', textAlign: 'center' }}>
+                    Cargando episodios...
+                </div>
+            )}
+            {error && (
+                <div style={{ padding: '20px', color: 'red', textAlign: 'center' }}>
+                    {error}
+                </div>
+            )}
+            {!loading && !error && (
+                <Tabla
+                    data={episodios}
+                    columns={COLUMNAS_EPISODIOS_MEDICO}
+                    keyField="id"
+                    emptyMessage="No hay episodios de cefalea registrados"
+                />
+            )}
+            {showModalFiltro && (
+                <ModalFiltro
+                    message="Seleccionar filtro para la bitácora"
+                    onConfirm={handleConfirmarFiltro}
+                    onCancel={handleCancelarFiltro}
+                />
+            )}
         </div>
     );
 }
