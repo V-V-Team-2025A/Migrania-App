@@ -35,3 +35,9 @@
     display: flex;
     justify-content: center;
 }
+.resultados__seccion-inferior h3{
+    margin-bottom: var(--spacing-m);
+}
+.resultados__seccion-superior h4{
+    margin-bottom: var(--spacing-m);
+}
