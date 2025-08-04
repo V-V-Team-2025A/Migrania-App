@@ -116,6 +116,7 @@ label {
 /* === INPUTS BASE === */
 input[type="text"],
 input[type="email"],
+input[type="number"],
 input[type="password"] {
     flex: 1;
     padding: var(--spacing-s);
@@ -221,6 +222,7 @@ table {
     min-width: 100%;
     border-collapse: collapse;
     background-color: var(--color-background);
+    user-select: none;
 }
 
 table thead {

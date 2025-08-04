@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from "../../common/styles/dashboardPaciente.module.css";
-import { BellIcon, StethoscopeIcon, ChartLineIcon, FilesIcon, PillIcon, PlusIcon } from "@phosphor-icons/react";
+import { BellIcon, StethoscopeIcon, ChartLineIcon, FilesIcon, PillIcon, PlusIcon, BrainIcon } from "@phosphor-icons/react";
 import { fetchEpisodiosPaciente } from "../../utils/apiUtils.js";
 import {
     obtenerFechaEpisodio,
@@ -9,7 +9,6 @@ import {
     formatearFecha
 } from "../../utils/funciones.js";
 
-// Constantes para las tarjetas del dashboard
 const TARJETAS_DASHBOARD = [
     {
         icono: PlusIcon,
@@ -38,6 +37,13 @@ const TARJETAS_DASHBOARD = [
         backgroundColor: "#3588517d",
         titulo: "Mi progreso",
         descripcion: "Visualiza tendencias y estadísticas."
+    },
+    {
+        icono: BrainIcon,
+        color: "#f39a4cff",
+        backgroundColor: "#be713e50",
+        titulo: "Mis patrones",
+        descripcion: "Revisa tus patrones semanales."
     }
 ];
 
@@ -78,22 +84,17 @@ export default function Dashboard() {
         cargarEpisodiosRecientes();
     }, []);
 
-    // Funciones de navegación
     const handleNavegacion = (ruta) => {
         navigate(ruta);
     };
 
-    // Componentes de renderizado
     const TarjetaDashboard = ({ icono: Icono, color, backgroundColor, titulo, descripcion, onClick }) => (
         <div
             className={styles["dashboard__tarjeta"]}
             onClick={onClick}
             style={{ cursor: onClick ? 'pointer' : 'default' }}
         >
-            <div
-                className={styles["dashboard__icono"]}
-                style={{ backgroundColor }}
-            >
+            <div className={styles["dashboard__icono"]} style={{ backgroundColor }}>
                 <Icono size={32} color={color} />
             </div>
             <h4>{titulo}</h4>
@@ -103,27 +104,15 @@ export default function Dashboard() {
 
     const EstadoCarga = ({ cargando, error, vacio, textoVacio = "No hay datos disponibles" }) => {
         if (cargando) {
-            return (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-secondary-dark)' }}>
-                    Cargando...
-                </div>
-            );
+            return <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-secondary-dark)' }}>Cargando...</div>;
         }
 
         if (error) {
-            return (
-                <div style={{ textAlign: 'center', padding: '20px', color: '#e74c3c' }}>
-                    Error: {error}
-                </div>
-            );
+            return <div style={{ textAlign: 'center', padding: '20px', color: '#e74c3c' }}>Error: {error}</div>;
         }
 
         if (vacio) {
-            return (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-secondary-dark)' }}>
-                    {textoVacio}
-                </div>
-            );
+            return <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-secondary-dark)' }}>{textoVacio}</div>;
         }
 
         return null;
@@ -144,9 +133,7 @@ export default function Dashboard() {
 
         return (
             <div key={episodio.id || index} className={styles["dashboard__episodio-item"]}>
-                <div className={styles["dashboard__episodio-fecha"]}>
-                    {fechaFormateada}
-                </div>
+                <div className={styles["dashboard__episodio-fecha"]}>{fechaFormateada}</div>
                 <div className={styles["dashboard__episodio-contenido"]}>
                     <div className={styles["dashboard__episodio-header"]}>
                         <div className={`${styles["dashboard__episodio-severidad"]} ${severidadClass}`}>
@@ -154,18 +141,10 @@ export default function Dashboard() {
                         </div>
                     </div>
                     <div className={styles["dashboard__episodio-detalles"]}>
-                        <DetalleEpisodio
-                            icono="⏱"
-                            texto={episodio.duracion_cefalea_horas || episodio.duracion || 'N/A'}
-                        />
-                        {episodio.localizacion && (
-                            <DetalleEpisodio icono="📍" texto={episodio.localizacion} />
-                        )}
+                        <DetalleEpisodio icono="⏱" texto={episodio.duracion_cefalea_horas || episodio.duracion || 'N/A'} />
+                        {episodio.localizacion && <DetalleEpisodio icono="📍" texto={episodio.localizacion} />}
                         {(episodio.caracter_dolor || episodio.desencadenante) && (
-                            <DetalleEpisodio
-                                icono="💫"
-                                texto={episodio.caracter_dolor || episodio.desencadenante}
-                            />
+                            <DetalleEpisodio icono="💫" texto={episodio.caracter_dolor || episodio.desencadenante} />
                         )}
                     </div>
                 </div>
@@ -184,22 +163,11 @@ export default function Dashboard() {
             </div>
 
             <section className={styles["dashboard__contenedor-tarjetas"]}>
-                <TarjetaDashboard
-                    {...TARJETAS_DASHBOARD[0]}
-                    onClick={() => handleNavegacion('/bitacora-paciente')}
-                />
-                <TarjetaDashboard
-                    {...TARJETAS_DASHBOARD[1]}
-                    onClick={() => handleNavegacion('/midas')}
-                />
-                <TarjetaDashboard
-                    {...TARJETAS_DASHBOARD[2]}
-                    onClick={() => console.log('Navegando a tratamientos')}
-                />
-                <TarjetaDashboard
-                    {...TARJETAS_DASHBOARD[3]}
-                    onClick={() => console.log('Navegando a progreso')}
-                />
+                <TarjetaDashboard {...TARJETAS_DASHBOARD[0]} onClick={() => handleNavegacion('/bitacora-paciente')} />
+                <TarjetaDashboard {...TARJETAS_DASHBOARD[1]} onClick={() => handleNavegacion('/midas')} />
+                <TarjetaDashboard {...TARJETAS_DASHBOARD[2]} onClick={() => console.log('Navegando a tratamientos')} />
+                <TarjetaDashboard {...TARJETAS_DASHBOARD[3]} onClick={() => console.log('Navegando a progreso')} />
+                <TarjetaDashboard {...TARJETAS_DASHBOARD[4]} onClick={() =>  handleNavegacion('/analisis-patrones')} />
             </section>
 
             <div className={styles["dashboard__seccion-inferior"]}>
