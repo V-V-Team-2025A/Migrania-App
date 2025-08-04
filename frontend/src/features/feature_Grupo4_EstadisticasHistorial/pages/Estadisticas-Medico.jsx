@@ -36,67 +36,222 @@ const MedicalDashboard = () => {
     }
   ];
 
-  return (
-    <div className="min-h-screen bg-slate-700 text-white p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="text-sm text-gray-400 mb-4">
-          Historial y Estadísticas - Médico (sin registros)
-        </div>
-        
-        <div className="flex items-center gap-4 mb-6">
-          <button className="flex items-center gap-2 text-white hover:text-gray-300 transition-colors">
-            <ArrowLeft size={20} />
-            <span className="font-medium">Volver</span>
-          </button>
-          
-          <h1 className="text-2xl font-bold">Historial y Estadísticas</h1>
-        </div>
+  const handleVolver = () => {
+    console.log('Volver clickeado');
+  };
 
-        {/* Search Bar */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-          <input
-            type="text"
-            placeholder="Buscar paciente"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
-          />
-        </div>
+  const styles = {
+    container: {
+      fontFamily: 'var(--font-main)',
+      backgroundColor: 'var(--color-body-background)',
+      color: 'var(--color-text)',
+      padding: 'var(--spacing-m)',
+      minHeight: '100vh'
+    },
+    searchContainer: {
+      position: 'relative',
+      maxWidth: '300px',
+      marginBottom: 'var(--spacing-l)'
+    },
+    searchInput: {
+      width: '100%',
+      paddingLeft: '40px',
+      paddingRight: 'var(--spacing-m)',
+      paddingTop: 'var(--spacing-s)',
+      paddingBottom: 'var(--spacing-s)',
+      backgroundColor: 'var(--color-background)',
+      border: '1px solid #4A5A69',
+      borderRadius: 'var(--border-radius)',
+      color: 'var(--color-text)',
+      fontSize: '14px',
+      outline: 'none'
+    },
+    searchIcon: {
+      position: 'absolute',
+      left: '12px',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      color: '#9CA3AF'
+    },
+    patientTitle: {
+      fontSize: '18px',
+      fontWeight: '600',
+      marginBottom: 'var(--spacing-m)',
+      color: 'var(--color-text)'
+    },
+    summaryGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+      gap: 'var(--spacing-m)',
+      marginBottom: 'var(--spacing-l)'
+    },
+    summaryCard: {
+      backgroundColor: 'var(--color-background)',
+      borderRadius: 'var(--border-radius)',
+      padding: 'var(--spacing-m)',
+      textAlign: 'center',
+      border: '1px solid #4A5A69'
+    },
+    cardIcon: {
+      width: '48px',
+      height: '48px',
+      backgroundColor: '#4A5A69',
+      borderRadius: 'var(--border-radius)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      margin: '0 auto var(--spacing-s) auto'
+    },
+    cardTitle: {
+      fontSize: '12px',
+      color: '#9CA3AF',
+      marginBottom: 'var(--spacing-xs)'
+    },
+    cardValue: {
+      fontSize: '20px',
+      fontWeight: '700',
+      color: 'var(--color-text)',
+      marginBottom: 'var(--spacing-xs)'
+    },
+    cardSubtitle: {
+      fontSize: '10px',
+      color: '#9CA3AF'
+    },
+    categoryButtons: {
+      display: 'flex',
+      gap: 'var(--spacing-s)',
+      marginBottom: 'var(--spacing-m)'
+    },
+    categoryButton: {
+      padding: 'var(--spacing-s) var(--spacing-l)',
+      borderRadius: 'var(--border-radius)',
+      border: 'none',
+      fontFamily: 'var(--font-main)',
+      fontSize: '14px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease'
+    },
+    categoryButtonActive: {
+      backgroundColor: 'var(--color-action)',
+      color: 'var(--color-text)'
+    },
+    categoryButtonInactive: {
+      backgroundColor: 'var(--color-background)',
+      color: '#9CA3AF'
+    },
+    subcategoryContainer: {
+      display: 'flex',
+      gap: 'var(--spacing-s)',
+      alignItems: 'center',
+      marginBottom: 'var(--spacing-l)'
+    },
+    subcategoryButton: {
+      padding: 'var(--spacing-s) var(--spacing-l)',
+      borderRadius: 'var(--border-radius)',
+      border: 'none',
+      fontFamily: 'var(--font-main)',
+      fontSize: '14px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease'
+    },
+    subcategoryButtonActive: {
+      backgroundColor: 'var(--secondary-light)',
+      color: 'var(--color-background)'
+    },
+    subcategoryButtonInactive: {
+      backgroundColor: 'var(--color-background)',
+      color: '#9CA3AF'
+    },
+    exportButton: {
+      padding: 'var(--spacing-s) var(--spacing-m)',
+      backgroundColor: 'var(--color-background)',
+      color: '#9CA3AF',
+      borderRadius: 'var(--border-radius)',
+      border: 'none',
+      fontFamily: 'var(--font-main)',
+      fontSize: '12px',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 'var(--spacing-xs)',
+      transition: 'all 0.2s ease'
+    },
+    contentArea: {
+      backgroundColor: '#E5E7EB',
+      borderRadius: 'var(--border-radius)',
+      padding: 'var(--spacing-xxl)',
+      minHeight: '400px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    noDataContainer: {
+      textAlign: 'center'
+    },
+    noDataTitle: {
+      fontSize: '18px',
+      fontWeight: '600',
+      color: '#6B7280',
+      marginBottom: 'var(--spacing-s)'
+    },
+    noDataSubtitle: {
+      fontSize: '14px',
+      color: '#9CA3AF'
+    }
+  };
+
+  return (
+    <div style={styles.container}>
+      <Header
+        title="Historial y Estadísticas"
+        onBack={handleVolver}
+      />
+
+      {/* Search Bar */}
+      <div style={styles.searchContainer}>
+        <Search style={styles.searchIcon} size={18} />
+        <input
+          type="text"
+          placeholder="Buscar paciente"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={styles.searchInput}
+        />
       </div>
 
       {/* Patient Summary Section */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-4">Resumen de: nombrepaciente</h2>
+      <div>
+        <h2 style={styles.patientTitle}>Resumen de: nombrepaciente</h2>
         
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div style={styles.summaryGrid}>
           {summaryCards.map((card, index) => (
-            <div key={index} className="bg-slate-600 rounded-lg p-4 border border-slate-500">
-              <div className="flex items-center justify-center w-12 h-12 bg-slate-500 rounded-lg mb-3 mx-auto">
-                <card.icon size={24} className="text-gray-300" />
+            <div key={index} style={styles.summaryCard}>
+              <div style={styles.cardIcon}>
+                <card.icon size={24} color="#9CA3AF" />
               </div>
-              <div className="text-center">
-                <div className="text-sm text-gray-400 mb-1">{card.title}</div>
-                <div className="text-xl font-bold">{card.value}</div>
-                <div className="text-xs text-gray-400">{card.subtitle}</div>
-              </div>
+              <div style={styles.cardTitle}>{card.title}</div>
+              <div style={styles.cardValue}>{card.value}</div>
+              <div style={styles.cardSubtitle}>{card.subtitle}</div>
             </div>
           ))}
         </div>
 
         {/* Category Buttons */}
-        <div className="flex gap-4 mb-6">
+        <div style={styles.categoryButtons}>
           {categories.map((category) => (
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
-              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                activeCategory === category
-                  ? 'bg-cyan-500 text-white'
-                  : 'bg-slate-600 text-gray-300 hover:bg-slate-500'
-              }`}
+              style={{
+                ...styles.categoryButton,
+                ...(activeCategory === category 
+                  ? styles.categoryButtonActive 
+                  : styles.categoryButtonInactive
+                )
+              }}
             >
               {category}
             </button>
@@ -104,36 +259,38 @@ const MedicalDashboard = () => {
         </div>
 
         {/* Subcategory Buttons */}
-        <div className="flex gap-4 mb-6">
+        <div style={styles.subcategoryContainer}>
           {['Ver Historial', 'Ver Estadísticas'].map((subcategory) => (
             <button
               key={subcategory}
               onClick={() => setActiveSubcategory(subcategory)}
-              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                activeSubcategory === subcategory
-                  ? 'bg-yellow-600 text-white'
-                  : 'bg-slate-600 text-gray-300 hover:bg-slate-500'
-              }`}
+              style={{
+                ...styles.subcategoryButton,
+                ...(activeSubcategory === subcategory 
+                  ? styles.subcategoryButtonActive 
+                  : styles.subcategoryButtonInactive
+                )
+              }}
             >
               {subcategory}
             </button>
           ))}
           
           {/* Export Button */}
-          <button className="px-4 py-2 bg-slate-600 text-gray-300 hover:bg-slate-500 rounded-lg transition-colors flex items-center gap-2">
+          <button style={styles.exportButton}>
             <ClipboardList size={16} />
-            <span className="text-sm">Exportar</span>
+            <span>Exportar</span>
           </button>
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="bg-gray-100 rounded-lg p-8 min-h-96 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-gray-600 text-lg font-medium mb-2">
+      <div style={styles.contentArea}>
+        <div style={styles.noDataContainer}>
+          <div style={styles.noDataTitle}>
             No se encuentran registros
           </div>
-          <div className="text-gray-500 text-sm">
+          <div style={styles.noDataSubtitle}>
             Mostrando {activeSubcategory.toLowerCase()} de {activeCategory}
           </div>
         </div>
