@@ -12,6 +12,7 @@ disable=C0114,  # missing-module-docstring
         C0116,  # missing-function-docstring
         R0903,  # too-few-public-methods
         W0613,  # unused-argument
+        C0415,  # import-outside-toplevel
 
 [FORMAT]
 # Máximo número de caracteres por línea
