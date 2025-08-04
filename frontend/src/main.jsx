@@ -26,6 +26,8 @@ import Tratamientos from "./features/feature_Grupo7_GeneracionSeguimientoTratami
 import SuspenderTratamiento
     from "./features/feature_Grupo7_GeneracionSeguimientoTratamiento/pages/SuspenderTratamiento.jsx";
 import EditarTratamiento from "./features/feature_Grupo7_GeneracionSeguimientoTratamiento/pages/EditarTratamiento.jsx";
+import HistorialTratamientos
+  from "./features/feature_Grupo7_GeneracionSeguimientoTratamiento/pages/HistorialTratamientos.jsx";
 
 
 createRoot(document.getElementById('root')).render(
@@ -51,6 +53,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="/seguimiento/tratamientos/crearTratamiento" element={<CrearTratamiento />}/>
           <Route path="/seguimiento/tratamientos/crearTratamiento/suspenderTratamiento" element={<SuspenderTratamiento />}/>
           <Route path="/seguimiento/tratamientos/crearTratamiento/editarTratamiento" element={<EditarTratamiento />}/>
+          <Route path="/historialTratamientos" element={<HistorialTratamientos />}/>
       </Routes>
     </Router>
   </StrictMode>,
