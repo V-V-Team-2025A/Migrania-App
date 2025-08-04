@@ -6,10 +6,11 @@ django.setup()
 
 from behave import *
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, date
 from faker import Faker
 from tratamiento.repositories import FakeRepository
 from tratamiento.services import TratamientoService
+from tratamiento.models import EpisodioCefalea
 
 use_step_matcher("re")
 fake = Faker('es_ES')
@@ -35,8 +36,7 @@ def step_impl(context):
     context.repository = FakeRepository()
     context.service = TratamientoService(context.repository)
 
-    campos_esperados = {'Dosis', 'Medicamento', 'Características', 'Frecuencia', 'Duración tratamiento',
-                        'Recomendacion'}
+    campos_esperados = {'Dosis', 'Medicamento', 'Características', 'Frecuencia', 'Duración tratamiento','Recomendacion'}
     campos_tabla = {row['Campo'] for row in context.table}
     assert campos_esperados == campos_tabla, f"Campos faltantes o incorrectos"
     context.campos_tabla = campos_tabla
@@ -47,12 +47,10 @@ def step_impl(context):
     context.caracteristica = fake.random_element(['50mg', '500mg', '10mg'])
     context.frecuencia_horas = 8
 
-    context.repository.add_paciente_profile(context.paciente)
+    context.episodio = crear_episodio_dummy(paciente=context.paciente.usuario, tipo_migraña=context.tipo_migraña_actual)
 
-    context.tratamiento = context.service.crear_tratamiento(
-        paciente_id=context.paciente.id,
-        fecha_inicio=datetime.now().date(),
-        activo=True
+    context.tratamiento = context.service.crear_tratamiento( paciente=context.paciente, episodio=context.episodio,activo=True,
+        fecha_inicio=date.today(),
     )
 
     context.medicamento = context.service.crear_medicamento(
@@ -64,12 +62,7 @@ def step_impl(context):
         duracion_dias=context.duracion_dias
     )
 
-    context.repository.save_medicamento(context.medicamento)
-    context.service.agregar_medicamento_a_tratamiento(
-        context.tratamiento.id,
-        context.medicamento
-    )
-
+    context.service.agregar_medicamento_a_tratamiento( context.tratamiento.id, context.medicamento )
 
     from tratamiento.models import Recomendacion
     context.tratamiento.recomendaciones = [Recomendacion.HIDRATACION]
@@ -79,6 +72,7 @@ def step_impl(context):
 
     assert context.tratamiento_creado is not None, "El tratamiento no fue creado."
     assert context.tratamiento_creado.activo == True, "El tratamiento debe estar activo."
+
 
 @step("el sistema crea el tratamiento")
 def step_impl(context):
@@ -90,9 +84,10 @@ def step_impl(context):
     assert context.campos_tabla == campos_esperados, f"Los campos de la tabla no coinciden con los esperados"
 
     tratamiento_desde_repo = context.repository.get_tratamiento_by_id(context.tratamiento_creado.id)
+    context.service.agregar_medicamento_a_tratamiento(context.tratamiento.id, context.medicamento)
     medicamentos_tratamiento = context.repository.get_medicamentos_by_tratamiento_id(context.tratamiento_creado.id)
 
-    assert len(medicamentos_tratamiento) >= 1, "El tratamiento debe tener al menos un medicamento"
+    assert len(medicamentos_tratamiento) >= 1, "El tratamiento debe tener al menos una medicación"
     assert len(tratamiento_desde_repo.recomendaciones) >= 1, "El tratamiento debe tener al menos una recomendación"
 
     assert context.tratamiento_creado.activo == True, "El tratamiento debe estar activo"
@@ -108,10 +103,26 @@ def step_paciente_con_tratamiento(context):
     context.repository = FakeRepository()
     context.service = TratamientoService(context.repository)
 
-    context.repository.add_paciente_profile(context.paciente)
-
+    context.episodio = EpisodioCefalea.objects.create(
+        paciente=context.paciente.usuario,
+        duracion_cefalea_horas=2,
+        severidad='Moderada',
+        localizacion='Unilateral',
+        caracter_dolor='Pulsátil',
+        empeora_actividad=True,
+        nauseas_vomitos=True,
+        fotofobia=True,
+        fonofobia=False,
+        presencia_aura=False,
+        sintomas_aura='Ninguno',
+        duracion_aura_minutos=0,
+        en_menstruacion=False,
+        anticonceptivos=False,
+        categoria_diagnostica='Migraña sin aura'
+    )
     context.tratamiento_activo = context.service.crear_tratamiento(
-        paciente_id=context.paciente.id,
+        paciente=context.paciente,
+        episodio=context.episodio,
         fecha_inicio=datetime.now().date(),
         activo=True
     )
@@ -129,72 +140,55 @@ def step_historial_cumplimiento(context, porcentaje_cumplimiento, numero_tratami
     context.service = TratamientoService(context.repository)
 
     context.porcentaje_cumplimiento = float(porcentaje_cumplimiento)
+    context.cumplimiento_promedio = context.porcentaje_cumplimiento
     context.numero_tratamientos = int(numero_tratamientos)
-    context.repository.add_paciente_profile(context.paciente)
 
     context.tratamiento_activo = context.service.crear_tratamiento(
-        paciente_id=context.paciente.id,
+        paciente=context.paciente,
+        episodio=context.episodio,
         fecha_inicio=datetime.now().date(),
         activo=True
     )
-
-    context.tratamiento_activo_2 = context.service.crear_tratamiento(
-        paciente_id=context.paciente.id,
-        fecha_inicio=datetime.now().date(),
-        activo=True
-    )
-
-    # Asignar cumplimiento directamente al objeto tratamiento
     context.tratamiento_activo.cumplimiento = context.porcentaje_cumplimiento
-    context.tratamiento_activo_2.cumplimiento = context.porcentaje_cumplimiento
-
     context.repository.save_tratamiento(context.tratamiento_activo)
-    context.repository.save_tratamiento(context.tratamiento_activo_2)
-
     assert context.tratamiento_activo is not None, "El primer tratamiento debe existir."
-    assert context.tratamiento_activo_2 is not None, "El segundo tratamiento debe existir."
 
 
 @step("el médico evalúa el cumplimiento del tratamiento anterior")
 def step_medico_evalua(context):
     tratamiento_1 = context.repository.get_tratamiento_by_id(context.tratamiento_activo.id)
-    tratamiento_2 = context.repository.get_tratamiento_by_id(context.tratamiento_activo_2.id)
 
     context.cumplimiento_tratamiento_1 = float(tratamiento_1.cumplimiento)
-    context.cumplimiento_tratamiento_2 = float(tratamiento_2.cumplimiento)
 
-    context.cumplimiento_promedio = round(
-        (context.cumplimiento_tratamiento_1 + context.cumplimiento_tratamiento_2) / 2,
-        2
-    )
+    context.cumplimiento_tratamiento_1
     context.evaluacion_completada = True
 
     assert context.cumplimiento_tratamiento_1 >= 0, "El cumplimiento del primer tratamiento debe ser válido."
-    assert context.cumplimiento_tratamiento_2 >= 0, "El cumplimiento del segundo tratamiento debe ser válido."
     assert context.evaluacion_completada == True, "La evaluación debe estar completada."
 
 @step("se decide modificar el tratamiento")
 def step_modificar_tratamiento(context):
     context.modificacion_decidida = True
-
     assert context.modificacion_decidida is True, "La decisión de modificar el tratamiento debe estar tomada"
+
+
 @step('el médico ingresa las siguientes características para el nuevo tratamiento')
 def step_medico_ingresa_caracteristicas(context):
-    context.nueva_dosis = fake.random_element(['10', '20', '12', '30'])
+    context.nueva_cantidad = fake.random_element(['10', '20', '12', '30'])
     context.nueva_medicamento = fake.random_element(['Ibuprofeno', 'Paracetamol', 'Sumatriptán'])
+    context.nueva_duracion = fake.random_element([3, 15, 8])
     context.caracteristica = fake.random_element(['50mg', '500mg', '10mg'])
 
-    context.nueva_duracion = fake.random_element([3, 15, 8])
-
-    assert context.nueva_dosis is not None, "La cantidad debe estar definida."
+    assert context.nueva_cantidad is not None, "La cantidad debe estar definida."
     assert context.nueva_medicamento is not None, "La medicación debe estar definida."
 
 
 @step('el sistema debe actualizar el tratamiento con los nuevos datos')
 def step_sistema_actualiza(context):
+
     nuevo_medicamento = context.service.crear_medicamento(
         nombre=context.nueva_medicamento,
-        dosis=context.nueva_dosis,
+        dosis=context.nueva_cantidad,
         caracteristica=context.caracteristica,
         hora_inicio=datetime.now().time(),
         frecuencia_horas=8,
@@ -225,7 +219,7 @@ def step_impl(context, motivo_cancelacion):
 
 @step("el sistema debe cancelar el tratamiento con los datos ingresados")
 def step_impl(context):
-    tratamiento_a_cancelar = context.repository.get_tratamiento_by_id(context.tratamiento_activo_2.id)
+    tratamiento_a_cancelar = context.repository.get_tratamiento_by_id(context.tratamiento_activo.id)
     tratamiento_a_cancelar.activo = False
     tratamiento_a_cancelar.motivo_cancelacion = context.motivo_cancelacion
 
@@ -259,3 +253,40 @@ def inicializar_contexto_basico(context):
         contacto_emergencia_telefono=fake.phone_number()[:15],
         contacto_emergencia_relacion="Padre"
     )
+
+    context.usuario_medico = User.objects.create_user(
+        username=f"medico_{fake.user_name()}",
+        email=fake.unique.email(),
+        first_name=fake.first_name(),
+        last_name=fake.last_name(),
+        cedula=str(fake.unique.random_number(digits=10, fix_len=True)),
+        tipo_usuario='medico',
+        genero='M'
+    )
+
+    context.medico = MedicoProfile.objects.create(
+        usuario=context.usuario_medico,
+        numero_licencia=fake.unique.bothify(text='LIC-#####'),
+        especializacion='neurologia',
+        anos_experiencia=5
+    )
+
+def crear_episodio_dummy(paciente, tipo_migraña):
+    return EpisodioCefalea.objects.create(
+        paciente=paciente,
+        duracion_cefalea_horas=2,
+        severidad='Moderada',
+        localizacion='Unilateral',
+        caracter_dolor='Pulsátil',
+        empeora_actividad=True,
+        nauseas_vomitos=True,
+        fotofobia=True,
+        fonofobia=False,
+        presencia_aura=True,
+        sintomas_aura='Visuales, Sensitivos',
+        duracion_aura_minutos=30,
+        en_menstruacion=False,
+        anticonceptivos=False,
+        categoria_diagnostica=tipo_migraña
+    )
+

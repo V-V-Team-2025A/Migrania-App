@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styles from "./TablaExpandible.module.css"
+import styles from "../styles/TablaExpandible.module.css"
 export default function TablaExpandible({ data = [], keyField = "id" }) {
     const [expandedRow, setExpandedRow] = useState(null);
 
