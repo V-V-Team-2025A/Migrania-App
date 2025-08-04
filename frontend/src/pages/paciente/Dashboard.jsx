@@ -88,7 +88,7 @@ export default function Dashboard() {
         navigate(ruta);
     };
 
-    const TarjetaDashboard = ({ icono: Icono, color, backgroundColor, titulo, descripcion, onClick }) => (
+    const TarjetaDashboard = ({  color, backgroundColor, titulo, descripcion, onClick }) => (
         <div
             className={styles["dashboard__tarjeta"]}
             onClick={onClick}
