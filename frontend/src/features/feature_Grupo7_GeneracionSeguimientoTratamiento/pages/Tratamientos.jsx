@@ -59,13 +59,13 @@ function Tratamientos() {
                             <td className="acciones">
                                 <button
                                     className="edit-button"
-                                    onClick={() => navigate("/editarTratamiento")}
+                                    onClick={() => navigate("/seguimiento/tratamientos/crearTratamiento/editarTratamiento")}
                                 >
                                     Editar
                                 </button>
                                 <button
                                     className="delete-button"
-                                    onClick={() => navigate("/suspenderTratamiento")}
+                                    onClick={() => navigate("/seguimiento/tratamientos/crearTratamiento/suspenderTratamiento")}
                                 >
                                     Suspender
                                 </button>
