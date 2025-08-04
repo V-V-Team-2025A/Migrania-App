@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from "../../common/styles/dashboardPaciente.module.css";
-import { BellIcon, StethoscopeIcon, ChartLineIcon, FilesIcon, PillIcon, PlusIcon, BrainIcon } from "@phosphor-icons/react";
-import { fetchEpisodiosPaciente } from "../../utils/apiUtils.js";
-import {
-    obtenerFechaEpisodio,
-    compararFechas,
-    formatearFecha
-} from "../../utils/funciones.js";
+import { BellIcon, StethoscopeIcon, ChartLineIcon, FilesIcon, PillIcon, PlusIcon, BrainIcon, SignOut } from "@phosphor-icons/react";
+import { 
+    parseApiResponse, 
+    getApiUrl, 
+    getAuthHeaders,
+    fetchEpisodiosPaciente 
+} from "../../features/feature_Grupo2_BitacoraAsistidaCefalea/utils/apiUtils.js";
+import { transformEpisodio } from "../../features/feature_Grupo2_BitacoraAsistidaCefalea/utils/episodioUtils.js";
+import { EPISODIOS_ENDPOINT } from "../../features/feature_Grupo2_BitacoraAsistidaCefalea/utils/constants.js";
 
 const TARJETAS_DASHBOARD = [
     {
@@ -59,8 +61,8 @@ export default function Dashboard() {
         }
 
         return episodios
-            .filter(episodio => episodio && obtenerFechaEpisodio(episodio))
-            .sort(compararFechas)
+            .filter(episodio => episodio && episodio.creado_en)
+            .sort((a, b) => new Date(b.creado_en) - new Date(a.creado_en))
             .slice(0, 4);
     };
 
@@ -70,12 +72,14 @@ export default function Dashboard() {
                 setCargandoEpisodios(true);
                 setErrorEpisodios(null);
 
-                const episodios = await fetchEpisodiosPaciente();
-                const episodiosOrdenados = procesarEpisodios(episodios);
+                const episodiosArray = await fetchEpisodiosPaciente();
+                const episodiosTransformados = episodiosArray.map(transformEpisodio);
+                const episodiosOrdenados = procesarEpisodios(episodiosTransformados);
+                
                 setEpisodiosRecientes(episodiosOrdenados);
             } catch (error) {
                 console.error('Error al cargar episodios recientes:', error);
-                setErrorEpisodios(error.message);
+                setErrorEpisodios(error.message || 'Error al cargar episodios');
             } finally {
                 setCargandoEpisodios(false);
             }
@@ -133,6 +137,19 @@ export default function Dashboard() {
     }
 };
 
+    const handleLogout = () => {
+        // Eliminar tokens del localStorage
+        localStorage.removeItem("access");
+        localStorage.removeItem("refresh");
+        
+        // Opcional: también eliminar cualquier otro dato de sesión
+        localStorage.removeItem("user");
+        localStorage.removeItem("userType");
+        
+        // Redirigir al login
+        navigate("/login", { replace: true });
+    };
+
 
     const TarjetaDashboard = ({ icono: Icono, color, backgroundColor, titulo, descripcion, onClick }) => (
         <div
@@ -172,7 +189,8 @@ export default function Dashboard() {
     );
 
     const EpisodioItem = ({ episodio, index }) => {
-        const fechaFormateada = formatearFecha(obtenerFechaEpisodio(episodio));
+        // Usar directamente la fecha formateada que viene de transformEpisodio
+        const fechaFormateada = episodio.creado_en;
         const severidadClass = episodio.severidad
             ? styles[`dashboard__episodio-severidad--${episodio.severidad.toLowerCase()}`]
             : '';
@@ -187,10 +205,10 @@ export default function Dashboard() {
                         </div>
                     </div>
                     <div className={styles["dashboard__episodio-detalles"]}>
-                        <DetalleEpisodio icono="⏱" texto={episodio.duracion_cefalea_horas || episodio.duracion || 'N/A'} />
+                        <DetalleEpisodio icono="⏱" texto={episodio.duracion_cefalea_horas ? `${episodio.duracion_cefalea_horas}h` : 'N/A'} />
                         {episodio.localizacion && <DetalleEpisodio icono="📍" texto={episodio.localizacion} />}
-                        {(episodio.caracter_dolor || episodio.desencadenante) && (
-                            <DetalleEpisodio icono="💫" texto={episodio.caracter_dolor || episodio.desencadenante} />
+                        {episodio.caracter_dolor && (
+                            <DetalleEpisodio icono="💫" texto={episodio.caracter_dolor} />
                         )}
                     </div>
                 </div>
@@ -205,7 +223,28 @@ export default function Dashboard() {
                     <h2>¿Cómo te sientes hoy?</h2>
                     <p>¡Vas 5 días sin episodios! Sigue cuidándote y registrando tus síntomas.</p>
                 </div>
-                <BellIcon size={32} color="var(--color-text)" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <BellIcon size={32} color="var(--color-text)" />
+                    <button 
+                        onClick={handleLogout}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '8px',
+                            borderRadius: '6px',
+                            transition: 'background-color 0.2s',
+                            backgroundColor: 'transparent'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-background-light)'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                        title="Cerrar sesión"
+                    >
+                        <SignOut size={32} color="var(--color-text)" />
+                    </button>
+                </div>
             </div>
 
             <section className={styles["dashboard__contenedor-tarjetas"]}>

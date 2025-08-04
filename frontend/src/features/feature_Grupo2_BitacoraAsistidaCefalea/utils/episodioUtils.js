@@ -2,7 +2,13 @@ import { BOOLEAN_FIELDS, REQUIRED_FIELDS } from './constants.js';
 
 export const transformEpisodio = (episodio) => ({
     ...episodio,
-    creado_en: episodio.creado_en ? new Date(episodio.creado_en).toLocaleString() : '-',
+    creado_en: episodio.creado_en ? new Date(episodio.creado_en).toLocaleString('es-ES', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    }) : '-',
     empeora_actividad: episodio.empeora_actividad ? 'Sí' : 'No',
     nauseas_vomitos: episodio.nauseas_vomitos ? 'Sí' : 'No',
     fotofobia: episodio.fotofobia ? 'Sí' : 'No',
@@ -66,7 +72,7 @@ export const validateEpisodioForm = (formData) => {
 
 export const COLUMNAS_EPISODIOS = [
     { key: 'creado_en', header: 'Fecha de Registro' },
-    { key: 'categoria_diagnostica', header: 'Categoría Diagnóstica' },
+    { key: 'categoria_diagnostica', header: 'Categoría Diagnosticada' },
     { key: 'duracion_cefalea_horas', header: 'Duración Cefalea (horas)' },
     { key: 'severidad', header: 'Severidad del Dolor' },
     { key: 'localizacion', header: 'Localización del Dolor' },
