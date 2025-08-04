@@ -6,7 +6,7 @@ export default function ModalDisponibilidad({ onClose }) {
 
     const navigate = useNavigate()
 
-    const [puedeHacerAutoevaluacion, setPuedeHacerAutoevaluacion] = useState(false)
+    const [puedeHacerAutoevaluacion, setPuedeHacerAutoevaluacion] = useState(true)
 
     return (
         <div className={styles["modal__overlay"]}>

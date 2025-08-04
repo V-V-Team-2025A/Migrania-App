@@ -103,7 +103,6 @@ export default function Midas() {
                                         const nuevasRespuestas = [...respuestas];
                                         nuevasRespuestas[indice] = valorRespuesta;
                                         setRespuestas(nuevasRespuestas);
-
                                         navigate("/midas/resultados", {
                                             state: {
                                                 respuestas: nuevasRespuestas,
