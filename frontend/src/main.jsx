@@ -18,6 +18,7 @@ import BPaciente from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/pages/B
 import Registro from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/pages/Registro-cefalea.jsx'
 
 import MidasMedico from './features/feature_Grupo1_EvaluacionMidas/pages/MidasMedico.jsx'
+import MidasEstadisticas from './features/feature_Grupo1_EvaluacionMidas/pages/MidasEstadisticas.jsx'
 
 import PrimerConsulta from "./features/feature_Grupo7_GeneracionSeguimientoTratamiento/pages/PrimerConsulta.jsx";
 import Seguimiento from "./features/feature_Grupo7_GeneracionSeguimientoTratamiento/pages/Seguimiento.jsx";
@@ -40,7 +41,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/login" element={<Login />} />
         <Route path="/analisis-patrones" element={<AnalisisPatrones />} />
         <Route path="/bitacora-medico/:pacienteId" element={<BDoctor />} />
-        <Route path="/midas-medico/:pacienteId" element={<MidasMedico />} />
+        <Route path="/midas/historial" element={<MidasMedico />} />
         <Route path="/bitacora-paciente" element={<BPaciente />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/dashboard-paciente" element={<Dashboard />} />
@@ -49,6 +50,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/estadisticas-paciente" element={<EstadisticasPaciente />} />
         <Route path="/midas" element={<Midas />} />
         <Route path="/midas/resultados" element={<Resultados />} />
+         <Route path='/midas/estadisticas' element={<MidasEstadisticas/>}/>
           <Route path="/primerConsulta" element={<PrimerConsulta />}/>
           <Route path="/primerConsulta/crearTratamiento" element={<CrearTratamiento />}/>
           <Route path="/seguimiento" element={<Seguimiento />}/>

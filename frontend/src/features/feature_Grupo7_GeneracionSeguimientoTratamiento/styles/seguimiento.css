@@ -1,4 +1,4 @@
-.container {
+.seguimiento {
     padding: var(--spacing-m);
     background-color: var(--color-body-background);
     border-radius: var(--border-radius);
@@ -7,7 +7,7 @@
     height: 100vh;
 }
 
-.table-container {
+.seguimiento__table-container {
     width: 100%;
     max-height: 350px;
     overflow-y: auto;
@@ -17,31 +17,32 @@
     margin-bottom: var(--spacing-m);
 }
 
-table {
+.seguimiento table {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
 }
 
-thead {
+.seguimiento thead {
     display: table;
     width: 100%;
     table-layout: fixed;
 }
 
-tbody {
+.seguimiento tbody {
     display: block;
     max-height: 320px;
     width: 100%;
 }
 
-tbody tr {
+.seguimiento tbody tr {
     display: table;
     table-layout: fixed;
     width: 100%;
 }
 
-table th, table td {
+.seguimiento table th,
+.seguimiento table td {
     padding: var(--spacing-s) var(--spacing-m);
     font-size: 1rem;
     color: var(--color-text);
@@ -51,19 +52,19 @@ table th, table td {
     box-sizing: border-box;
 }
 
-table tbody tr:hover {
+.seguimiento table tbody tr:hover {
     background-color: transparent;
 }
 
-/* Botones */
-button {
+.seguimiento button {
     padding: var(--spacing-s) var(--spacing-m);
     border-radius: var(--border-radius);
     border: none;
     cursor: pointer;
     font-weight: 600;
 }
-.tratamiento-button {
+
+.seguimiento__tratamiento-button {
     background-color: var(--color-action);
     color: var(--color-text);
     padding: 8px 20px;
@@ -75,31 +76,61 @@ button {
     width: 200px;
 }
 
-.tratamiento-button:hover {
+.seguimiento__tratamiento-button:hover {
     background-color: var(--color-action-hover);
 }
 
-button.create-treatment {
+.seguimiento__create-treatment {
     background-color: var(--color-action);
     width: 300px;
 }
 
-button.create-treatment:hover {
+.seguimiento__create-treatment:hover {
     background-color: #2E7474;
 }
 
-button.cancel {
+.seguimiento__cancel {
     background-color: var(--color-error);
     width: 300px;
 }
 
-button.cancel:hover {
+.seguimiento__cancel:hover {
     background-color: #D94A50;
 }
 
-.actions {
+.seguimiento__actions {
     display: flex;
     gap: 10px;
     justify-content: center;
     margin-top: var(--spacing-m);
+}
+
+.seguimiento__history-button {
+    background-color: var(--color-action);
+    color: var(--color-text);
+    padding: 8px 20px;
+    border-radius: var(--border-radius);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    margin-left: auto;
+    display: block;
+    width: 200px;
+}
+
+.seguimiento__history-button:hover {
+    background-color: #2E7474;
+}
+
+.seguimiento__patient-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--spacing-l);
+}
+
+.seguimiento__patient-info h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0;
 }

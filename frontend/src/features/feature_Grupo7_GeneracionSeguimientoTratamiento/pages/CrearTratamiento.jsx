@@ -55,21 +55,21 @@ function CrearTratamiento({ genero = "hombre" }) {
     };
 
     return (
-        <div className="container">
-            <header>
-                <div className="user-info">
-                    <span className="user-icon">👤</span>
-                    <span className="user-name">Dr. X</span>
+        <div className="crear-tratamiento-container">
+            <header className="crear-tratamiento-header">
+                <div className="crear-tratamiento-user-info">
+                    <span className="crear-tratamiento-user-icon">👤</span>
+                    <span className="crear-tratamiento-user-name">Dr. X</span>
                 </div>
             </header>
 
-            <div className="patient-info">
+            <div className="crear-tratamiento-patient-info">
                 <h1>Paciente X – Crear Tratamiento</h1>
             </div>
 
-                <div className="table-container">
-                    <table>
-                        <thead>
+            <div className="crear-tratamiento-tabla-container">
+                <table className="crear-tratamiento-tabla">
+                    <thead>
                         <tr>
                             <th>Cantidad</th>
                             <th>Medicamento</th>
@@ -78,8 +78,8 @@ function CrearTratamiento({ genero = "hombre" }) {
                             <th>Duración Tratamiento</th>
                             <th>Acciones</th>
                         </tr>
-                        </thead>
-                        <tbody>
+                    </thead>
+                    <tbody>
                         {tratamientos.map((fila, index) => (
                             <tr key={index}>
                                 <td>
@@ -123,37 +123,37 @@ function CrearTratamiento({ genero = "hombre" }) {
                                         onChange={(e) => handleInputChange(index, "duracion", e.target.value)}
                                     />
                                 </td>
-                                <td className="acciones-botones">
-                                    <button className="add-button" onClick={handleAddFila}>+</button>
+                                <td className="crear-tratamiento-botones">
+                                    <button className="crear-tratamiento-add" onClick={handleAddFila}>+</button>
                                     {tratamientos.length > 1 && (
-                                        <button className="remove-button" onClick={() => handleRemoveFila(index)}>-</button>
+                                        <button className="crear-tratamiento-remove" onClick={() => handleRemoveFila(index)}>-</button>
                                     )}
                                 </td>
                             </tr>
                         ))}
-                        </tbody>
-                    </table>
-                    <div className="recomendaciones">
-                        <h3>Recomendaciones</h3>
-                        <div className="lista-recomendaciones">
-                            {recomendaciones.map((texto, i) => (
-                                <label key={i}>
-                                    <input
-                                        type="checkbox"
-                                        checked={recomendacionesSeleccionadas.includes(texto)}
-                                        onChange={() => handleToggleRecomendacion(texto)}
-                                    />
-                                    {" "}{texto}
-                                </label>
-                            ))}
-                        </div>
+                    </tbody>
+                </table>
+
+                <div className="crear-tratamiento-recomendaciones">
+                    <h3>Recomendaciones</h3>
+                    <div className="crear-tratamiento-lista-recomendaciones">
+                        {recomendaciones.map((texto, i) => (
+                            <label key={i}>
+                                <input
+                                    type="checkbox"
+                                    checked={recomendacionesSeleccionadas.includes(texto)}
+                                    onChange={() => handleToggleRecomendacion(texto)}
+                                />
+                                {" "}{texto}
+                            </label>
+                        ))}
                     </div>
                 </div>
+            </div>
 
-
-            <div className="actions">
-                <button className="create-treatment">Enviar tratamiento</button>
-                <button className="cancel" onClick={() => navigate(-1)}>↩ Regresar</button>
+            <div className="crear-tratamiento-acciones">
+                <button className="crear-tratamiento-enviar">Enviar tratamiento</button>
+                <button className="crear-tratamiento-cancelar" onClick={() => navigate(-1)}>↩ Regresar</button>
             </div>
         </div>
     );
