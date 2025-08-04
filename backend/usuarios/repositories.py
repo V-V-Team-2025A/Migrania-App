@@ -1,5 +1,6 @@
 # usuarios/repositories.py
 import abc
+from datetime import date
 from typing import Optional, List, Dict, Any
 from django.db import transaction
 # NO importar modelos aquí - importar solo donde es seguro
@@ -262,6 +263,7 @@ class FakeUserRepository(AbstractUserRepository):
         self.MedicoProfile = None
         self.EnfermeraProfile = None
         self._next_id = 1
+        self._populate_test_data()
 
     def _load_models(self):
         """Cargar modelos Django solo cuando se necesiten (lazy loading)"""
@@ -278,6 +280,119 @@ class FakeUserRepository(AbstractUserRepository):
         current_id = self._next_id
         self._next_id += 1
         return current_id
+    def _populate_test_data(self):
+        """Poblar el repositorio con datos de prueba para testing"""
+        # Crear médicos de prueba
+        self._create_test_medicos()
+        # Crear pacientes de prueba
+        self._create_test_pacientes()
+
+    def _create_test_medicos(self):
+        """Crear médicos de prueba usando la función create_medico existente"""
+        medicos_data = [
+            {
+                'user_data': {
+                    'first_name': 'Dr. Carlos',
+                    'last_name': 'Rodriguez',
+                    'email': 'carlos.rodriguez@hospital.com',
+                    'cedula': '1716852634',
+                    'telefono': '0987654321',
+                    'fecha_nacimiento': date(1980, 5, 15),
+                },
+                'profile_data': {
+                    'numero_licencia': 'MED-001',
+                    'especializacion': 'Cardiología',
+                    'anos_experiencia': 15,
+                }
+            },
+            {
+                'user_data': {
+                    'first_name': 'Dra. Maria',
+                    'last_name': 'Gonzalez',
+                    'email': 'maria.gonzalez@hospital.com',
+                    'cedula': '1717425255',
+                    'telefono': '0912345678',
+                    'fecha_nacimiento': date(1985, 8, 22),
+                },
+                'profile_data': {
+                    'numero_licencia': 'MED-002',
+                    'especializacion': 'Pediatría',
+                    'anos_experiencia': 10,
+                }
+            },
+            {
+                'user_data': {
+                    'first_name': 'Dr. Luis',
+                    'last_name': 'Martinez',
+                    'email': 'luis.martinez@hospital.com',
+                    'cedula': '1122334455',
+                    'telefono': '0923456789',
+                    'fecha_nacimiento': date(1975, 12, 3),
+                },
+                'profile_data': {
+                    'numero_licencia': 'MED-003',
+                    'especializacion': 'Neurología',
+                    'anos_experiencia': 20,
+                }
+            }
+        ]
+
+        # Usar la función create_medico existente para crear objetos reales
+        for medico_data in medicos_data:
+            self.create_medico(medico_data['user_data'], medico_data['profile_data'])
+
+    def _create_test_pacientes(self):
+        """Crear pacientes de prueba usando la función create_paciente existente"""
+        pacientes_data = [
+            {
+                'user_data': {
+                    'first_name': 'Roberto',
+                    'last_name': 'Vargas',
+                    'email': 'roberto.vargas@email.com',
+                    'cedula': '1716526263',
+                    'telefono': '0934567890',
+                    'fecha_nacimiento': date(1985, 7, 25),
+                },
+                'profile_data': {
+                    'grupo_sanguineo': 'A-',
+                    'contacto_emergencia_nombre': 'Carmen Vargas',
+                    'contacto_emergencia_telefono': '0965432109',
+                }
+            },
+            {
+                'user_data': {
+                    'first_name': 'Andres',
+                    'last_name': 'Narvaez',
+                    'email': 'andrez.narvaez@email.com',
+                    'cedula': '1755236545',
+                    'telefono': '0934567890',
+                    'fecha_nacimiento': date(1985, 7, 25),
+                },
+                'profile_data': {
+                    'grupo_sanguineo': 'A-',
+                    'contacto_emergencia_nombre': 'Carmen Vargas',
+                    'contacto_emergencia_telefono': '0965432109',
+                }
+            },
+            {
+                'user_data': {
+                    'first_name': 'Elena',
+                    'last_name': 'Morales',
+                    'email': 'elena.morales@email.com',
+                    'cedula': '1715852366 ',
+                    'telefono': '0945678901',
+                    'fecha_nacimiento': date(1995, 11, 14),
+                },
+                'profile_data': {
+                    'grupo_sanguineo': 'B+',
+                    'contacto_emergencia_nombre': 'Miguel Morales',
+                    'contacto_emergencia_telefono': '0956789012',
+                }
+            }
+        ]
+        # Usar la función create_paciente existente para crear objetos reales
+        for paciente_data in pacientes_data:
+            self.create_paciente(paciente_data['user_data'], paciente_data['profile_data'])
 
     def get_all_users(self):
         return [u for u in self._usuarios if u.is_active]
