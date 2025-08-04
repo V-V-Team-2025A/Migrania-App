@@ -15,18 +15,21 @@ import PrimerConsulta from "./features/feature_Grupo7_GeneracionSeguimientoTrata
 import BDoctor from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/pages/Bitacora-Medico.jsx'
 import BPaciente from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/pages/Bitacora-Paciente.jsx'
 import Registro from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/pages/Registro-cefalea.jsx'
+import SuspenderTratamiento
+  from "./features/feature_Grupo7_GeneracionSeguimientoTratamiento/pages/SuspenderTratamiento.jsx";
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Router>
       <Routes>
         <Route path="/login" element={<Login />}/>
-          <Route path="/primerConsulta" element={<PrimerConsulta />}/>
-          <Route path="/primerConsulta/crearTratamiento" element={<CrearTratamiento />}/>
-          <Route path="/seguimiento" element={<Seguimiento />}/>
-          <Route path= "/seguimiento/crearTratamiento" element ={<CrearTratamiento />}/>
-          <Route path="/seguimiento/tratamientos" element={<Tratamientos />}/>
-          <Route path="/seguimiento/tratamientos/crearTratamiento" element={<CrearTratamiento />}/>
+        <Route path="/primerConsulta" element={<PrimerConsulta />}/>
+        <Route path="/primerConsulta/crearTratamiento" element={<CrearTratamiento />}/>
+        <Route path="/seguimiento" element={<Seguimiento />}/>
+        <Route path= "/seguimiento/crearTratamiento" element ={<CrearTratamiento />}/>
+        <Route path="/seguimiento/tratamientos" element={<Tratamientos />}/>
+        <Route path="/seguimiento/tratamientos/crearTratamiento" element={<CrearTratamiento />}/>
+        <Route path="/seguimiento/tratamientos/crearTratamiento/suspenderTratamiento" element={<SuspenderTratamiento />}/>
         <Route path="/dashboard-paciente" element={<Dashboard />}/>
         <Route path="/midas" element={<Midas />}/>
         <Route path="/midas/resultados" element={<Resultados />}/>
