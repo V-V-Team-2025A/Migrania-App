@@ -39,7 +39,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/login" element={<Login />} />
         <Route path="/analisis-patrones" element={<AnalisisPatrones />} />
         <Route path="/bitacora-medico/:pacienteId" element={<BDoctor />} />
-        <Route path="/midas-medico/:pacienteId" element={<MidasMedico />} />
+        <Route path="/midas/historial" element={<MidasMedico />} />
         <Route path="/bitacora-paciente" element={<BPaciente />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/dashboard-paciente" element={<Dashboard />} />

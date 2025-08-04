@@ -27,6 +27,9 @@ export default function ModalDisponibilidad({ onClose }) {
                             ¡Entendido!
                         </button>)
                 }
+                <button className="btn-primary" onClick={() => { navigate("/midas/historial") }}>
+                    Ver historial
+                </button>
             </div>
         </div>
     );

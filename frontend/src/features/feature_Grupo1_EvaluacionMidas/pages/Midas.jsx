@@ -52,7 +52,6 @@ export default function Midas() {
 
     const enviarRespuesta = async (idPregunta, valor) => {
         try {
-            console.log(idPregunta, "fsdhuyhbjfwb ")
             await fetch("http://localhost:8000/api/evaluaciones/respuestas/", {
                 method: "POST",
                 headers: {
