@@ -1,4 +1,4 @@
-import { BASE_URL, TEMP_TOKEN, TEMP_TOKEN_PACIENTE, TEMP_TOKEN_MEDICO, MI_PERFIL_ENDPOINT, EPISODIOS_ENDPOINT } from './constants.js';
+import { BASE_URL, getAuthToken, MI_PERFIL_ENDPOINT, EPISODIOS_ENDPOINT } from './constants.js';
 
 export const parseApiResponse = (data) => {
     if (Array.isArray(data)) {
@@ -59,12 +59,12 @@ export const getApiUrl = (endpoint) => {
 
 /**
  * Obtiene los headers de autenticación
- * @param {string} token - Token de autenticación (opcional, usa TEMP_TOKEN_PACIENTE por defecto)
- * @param {string} userType - Tipo de usuario ('paciente' o 'medico')
+ * @param {string} token - Token de autenticación (opcional, usa token del localStorage por defecto)
+ * @param {string} userType - Tipo de usuario ('paciente' o 'medico') - mantenido por compatibilidad
  * @returns {Object} Headers con autenticación
  */
 export const getAuthHeaders = (token = null, userType = 'paciente') => {
-    const defaultToken = token || (userType === 'medico' ? TEMP_TOKEN_MEDICO : TEMP_TOKEN_PACIENTE);
+    const defaultToken = token || getAuthToken();
     return {
         'Content-Type': 'application/json',
         'Authorization': defaultToken ? `Bearer ${defaultToken}` : '',
@@ -158,17 +158,14 @@ export const createEpisodioMedico = async (episodioData, token = null) => {
 };
 
 
-export const fetchPacienteInfo = async (pacienteId, baseUrl, token) => {
+export const fetchPacienteInfo = async (pacienteId, baseUrl, token = null) => {
     try {
         const pacienteUrl = `${baseUrl}/usuarios/${pacienteId}/`;
         console.log('Intentando obtener información del paciente desde:', pacienteUrl);
 
         const response = await fetch(pacienteUrl, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token ? `Bearer ${token}` : '',
-            }
+            headers: getAuthHeaders(token, 'medico')
         });
 
         console.log('Respuesta del API para paciente:', response.status, response.statusText);
