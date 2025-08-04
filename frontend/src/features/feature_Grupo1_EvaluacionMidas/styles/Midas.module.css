@@ -9,6 +9,9 @@
     background-color: var(--color-background);
     padding: var(--spacing-xl);
     border-radius: var(--border-radius);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
     width: 650px;
 }
 
