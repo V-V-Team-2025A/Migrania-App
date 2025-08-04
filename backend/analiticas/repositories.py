@@ -24,6 +24,10 @@ class FakeAnalisisPatronesRepository(AnalisisPatronesRepository):
     def __init__(self):
         self._episodios = {}
 
+    def limpiar_repositorio(self):
+        """Limpia todos los episodios del repositorio fake."""
+        self._episodios.clear()
+
     def guardar_episodio(self, paciente_id: int, episodio: EpisodioData):
         if paciente_id not in self._episodios:
             self._episodios[paciente_id] = []
@@ -56,7 +60,9 @@ class DjangoAnalisisPatronesRepository(AnalisisPatronesRepository):
                 presencia_aura=bool(orm_obj.presencia_aura),  # Aseguramos que sea un booleano
                 sintomas_aura=orm_obj.sintomas_aura,
                 duracion_aura_minutos=orm_obj.duracion_aura_minutos,
+                duracion_cefalea_horas=float(orm_obj.duracion_cefalea_horas),  # Agregamos el campo que faltaba
                 en_menstruacion=bool(orm_obj.en_menstruacion),  # Aseguramos que sea un booleano
+                anticonceptivos=bool(orm_obj.anticonceptivos),  # Agregamos el campo que faltaba
                 categoria_diagnostica=orm_obj.categoria_diagnostica,
                 dia=orm_obj.creado_en.strftime('%A'),
                 fecha_creacion=orm_obj.creado_en,

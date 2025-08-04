@@ -17,5 +17,7 @@ urlpatterns = [
 
     # App de evaluación y diagnóstico.
     path('api/', include('evaluacion_diagnostico.urls')),
+    
+    path('api/', include('tratamiento.urls')),
 
 ]
