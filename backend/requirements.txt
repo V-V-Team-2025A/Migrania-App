@@ -9,6 +9,7 @@ django==5.2.4
 django-cors-headers==4.7.0
 djangorestframework==3.16.0
 djangorestframework-simplejwt==5.5.1
+django-filter>=23.5
 djoser==2.3.3
 dotenv==0.9.9
 drf-spectacular==0.28.0
