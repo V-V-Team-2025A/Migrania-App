@@ -1,10 +1,36 @@
-/* --- Estilos de la Página principal --- */
-.patrones__cabecera {
-    padding: var(--spacing-l);
+
+.paginaCompleta {
+    min-height: 100vh;
+    display: grid;
+
+    grid-template-rows: auto 1fr;
 }
 
+.patrones__cabecera {
+    padding: var(--spacing-l);
+    position: sticky;
+    top: 0;
+    background-color: var(--color-body-background);
+    z-index: 10;
+}
+
+.patrones__contenido {
+    max-width: var(--max-width);
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 var(--spacing-l) var(--spacing-l);
+    
+    overflow-y: auto;
+    
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-l);
+}
+
+
+
 .patrones__botonVolver {
-    background-color: transparent;
+    background: none;
     border: none;
     color: var(--color-text);
     font-size: var(--font-size-l);
@@ -14,16 +40,6 @@
     gap: var(--spacing-m);
     cursor: pointer;
     text-decoration: none;
-}
-
-.patrones__contenido {
-    
-    max-width: var(--max-width); 
-    margin: 0 auto;             
-    padding: 0 var(--spacing-l) var(--spacing-l); 
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-l);
 }
 
 .patrones__resumen {
@@ -38,7 +54,8 @@
     gap: var(--spacing-l);
 }
 
-/* --- Estilos para TarjetaResumen --- */
+
+
 .tarjetaResumen {
     padding: var(--spacing-l);
     border-radius: var(--border-radius);
@@ -74,7 +91,6 @@
     margin: 0;
 }
 
-/* --- Estilos para TarjetaAnalisis --- */
 .tarjetaAnalisis {
     background-color: var(--color-background);
     padding: var(--spacing-l);
