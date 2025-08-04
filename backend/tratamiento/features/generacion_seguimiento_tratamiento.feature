@@ -14,15 +14,15 @@ Característica: Generación y análisis de seguimiento de tratamiento médico
   Esquema del escenario: Generar tratamiento según tipo de migraña
 
     Dado que el paciente presenta su primer episodio con la categorización <tipo_migraña>
-    Cuando genero un tratamiento
-    Entonces el sistema mostrará las siguientes características para ingresar
+    Cuando el médico ingresa los datos del tratamiento
       | Campo                |
-      | Cantidad             |
-      | Medicación           |
+      | Dosis                |
+      | Medicamento          |
       | Características      |
       | Frecuencia           |
       | Duración tratamiento |
       | Recomendacion        |
+    Entonces el sistema crea el tratamiento
 
 
     Ejemplos:

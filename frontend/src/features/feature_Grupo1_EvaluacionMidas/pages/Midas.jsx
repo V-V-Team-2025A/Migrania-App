@@ -13,12 +13,11 @@ export default function Midas() {
     const [mostrarModal, setMostrarModal] = useState(true);
     const [loading, setLoading] = useState(true);
 
-    const token = localStorage.getItem("access");
-
     useEffect(() => {
         const fetchPreguntas = async () => {
             try {
                 setLoading(true);
+                const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MjY4MjE0LCJpYXQiOjE3NTQyNjQ2MTQsImp0aSI6IjFkNDk1NWZjN2Y0YjQyYWM5NTg0OWFmNDcxNWVjYTRmIiwidXNlcl9pZCI6Ijk4NSJ9.z43h4CahAjL8dt63WjV5dQ2Sm6sfDgt0-VEfW2Ds-Z0"; // o donde lo tengas guardado
 
                 const response = await fetch('http://localhost:8000/api/evaluaciones/preguntas/', {
                     headers: {
