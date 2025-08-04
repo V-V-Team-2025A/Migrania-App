@@ -1,0 +1,211 @@
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: var(--spacing-l);
+  gap: 1rem;
+}
+.headerLeft {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.headerCenter {
+  flex: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.headerRight {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.calendarGridWrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.calendarGridWrapper::-webkit-scrollbar {
+  display: none;
+}
+.agendaContainer {
+  background: var(--color-background);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xl);
+  margin: var(--spacing-xl) auto;
+  max-width: var(--max-width);
+  box-shadow: 0 4px 24px #0002;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: var(--spacing-l);
+  width: 100%;
+}
+
+.toggleGroup {
+  display: flex;
+}
+
+.toggleBtn {
+  background: #d9f8fa;
+  color: #222c36;
+  border: none;
+  border-radius: 10px 0 0 10px;
+  padding: 12px 32px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  border: 2px solid #d9f8fa;
+  transition: background 0.2s, color 0.2s;
+}
+
+.toggleBtn:last-child {
+  border-radius: 0 10px 10px 0;
+  border-left: none;
+}
+
+.toggleBtn.active {
+  background: #222c36;
+  color: #fff;
+}
+
+.toggleBtn.inactive {
+  background: #d9f8fa;
+  color: #222c36;
+}
+
+.monthNav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navBtn {
+  background: none;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.navBtn:hover {
+  background: #00bfc9;
+  color: #222c36;
+}
+
+.monthLabel {
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.calendar {
+  background: #3a4652;
+  border-radius: var(--border-radius);
+  padding: var(--spacing-l);
+  margin-top: var(--spacing-l);
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.calendarHeader {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+}
+
+.headerDay {
+  color: #222c36;
+  background: #d9f8fa;
+  font-weight: bold;
+  text-align: center;
+  font-size: 1.2rem;
+  padding: 12px 0;
+  border-right: 1px solid #00bfc9;
+  border-bottom: 2px solid #00bfc9;
+}
+
+.headerDay:last-child {
+  border-right: none;
+}
+
+.calendarBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.weekRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.dayCell {
+  background: #d9f8fa;
+  border-right: 1px solid #00bfc9;
+  border-bottom: 1px solid #00bfc9;
+  min-height: 110px;
+  padding: 14px 10px 10px 14px;
+  color: #222c36;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 1.1rem;
+}
+
+.dayCell:last-child {
+  border-right: none;
+}
+
+.prevMonth {
+  opacity: 0.4;
+}
+
+.dayNumber {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.citaInfo {
+  margin-top: 4px;
+}
+
+.citaDoctor {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.citaHora {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+}
+
+.scrollControls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
