@@ -210,6 +210,7 @@ export default function Dashboard() {
 
             <section className={styles["dashboard__contenedor-tarjetas"]}>
                 <TarjetaDashboard {...TARJETAS_DASHBOARD[0]} onClick={() => handleNavegacion('/bitacora-paciente')} />
+
                 <TarjetaDashboard {...TARJETAS_DASHBOARD[1]} onClick={() => handleNavegacionMidas()} />
                 <TarjetaDashboard {...TARJETAS_DASHBOARD[2]} onClick={() => console.log('Navegando a tratamientos')} />
                 <TarjetaDashboard {...TARJETAS_DASHBOARD[3]} onClick={() => handleNavegacion('/estadisticas')} />

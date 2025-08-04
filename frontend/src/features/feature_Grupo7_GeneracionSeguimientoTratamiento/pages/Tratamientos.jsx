@@ -36,7 +36,7 @@ function Tratamientos() {
                 <button className="history-button">Historial</button>
             </div>
 
-            <div className="table-container">
+            <div className="table-container-PC">
                 <table>
                     <thead>
                     <tr>
