@@ -152,7 +152,7 @@ jobs:
       working-directory: ./backend
       run: |
         python -c "import django; django.setup()" || true
-        behave analiticas/features/analisis_factores_desencadenantes.feature --format=progress --no-capture --stop
+        behave analiticas/features/analisis_patrones.feature --format=progress --no-capture --stop
       continue-on-error: true
     
     - name: Run Behave test - Estadísticas Historial
