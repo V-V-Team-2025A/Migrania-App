@@ -28,6 +28,8 @@ import SuspenderTratamiento
 import EditarTratamiento from "./features/feature_Grupo7_GeneracionSeguimientoTratamiento/pages/EditarTratamiento.jsx";
 import HistorialTratamientos
   from "./features/feature_Grupo7_GeneracionSeguimientoTratamiento/pages/HistorialTratamientos.jsx";
+import EstadisticasPaciente from './features/feature_Grupo4_EstadisticasHistorial/pages/Estadisticas_Paciente.jsx'
+import EstadisticasMedico from './features/feature_Grupo4_EstadisticasHistorial/pages/Estadisticas-Medico.jsx'
 
 
 createRoot(document.getElementById('root')).render(
@@ -43,6 +45,8 @@ createRoot(document.getElementById('root')).render(
         <Route path="/registro" element={<Registro />} />
         <Route path="/dashboard-paciente" element={<Dashboard />} />
         <Route path="/dashboard-medico" element={<MDashboard />} />
+        <Route path="/estadisticas-medico" element={<EstadisticasMedico/>} />
+        <Route path="/estadisticas-paciente" element={<EstadisticasPaciente />} />
         <Route path="/midas" element={<Midas />} />
         <Route path="/midas/resultados" element={<Resultados />} />
           <Route path="/primerConsulta" element={<PrimerConsulta />}/>
