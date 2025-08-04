@@ -15,7 +15,6 @@ export default function BitacoraDigitalMedico() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showModalFiltro, setShowModalFiltro] = useState(false);
-    const [filtroActivo, setFiltroActivo] = useState("");
     const [nombrePaciente, setNombrePaciente] = useState("");
 
     useEffect(() => {
