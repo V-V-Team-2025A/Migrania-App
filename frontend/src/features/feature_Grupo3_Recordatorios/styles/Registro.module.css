@@ -16,6 +16,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-l);
+    position: relative; 
 }
 
 .registro__titulo  {
@@ -94,7 +95,7 @@
     position: absolute;
     right: 15px;
     cursor: pointer;
-    color: #888; 
+    color: var(--color-text-disabled); 
     display: flex;
     align-items: center;
     transition: color 0.2s; 
@@ -102,4 +103,26 @@
 
 .registro__icono-password:hover {
     color: #282828; 
+}
+
+.registro__boton-volver {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text);
+    transition: color 0.3s ease;
+    z-index: 10; 
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.registro__boton-volver:hover {
+    color: var(--color-action-hover);
+    background-color: rgba(0, 0, 0, 0.1);
 }

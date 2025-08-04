@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Eye, EyeSlash } from '@phosphor-icons/react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Eye, EyeSlash, ArrowLeft } from '@phosphor-icons/react';
 import styles from '../styles/Registro.module.css';
 
 export default function Registro() {
@@ -9,15 +9,29 @@ export default function Registro() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    
+    const navigate = useNavigate();
 
     const handleSubmit = (event) => {
         event.preventDefault();
         console.log("Intentando registrarse con:", { nombre, apellido, email, password });
     };
 
+    const handleGoBack = () => {
+        navigate('/login');
+    };
+
     return (
         <div className={styles["registro"]}>
             <div className={styles["registro__tarjeta"]}>
+                <button 
+                    type="button" 
+                    onClick={handleGoBack}
+                    className={styles["registro__boton-volver"]}
+                >
+                    <ArrowLeft size={32} />
+                </button>
+                
                 <h1 className={styles.registro__titulo}>Regístrate</h1>
 
                 <form onSubmit={handleSubmit} className={styles["registro__formulario"]}>
