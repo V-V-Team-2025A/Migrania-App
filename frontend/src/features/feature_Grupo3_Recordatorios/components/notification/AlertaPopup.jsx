@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AlarmIcon } from '@phosphor-icons/react';
 import styles from '../../styles/AlertaPopup.module.css';
+import NotificacionesService from '../../services/notificacionesService';
 
 const AlertaPopup = ({ 
   isOpen, 
@@ -9,8 +10,34 @@ const AlertaPopup = ({
   title = "¿Tomaste la medicación?",
   message,
   confirmText = "SÍ",
-  cancelText = "NO"
+  cancelText = "NO",
+  alertaId = null
 }) => {
+  const [procesando, setProcesando] = useState(false);
+
+  const handleConfirm = async () => {
+    if (alertaId) {
+      try {
+        setProcesando(true);
+        await NotificacionesService.confirmarAlerta(alertaId);
+        console.log('Alerta confirmada exitosamente');
+      } catch (error) {
+        console.error('Error confirmando alerta:', error);
+      } finally {
+        setProcesando(false);
+      }
+    }
+    
+    if (onConfirm) {
+      onConfirm();
+    }
+  };
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    }
+  };
   if (!isOpen) return null;
 
   return (
@@ -28,14 +55,16 @@ const AlertaPopup = ({
         <div className={styles.buttonContainer}>
           <button 
             className={styles.confirmBtn}
-            onClick={onConfirm}
+            onClick={handleConfirm}
+            disabled={procesando}
           >
-            {confirmText}
+            {procesando ? 'Confirmando...' : confirmText}
           </button>
           
           <button 
             className={styles.cancelBtn}
-            onClick={onCancel}
+            onClick={handleCancel}
+            disabled={procesando}
           >
             {cancelText}
           </button>

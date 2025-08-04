@@ -60,6 +60,10 @@ class BaseRepository(ABC):
     def get_notificaciones_pendientes(self, tratamiento_id, fecha_hora=None):
         pass
 
+    @abstractmethod
+    def get_siguiente_alerta(self, tratamiento_id, ahora=None):
+        pass
+
 
 class DjangoRepository(BaseRepository):
     def get_medicamento_by_id(self, id):
@@ -146,6 +150,18 @@ class DjangoRepository(BaseRepository):
 
             return sorted(alertas + recordatorios, key=lambda x: x.fecha_hora)
         return []
+
+    def get_siguiente_alerta(self, tratamiento_id, ahora=None):
+        if ahora is None:
+            ahora = timezone.now()
+
+        tratamiento = self.get_tratamiento_by_id(tratamiento_id)
+        if tratamiento:
+            return tratamiento.alertas.filter(
+                estado=EstadoNotificacion.ACTIVO,
+                fecha_hora__gte=ahora
+            ).order_by('fecha_hora').first()
+        return None
 
 
 class FakeRepository(BaseRepository):
@@ -247,3 +263,7 @@ class FakeRepository(BaseRepository):
     def get_medicamentos_by_tratamiento_id(self, tratamiento_id):
         ids = self.tratamiento_medicamentos.get(tratamiento_id, set())
         return [self.medicamentos[mid] for mid in ids if mid in self.medicamentos]
+
+
+    def get_siguiente_alerta(self, tratamiento_id, ahora=None):
+        pass

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tratamiento, Medicamento, Recomendacion, Alerta, Recordatorio
+from .models import Tratamiento, Medicamento, Recomendacion, Alerta, Recordatorio, EstadoNotificacion
 
 
 class MedicamentoSerializer(serializers.ModelSerializer):
@@ -111,3 +111,44 @@ class NotificacionSerializer(serializers.Serializer):
 
     def get_tipo(self, obj):
         return obj.__class__.__name__
+
+
+class AlertaSerializer(serializers.ModelSerializer):
+    tipo = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Alerta
+        fields = ['id', 'mensaje', 'fecha_hora', 'estado', 'numero_alerta', 
+                 'duracion', 'tiempo_espera', 'tipo']
+
+    def get_tipo(self, obj):
+        return 'Alerta'
+
+
+class RecordatorioSerializer(serializers.ModelSerializer):
+    tipo = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Recordatorio
+        fields = ['id', 'mensaje', 'fecha_hora', 'estado', 'tipo']
+
+    def get_tipo(self, obj):
+        return 'Recordatorio'
+
+
+class CambiarEstadoAlertaSerializer(serializers.Serializer):
+    nuevo_estado = serializers.ChoiceField(
+        choices=[
+            ('tomado', 'Confirmado Tomado'),
+            ('no_tomado', 'Confirmado No Tomado'),
+            ('tomado_tarde', 'Confirmado Tomado Tarde'),
+            ('tomado_muy_tarde', 'Confirmado Tomado Muy Tarde'),
+        ]
+    )
+    hora_confirmacion = serializers.DateTimeField(required=False)
+
+
+class NotificacionesPendientesSerializer(serializers.Serializer):
+    alertas = AlertaSerializer(many=True)
+    recordatorios = RecordatorioSerializer(many=True)
+    total = serializers.IntegerField()

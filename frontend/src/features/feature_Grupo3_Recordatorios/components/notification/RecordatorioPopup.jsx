@@ -1,13 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { LightbulbFilamentIcon, InfoIcon, X } from '@phosphor-icons/react';
 import styles from '../../styles/RecordatorioPopup.module.css';
+import NotificacionesService from '../../services/notificacionesService';
 
 const RecordatorioPopup = ({ 
   isOpen, 
   onClose,
   type,
-  message
+  message,
+  recordatorioId = null
 }) => {
+  const [procesando, setProcesando] = useState(false);
+
+  const handleClose = async () => {
+    if (recordatorioId) {
+      try {
+        setProcesando(true);
+        await NotificacionesService.desactivarRecordatorio(recordatorioId);
+        console.log('Recordatorio desactivado exitosamente');
+      } catch (error) {
+        console.error('Error desactivando recordatorio:', error);
+      } finally {
+        setProcesando(false);
+      }
+    }
+    
+    if (onClose) {
+      onClose();
+    }
+  };
   if (!isOpen) return null;
 
   // Configuración según el tipo
@@ -34,8 +55,9 @@ const RecordatorioPopup = ({
       <div className={styles.popup}>
         <button 
           className={styles.closeBtn}
-          onClick={onClose}
-          title="Cerrar"
+          onClick={handleClose}
+          title={procesando ? "Procesando..." : "Cerrar"}
+          disabled={procesando}
         >
           <X size={24} color="var(--color-text)" weight="bold" />
         </button>
