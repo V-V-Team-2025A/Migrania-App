@@ -2,7 +2,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from usuarios.models import Usuario
-
+from django.core.exceptions import ValidationError
 
 class AutoevaluacionMidas(models.Model):
     paciente = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='autoevaluaciones_midas',
