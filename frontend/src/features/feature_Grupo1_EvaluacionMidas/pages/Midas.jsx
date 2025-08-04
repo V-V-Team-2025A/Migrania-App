@@ -1,19 +1,44 @@
 import styles from "../styles/Midas.module.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import ModalDisponibilidad from "../components/ModalDisponibilidad";
 
 export default function Midas() {
-    const preguntasMock = [
-        "¿Cuántos días en los últimos 3 meses faltaste al trabajo o a la escuela debido a tus dolores de cabeza?",
-        "¿Cuántos días en los últimos 3 meses redujiste tu productividad a la mitad o menos en el trabajo o la escuela?",
-        "¿Cuántos días no realizaste tareas del hogar debido a los dolores de cabeza?",
-        "¿Cuántos días tuviste que reducir a la mitad o más tu rendimiento en tareas del hogar?",
-        "¿Cuántos días evitaste actividades sociales o familiares por dolores de cabeza?"
-    ];
+
     const navigate = useNavigate();
     const [indice, setIndice] = useState(0);
-    const [respuestas, setRespuestas] = useState(Array(preguntasMock.length).fill(""));
+    const [preguntas, setPreguntas] = useState([]);
+    const [respuestas, setRespuestas] = useState(Array(preguntas.length).fill(""));
     const [valorRespuesta, setValorRespuesta] = useState("");
+    const [mostrarModal, setMostrarModal] = useState(true);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPreguntas = async () => {
+            try {
+                setLoading(true);
+                const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MjY4MjE0LCJpYXQiOjE3NTQyNjQ2MTQsImp0aSI6IjFkNDk1NWZjN2Y0YjQyYWM5NTg0OWFmNDcxNWVjYTRmIiwidXNlcl9pZCI6Ijk4NSJ9.z43h4CahAjL8dt63WjV5dQ2Sm6sfDgt0-VEfW2Ds-Z0"; // o donde lo tengas guardado
+
+                const response = await fetch('http://localhost:8000/api/evaluaciones/preguntas/', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    }
+                });
+                const data = await response.json();
+
+                const enunciadosOrdenados = data.results
+                    .sort((a, b) => a.orden_pregunta - b.orden_pregunta)
+                    .map(p => p.enunciado_pregunta);
+                setPreguntas(enunciadosOrdenados);
+            } catch (error) {
+                console.error('Error al obtener preguntas:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPreguntas()
+        setMostrarModal(true);
+    }, []);
 
     const responderPregunta = () => {
         const nuevasRespuestas = [...respuestas];
@@ -21,7 +46,7 @@ export default function Midas() {
         setRespuestas(nuevasRespuestas);
         setValorRespuesta("");
 
-        if (indice < preguntasMock.length - 1) {
+        if (indice < preguntas.length - 1) {
             setIndice(indice + 1);
         } else {
             alert("Respuestas registradas: " + JSON.stringify(nuevasRespuestas));
@@ -30,66 +55,70 @@ export default function Midas() {
 
     return (
         <div className={styles["midas__contenedor"]}>
+            {mostrarModal && <ModalDisponibilidad onClose={() => setMostrarModal(false)} />}
             <h1>Autoevaluación MIDAS</h1>
+            {loading ? (
+                <p>Cargando preguntas...</p>
+            ) :
+                <div className={styles["midas__tarjeta-pregunta"]}>
+                    <h2>Pregunta {indice + 1}</h2>
+                    <p>{preguntas[indice]}</p>
 
-            <div className={styles["midas__tarjeta-pregunta"]}>
-                <h2>Pregunta {indice + 1}</h2>
-                <p>{preguntasMock[indice]}</p>
+                    <p style={{ color: "var(--color-secondary-dark)" }}>Número de días</p>
+                    <input
+                        type="number"
+                        placeholder="Ej: 5"
+                        min={0}
+                        max={90}
+                        value={valorRespuesta}
+                        onChange={(e) => setValorRespuesta(e.target.value)}
+                    />
 
-                <p style={{ color: "var(--color-secondary-dark)" }}>Número de días</p>
-                <input
-                    type="number"
-                    placeholder="Ej: 5"
-                    min={0}
-                    max={90}
-                    value={valorRespuesta}
-                    onChange={(e) => setValorRespuesta(e.target.value)}
-                />
+                    <div className={styles["midas__contenedor-botones"]}>
+                        <button
+                            className="btn-secondary"
+                            disabled={indice === 0}
+                            onClick={() => {
+                                const nuevaRespuesta = respuestas[indice - 1] || "";
+                                setIndice(indice - 1);
+                                setValorRespuesta(nuevaRespuesta);
+                            }}
+                        >
+                            Regresar
+                        </button>
+                        {
+                            indice < preguntas.length - 1 ? (
+                                <button
+                                    className="btn-primary"
+                                    onClick={responderPregunta}
+                                    disabled={valorRespuesta === ""}
+                                >
+                                    Siguiente
+                                </button>
+                            ) : (
+                                <button
+                                    className="btn-primary"
+                                    onClick={() => {
+                                        const nuevasRespuestas = [...respuestas];
+                                        nuevasRespuestas[indice] = valorRespuesta;
+                                        setRespuestas(nuevasRespuestas);
 
-                <div className={styles["midas__contenedor-botones"]}>
-                    <button
-                        className="btn-secondary"
-                        disabled={indice === 0}
-                        onClick={() => {
-                            const nuevaRespuesta = respuestas[indice - 1] || "";
-                            setIndice(indice - 1);
-                            setValorRespuesta(nuevaRespuesta);
-                        }}
-                    >
-                        Regresar
-                    </button>
-                    {
-                        indice < preguntasMock.length - 1 ? (
-                            <button
-                                className="btn-primary"
-                                onClick={responderPregunta}
-                                disabled={valorRespuesta === ""}
-                            >
-                                Siguiente
-                            </button>
-                        ) : (
-                            <button
-                                className="btn-primary"
-                                onClick={() => {
-                                    const nuevasRespuestas = [...respuestas];
-                                    nuevasRespuestas[indice] = valorRespuesta;
-                                    setRespuestas(nuevasRespuestas);
+                                        navigate("/midas/resultados", {
+                                            state: {
+                                                respuestas: nuevasRespuestas,
+                                                preguntas: preguntas
+                                            }
+                                        });
+                                    }}
+                                    disabled={valorRespuesta === ""}
+                                >
+                                    Finalizar
+                                </button>
 
-                                    navigate("/midas/resultados", {
-                                        state: {
-                                            respuestas: nuevasRespuestas
-                                        }
-                                    });
-                                }}
-                                disabled={valorRespuesta === ""}
-                            >
-                                Finalizar
-                            </button>
-
-                        )
-                    }
-                </div>
-            </div>
+                            )
+                        }
+                    </div>
+                </div>}
         </div>
     );
 }

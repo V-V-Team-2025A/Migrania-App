@@ -15,15 +15,7 @@ export default function Resultados() {
     const location = useLocation();
     const navigate = useNavigate();
     const respuestas = location.state?.respuestas || [];
-
-    const preguntas = [
-        "¿Cuántos días en los últimos 3 meses faltaste al trabajo o a la escuela debido a tus dolores de cabeza?",
-        "¿Cuántos días en los últimos 3 meses redujiste tu productividad a la mitad o menos en el trabajo o la escuela?",
-        "¿Cuántos días no realizaste tareas del hogar debido a los dolores de cabeza?",
-        "¿Cuántos días tuviste que reducir a la mitad o más tu rendimiento en tareas del hogar?",
-        "¿Cuántos días evitaste actividades sociales o familiares por dolores de cabeza?"
-    ];
-
+    const preguntas = location.state?.preguntas || [];
     const puntuacionTotal = respuestas.reduce((sum, val) => sum + Number(val || 0), 0);
 
     // Mensaje según la puntuación total
@@ -68,7 +60,7 @@ export default function Resultados() {
                 </div>
 
                 <div className={styles["resultados__boton-inferior"]}>
-                    <button className="btn-primary" onClick={() => navigate("/")}>
+                    <button className="btn-primary" onClick={() => navigate("/dashboard-paciente")}>
                         ¡Listo!
                     </button>
                 </div>

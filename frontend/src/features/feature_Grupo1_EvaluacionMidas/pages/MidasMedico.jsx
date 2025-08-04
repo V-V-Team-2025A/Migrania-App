@@ -15,12 +15,6 @@ const datosEjemplo = [
 
 export default function MidasMedico() {
 
-    const columnas = [
-        { key: "id", header: "ID" },
-        { key: "nombre", header: "Nombre" },
-        { key: "edad", header: "Edad" }
-    ];
-
     return <div>
         <h1>Autoevaluaciones Pasadas</h1>
         <TablaExpandible data={datosEjemplo} />
