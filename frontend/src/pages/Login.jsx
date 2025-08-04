@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import NotificationButton from '../features/feature_Grupo3_Recordatorios/components/notificationPanel/NotificationButton';
-import ModalNotifications from '../features/feature_Grupo3_Recordatorios/components/notificationPanel/ModalNotifications';
-import AlertPopup from '../features/feature_Grupo3_Recordatorios/components/notification/AlertPopup';
-import ReminderPopup from '../features/feature_Grupo3_Recordatorios/components/notification/ReminderPopup';
+import { Link } from 'react-router-dom';
+import NotificationButton from '../features/feature_Grupo3_Recordatorios/components/notificationPanel/BotonNotificacion';
+import ModalNotifications from '../features/feature_Grupo3_Recordatorios/components/notificationPanel/ModalNotificaciones';
+import AlertPopup from '../features/feature_Grupo3_Recordatorios/components/notification/AlertaPopup';
+import ReminderPopup from '../features/feature_Grupo3_Recordatorios/components/notification/RecordatorioPopup';
 
 function Login() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,6 +57,10 @@ function Login() {
       <div style={{ position: 'relative', minHeight: '100vh' }}>
         <h1>Login</h1>
         <button className="btn-primary">Login</button>
+        
+        <Link to="/registro" className="btn-primary" style={{ marginLeft: '10px', textDecoration: 'none' }}>
+          Ir a Registro
+        </Link>
         
         <button onClick={handleShowAlert} className="btn-primary" style={{ marginLeft: '10px' }}>
           Mostrar Alerta

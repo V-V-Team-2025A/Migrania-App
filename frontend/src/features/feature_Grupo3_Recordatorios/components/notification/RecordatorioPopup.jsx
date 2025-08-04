@@ -1,8 +1,8 @@
 import React from 'react';
 import { LightbulbFilamentIcon, InfoIcon, X } from '@phosphor-icons/react';
-import styles from './ReminderPopup.module.css';
+import styles from '../../styles/RecordatorioPopup.module.css';
 
-const ReminderPopup = ({ 
+const RecordatorioPopup = ({ 
   isOpen, 
   onClose,
   type,
@@ -53,4 +53,4 @@ const ReminderPopup = ({
   );
 };
 
-export default ReminderPopup;
+export default RecordatorioPopup;

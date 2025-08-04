@@ -1,8 +1,8 @@
 import React from 'react';
 import { AlarmIcon } from '@phosphor-icons/react';
-import styles from './AlertPopup.module.css';
+import styles from '../../styles/AlertaPopup.module.css';
 
-const AlertPopup = ({ 
+const AlertaPopup = ({ 
   isOpen, 
   onConfirm, 
   onCancel, 
@@ -45,4 +45,4 @@ const AlertPopup = ({
   );
 };
 
-export default AlertPopup;
+export default AlertaPopup;

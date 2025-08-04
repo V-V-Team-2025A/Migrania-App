@@ -1,8 +1,8 @@
 import React from 'react';
 import { BellRingingIcon, BellSlashIcon, BellZIcon } from '@phosphor-icons/react';
-import styles from './ConfigurationButtons.module.css';
+import styles from '../../styles/BotonesDeConfiguracion.module.css';
 
-const ConfigurationButtons = ({ 
+const BotonesDeConfiguracion = ({ 
   onSonido, 
   onSilenciar, 
   onSuspender, 
@@ -40,4 +40,4 @@ const ConfigurationButtons = ({
   );
 };
 
-export default ConfigurationButtons;
+export default BotonesDeConfiguracion;

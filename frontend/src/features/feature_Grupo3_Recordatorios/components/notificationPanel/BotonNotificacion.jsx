@@ -1,8 +1,8 @@
 import React from 'react';
 import { BellIcon } from '@phosphor-icons/react';
-import styles from './NotificationButton.module.css';
+import styles from '../../styles/BotonNotificacion.module.css';
 
-const NotificationButton = ({ onClick, size = 32, className = '', hasNotifications = false, notificationCount = 0 }) => {
+const BotonNotificacion = ({ onClick, size = 32, className = '', hasNotifications = false, notificationCount = 0 }) => {
   return (
     <button 
       onClick={onClick}
@@ -30,4 +30,4 @@ const NotificationButton = ({ onClick, size = 32, className = '', hasNotificatio
   );
 };
 
-export default NotificationButton;
+export default BotonNotificacion;

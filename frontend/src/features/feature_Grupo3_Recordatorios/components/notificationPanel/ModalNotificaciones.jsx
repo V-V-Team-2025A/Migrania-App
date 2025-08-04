@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { AlarmIcon, LightbulbFilamentIcon, SirenIcon } from '@phosphor-icons/react';
-import Notificacion from './Notification';
-import ConfigurationButtons from './ConfigurationButtons';
-import styles from './ModalNotifications.module.css';
+import Notificacion from './Notificacion';
+import ConfigurationButtons from './BotonesDeConfiguracion';
+import styles from '../../styles/ModalNotificaciones.module.css';
 
-const ModalNotifications = ({ isOpen, onClose }) => {
+const ModalNotificaciones = ({ isOpen, onClose }) => {
   const [estadoNotificaciones, setEstadoNotificaciones] = useState('sonido');
 
   const notificaciones = [
@@ -79,4 +79,4 @@ const ModalNotifications = ({ isOpen, onClose }) => {
   );
 };
 
-export default ModalNotifications;
+export default ModalNotificaciones;

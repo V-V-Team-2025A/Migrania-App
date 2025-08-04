@@ -1,7 +1,7 @@
 import React from 'react';
-import styles from './Notification.module.css';
+import styles from '../../styles/Notificacion.module.css';
 
-const Notification = ({ 
+const Notificacion = ({ 
   tipo, 
   titulo, 
   mensaje, 
@@ -22,4 +22,4 @@ const Notification = ({
   );
 };
 
-export default Notification;
+export default Notificacion;
