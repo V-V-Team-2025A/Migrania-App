@@ -1,25 +1,23 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.utils import timezone
 
-from .models import Tratamiento, Medicamento, Recomendacion
+from .models import Tratamiento
 from .serializers import (
     TratamientoCreateSerializer,
     TratamientoSerializer,
     TratamientoResumenSerializer,
-    TratamientoCancelarSerializer
+    TratamientoCancelarSerializer,
+    TratamientoUpdateSerializer
+
 )
 from .services import TratamientoService
 from .permissions import (
     EsMedico,
     EsPaciente,
     EsPropietarioDelTratamientoOPersonalMedico,
-    PuedeConfirmarToma,
 )
 
-
-# ViewSet
 
 class TratamientoViewSet(viewsets.ModelViewSet):
     queryset = Tratamiento.objects.all().order_by('-fecha_inicio')
