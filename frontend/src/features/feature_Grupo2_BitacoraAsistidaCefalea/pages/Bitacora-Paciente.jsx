@@ -1,23 +1,32 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '@/common/components/Header.jsx';
-import Tabla from '@/common/components/Tabla.jsx';
-import { parseApiResponse, getErrorMessage, getApiUrl, getAuthHeaders } from '../utils/apiUtils.js';
-import { transformEpisodio, COLUMNAS_EPISODIOS } from '../utils/episodioUtils.js';
+import Header from '../components/Header.jsx';
+import Tabla from '../components/Table.jsx';
+import { parseApiResponse, getErrorMessage, getApiUrl, getAuthHeaders, fetchUserInfoPaciente } from '../utils/apiUtils.js';
+import { transformEpisodio, getColumnasSegunGenero } from '../utils/episodioUtils.js';
 import { EPISODIOS_ENDPOINT } from '../utils/constants.js';
-import '@/features/feature_Grupo2_BitacoraAsistidaCefalea/styles/bitacora.module.css';
+import '../styles/bitacora.module.css';
 
 export default function BitacoraDigital() {
     const navigate = useNavigate();
     const [episodios, setEpisodios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [userInfo, setUserInfo] = useState(null);
+    const [columnas, setColumnas] = useState([]);
 
     useEffect(() => {
-        const fetchEpisodios = async () => {
+        const fetchData = async () => {
             try {
                 setLoading(true);
                 setError(null);
+
+                const userData = await fetchUserInfoPaciente();
+                setUserInfo(userData);
+
+                const columnasAMostrar = getColumnasSegunGenero(userData.genero);
+                setColumnas(columnasAMostrar);
 
                 const url = getApiUrl(EPISODIOS_ENDPOINT);
                 console.log('Intentando conectar a:', url);
@@ -39,14 +48,14 @@ export default function BitacoraDigital() {
 
                 setEpisodios(episodiosTransformados);
             } catch (err) {
-                console.error('Error al cargar episodios:', err);
+                console.error('Error al cargar datos:', err);
                 setError(getErrorMessage(err));
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchEpisodios();
+        fetchData();
     }, []);
 
     const handleNuevoEpisodio = () => {
@@ -78,7 +87,7 @@ export default function BitacoraDigital() {
             {!loading && !error && (
                 <Tabla
                     data={episodios}
-                    columns={COLUMNAS_EPISODIOS}
+                    columns={columnas}
                     keyField="id"
                     emptyMessage="No hay episodios de cefalea registrados"
                 />

@@ -1,21 +1,25 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import Header from '@/common/components/Header.jsx';
-import Tabla from '@/common/components/Tabla.jsx';
+import Header from '../components/Header.jsx';
+import Tabla from '../components/Table.jsx';
 import ModalFiltro from '../components/ModalFiltro.jsx';
-import { parseApiResponse, getErrorMessageMedico, fetchPacienteInfo } from '../utils/apiUtils.js';
-import { transformEpisodioMedico, COLUMNAS_EPISODIOS_MEDICO } from '../utils/episodioUtils.js';
-import { BASE_URL, EPISODIOS_ENDPOINT, TEMP_TOKEN_MEDICO } from '../utils/constants.js';
-import '@/features/feature_Grupo2_BitacoraAsistidaCefalea/styles/bitacora.module.css';
+import { parseApiResponse, getErrorMessageMedico, fetchPacienteInfo, fetchPacienteInfoCompleta, getAuthHeaders } from '../utils/apiUtils.js';
+import { transformEpisodioMedico, getColumnasSegunGenero } from '../utils/episodioUtils.js';
+import { BASE_URL, EPISODIOS_ENDPOINT } from '../utils/constants.js';
+import styles from '../styles/bitacora.module.css';
 
 export default function BitacoraDigitalMedico() {
-    const { pacienteId } = useParams(); // Obtener el ID del paciente desde la URL
+    const { pacienteId } = useParams();
     const [episodios, setEpisodios] = useState([]);
     const [episodiosOriginales, setEpisodiosOriginales] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showModalFiltro, setShowModalFiltro] = useState(false);
     const [nombrePaciente, setNombrePaciente] = useState("");
+    const [pacienteInfo, setPacienteInfo] = useState(null);
+    const [columnas, setColumnas] = useState([]);
+    const [filtroActivo, setFiltroActivo] = useState("");
 
     useEffect(() => {
         const fetchEpisodios = async () => {
@@ -29,23 +33,21 @@ export default function BitacoraDigitalMedico() {
                 setLoading(true);
                 setError(null);
 
-                // Obtener información del paciente
-                const nombrePaciente = await fetchPacienteInfo(pacienteId, BASE_URL, TEMP_TOKEN_MEDICO);
-                setNombrePaciente(nombrePaciente);
-                console.log(nombrePaciente);
+                const pacienteData = await fetchPacienteInfoCompleta(pacienteId, BASE_URL);
+                setPacienteInfo(pacienteData);
+                setNombrePaciente(pacienteData.nombre);
+                console.log('Información del paciente:', pacienteData);
 
+                const columnasAMostrar = getColumnasSegunGenero(pacienteData.genero);
+                setColumnas(columnasAMostrar);
 
-                // Obtener episodios del paciente
                 const url = `${BASE_URL}${EPISODIOS_ENDPOINT}?paciente_id=${pacienteId}`;
                 console.log('Intentando conectar a:', url);
                 console.log('Base URL configurada:', BASE_URL);
 
                 const response = await fetch(url, {
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': TEMP_TOKEN_MEDICO ? `Bearer ${TEMP_TOKEN_MEDICO}` : '',
-                    }
+                    headers: getAuthHeaders(null, 'medico')
                 });
 
                 if (!response.ok) {
@@ -110,20 +112,21 @@ export default function BitacoraDigitalMedico() {
                 patientName={nombrePaciente}
             />
             {loading && (
-                <div style={{ padding: '20px', textAlign: 'center' }}>
+                <div className={styles.loading}>
                     Cargando episodios...
                 </div>
             )}
             {error && (
-                <div style={{ padding: '20px', color: 'red', textAlign: 'center' }}>
+                <div className={styles.error}>
                     {error}
                 </div>
             )}
             {!loading && !error && (
                 <Tabla
                     data={episodios}
-                    columns={COLUMNAS_EPISODIOS_MEDICO}
+                    columns={columnas}
                     keyField="id"
+                    className={styles.tableContainer}
                     emptyMessage="No hay episodios de cefalea registrados"
                 />
             )}

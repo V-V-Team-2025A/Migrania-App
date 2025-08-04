@@ -1,4 +1,5 @@
-import { BASE_URL, TEMP_TOKEN, TEMP_TOKEN_PACIENTE, TEMP_TOKEN_MEDICO, MI_PERFIL_ENDPOINT, EPISODIOS_ENDPOINT } from './constants.js';
+
+import { BASE_URL, getAuthToken, MI_PERFIL_ENDPOINT, EPISODIOS_ENDPOINT } from './constants.js';
 
 export const parseApiResponse = (data) => {
     if (Array.isArray(data)) {
@@ -43,40 +44,22 @@ export const getErrorMessage = (error, response, context = 'paciente') => {
     return `Error al cargar los episodios: ${error.message}`;
 };
 
-// Función específica para médicos (mantiene compatibilidad)
 export const getErrorMessageMedico = (error, response) => {
     return getErrorMessage(error, response, 'medico');
 };
 
-/**
- * Construye la URL completa de la API
- * @param {string} endpoint - Endpoint de la API
- * @returns {string} URL completa
- */
 export const getApiUrl = (endpoint) => {
     return `${BASE_URL}${endpoint}`;
 };
 
-/**
- * Obtiene los headers de autenticación
- * @param {string} token - Token de autenticación (opcional, usa TEMP_TOKEN_PACIENTE por defecto)
- * @param {string} userType - Tipo de usuario ('paciente' o 'medico')
- * @returns {Object} Headers con autenticación
- */
 export const getAuthHeaders = (token = null, userType = 'paciente') => {
-    const defaultToken = token || (userType === 'medico' ? TEMP_TOKEN_MEDICO : TEMP_TOKEN_PACIENTE);
+    const defaultToken = token || getAuthToken();
     return {
         'Content-Type': 'application/json',
         'Authorization': defaultToken ? `Bearer ${defaultToken}` : '',
     };
 };
 
-/**
- * Obtiene información del usuario actual
- * @param {string} token - Token de autenticación (opcional)
- * @param {string} userType - Tipo de usuario ('paciente' o 'medico')
- * @returns {Promise<Object>} Información del usuario
- */
 export const fetchUserInfo = async (token = null, userType = 'paciente') => {
     const response = await fetch(getApiUrl(MI_PERFIL_ENDPOINT), {
         method: 'GET',
@@ -85,7 +68,6 @@ export const fetchUserInfo = async (token = null, userType = 'paciente') => {
 
     if (!response.ok) {
         console.error(`Error al obtener información del usuario:`, response.status);
-        // Fallback para mostrar todos los campos
         return { genero: 'F', nombre_completo: 'Usuario' };
     }
 
@@ -94,12 +76,6 @@ export const fetchUserInfo = async (token = null, userType = 'paciente') => {
     return userData;
 };
 
-/**
- * Maneja errores de API y lanza errores apropiados
- * @param {Response} response - Respuesta de la API
- * @param {Object} errorData - Datos de error de la respuesta
- * @throws {Error} Error con mensaje apropiado
- */
 export const handleApiError = (response, errorData) => {
     if (response.status === 401) {
         throw new Error('No autorizado. Por favor, inicia sesión nuevamente.');
@@ -115,13 +91,6 @@ export const handleApiError = (response, errorData) => {
     }
 };
 
-/**
- * Crea un nuevo episodio de cefalea
- * @param {Object} episodioData - Datos del episodio
- * @param {string} token - Token de autenticación (opcional)
- * @param {string} userType - Tipo de usuario ('paciente' o 'medico')
- * @returns {Promise<Object>} Respuesta de la API
- */
 export const createEpisodio = async (episodioData, token = null, userType = 'paciente') => {
     const response = await fetch(getApiUrl(EPISODIOS_ENDPOINT), {
         method: 'POST',
@@ -138,7 +107,6 @@ export const createEpisodio = async (episodioData, token = null, userType = 'pac
 };
 
 
-// Funciones específicas para pacientes
 export const fetchUserInfoPaciente = async (token = null) => {
     return fetchUserInfo(token, 'paciente');
 };
@@ -148,7 +116,6 @@ export const createEpisodioPaciente = async (episodioData, token = null) => {
 };
 
 
-// Funciones específicas para médicos
 export const fetchUserInfoMedico = async (token = null) => {
     return fetchUserInfo(token, 'medico');
 };
@@ -158,17 +125,14 @@ export const createEpisodioMedico = async (episodioData, token = null) => {
 };
 
 
-export const fetchPacienteInfo = async (pacienteId, baseUrl, token) => {
+export const fetchPacienteInfo = async (pacienteId, baseUrl, token = null) => {
     try {
         const pacienteUrl = `${baseUrl}/usuarios/${pacienteId}/`;
         console.log('Intentando obtener información del paciente desde:', pacienteUrl);
 
         const response = await fetch(pacienteUrl, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': token ? `Bearer ${token}` : '',
-            }
+            headers: getAuthHeaders(token, 'medico')
         });
 
         console.log('Respuesta del API para paciente:', response.status, response.statusText);
@@ -177,7 +141,6 @@ export const fetchPacienteInfo = async (pacienteId, baseUrl, token) => {
             const pacienteData = await response.json();
             console.log('Datos completos del paciente:', pacienteData);
 
-            // Intentar diferentes campos para obtener el nombre
             const nombre = pacienteData.first_name ||
                 pacienteData.nombre ||
                 pacienteData.username ||
@@ -194,5 +157,38 @@ export const fetchPacienteInfo = async (pacienteId, baseUrl, token) => {
     } catch (error) {
         console.error('Error al obtener información del paciente:', error);
         return 'Paciente';
+    }
+};
+
+export const fetchPacienteInfoCompleta = async (pacienteId, baseUrl, token = null) => {
+    try {
+        const pacienteUrl = `${baseUrl}/usuarios/${pacienteId}/`;
+        console.log('Intentando obtener información completa del paciente desde:', pacienteUrl);
+
+        const response = await fetch(pacienteUrl, {
+            method: 'GET',
+            headers: getAuthHeaders(token, 'medico')
+        });
+
+        console.log('Respuesta del API para paciente completo:', response.status, response.statusText);
+
+        if (response.ok) {
+            const pacienteData = await response.json();
+            console.log('Datos completos del paciente:', pacienteData);
+
+            return {
+                nombre: pacienteData.first_name || pacienteData.nombre || pacienteData.username || 'Paciente',
+                genero: pacienteData.genero || pacienteData.gender || 'F',
+                ...pacienteData
+            };
+        } else {
+            console.error('Error en la respuesta del API:', response.status, response.statusText);
+            const errorText = await response.text();
+            console.error('Detalles del error:', errorText);
+            return { nombre: 'Paciente', genero: 'F' };
+        }
+    } catch (error) {
+        console.error('Error al obtener información completa del paciente:', error);
+        return { nombre: 'Paciente', genero: 'F' };
     }
 };

@@ -13,36 +13,22 @@ export const transformEpisodio = (episodio) => ({
     sintomas_aura: episodio.sintomas_aura || '-'
 });
 
-/**
- * Convierte string "Sí"/"No" a booleano
- * @param {string} value - Valor a convertir
- * @returns {boolean} Valor booleano
- */
 export const convertStringToBoolean = (value) => {
     return value === 'Sí' || value === 'Si';
 };
 
-/**
- * Transforma los datos del formulario para enviar a la API
- * @param {Object} formData - Datos del formulario
- * @param {Object} userInfo - Información del usuario
- * @returns {Object} Datos transformados para la API
- */
 export const transformFormDataForAPI = (formData, userInfo) => {
     const transformedData = { ...formData };
 
-    // Transformar campos booleanos
     BOOLEAN_FIELDS.forEach(field => {
         transformedData[field] = convertStringToBoolean(transformedData[field]);
     });
 
-    // Campos específicos para hombres
     if (userInfo?.genero === 'M') {
         transformedData.en_menstruacion = false;
         transformedData.anticonceptivos = false;
     }
 
-    // Convertir campos numéricos
     if (transformedData.duracion_cefalea_horas) {
         transformedData.duracion_cefalea_horas = parseInt(transformedData.duracion_cefalea_horas);
     }
@@ -51,7 +37,6 @@ export const transformFormDataForAPI = (formData, userInfo) => {
         ? parseInt(transformedData.duracion_aura_minutos)
         : 0;
 
-    // Manejar síntomas del aura
     if (!transformedData.presencia_aura) {
         transformedData.sintomas_aura = "";
         transformedData.duracion_aura_minutos = 0;
@@ -62,11 +47,6 @@ export const transformFormDataForAPI = (formData, userInfo) => {
     return transformedData;
 };
 
-/**
- * Valida los datos del formulario
- * @param {Object} formData - Datos del formulario a validar
- * @throws {Error} Si la validación falla
- */
 export const validateEpisodioForm = (formData) => {
     const missingFields = REQUIRED_FIELDS.filter(field => !formData[field]);
 
@@ -102,8 +82,16 @@ export const COLUMNAS_EPISODIOS = [
     { key: 'anticonceptivos', header: 'Anticonceptivos' }
 ];
 
-// Columnas específicas para la vista del médico (mismas columnas por ahora)
 export const COLUMNAS_EPISODIOS_MEDICO = COLUMNAS_EPISODIOS;
 
-// Función específica para transformar episodios en la vista del médico
 export const transformEpisodioMedico = transformEpisodio;
+
+export const getColumnasSegunGenero = (genero) => {
+    if (genero === 'M') {
+        return COLUMNAS_EPISODIOS.filter(columna =>
+            !['en_menstruacion', 'anticonceptivos'].includes(columna.key)
+        );
+    }
+
+    return COLUMNAS_EPISODIOS;
+};
