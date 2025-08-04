@@ -17,3 +17,15 @@
 .midas_tabla-resultados td {
     color: var(--color-secondary-dark) !important;
 }
+
+.midas_tabla-resultados table th:first-child{
+  white-space: normal;
+  word-wrap: break-word;
+  width: 950px;
+}
+
+.midas_tabla-resultados table td:first-child{
+  white-space: normal;
+  word-wrap: break-word;
+  width: 950px;
+}
