@@ -65,7 +65,7 @@ function Tratamientos() {
                                 </button>
                                 <button
                                     className="delete-button"
-                                    onClick={() => navigate("/suspenderTratamiento")}
+                                    onClick={() => navigate("/seguimiento/tratamientos/crearTratamiento/suspenderTratamiento")}
                                 >
                                     Suspender
                                 </button>
