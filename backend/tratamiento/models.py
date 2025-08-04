@@ -188,6 +188,10 @@ class Tratamiento(models.Model):
     def porcentaje_cumplimiento(self):
         return self.cumplimiento
 
+    @property
+    def porcentaje_cumplimiento(self):
+        return self.cumplimiento
+
     def asignar_recomendaciones_generales(self):
         self.recomendaciones = [
             Recomendacion.RUTINA_SUENO,
