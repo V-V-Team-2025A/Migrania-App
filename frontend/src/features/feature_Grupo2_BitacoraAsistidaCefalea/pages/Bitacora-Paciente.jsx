@@ -1,129 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/common/components/Header.jsx';
 import Tabla from '@/common/components/Tabla.jsx';
+import { parseApiResponse, getErrorMessage, getApiUrl, getAuthHeaders } from '../utils/apiUtils.js';
+import { transformEpisodio, COLUMNAS_EPISODIOS } from '../utils/episodioUtils.js';
+import { EPISODIOS_ENDPOINT } from '../utils/constants.js';
+import '@/features/feature_Grupo2_BitacoraAsistidaCefalea/styles/bitacora.module.css';
 
 export default function BitacoraDigital() {
-    const [episodios, setEpisodios] = useState([
-        {
-            id: 1,
-            duracion_cefalea_horas: 5,
-            severidad: 'Moderada',
-            localizacion: 'Unilateral',
-            caracter_dolor: 'Pulsátil',
-            empeora_actividad: 'Sí',
-            nauseas_vomitos: 'Sí',
-            fotofobia: 'Sí',
-            fonofobia: 'No',
-            presencia_aura: 'Sí',
-            sintomas_aura: 'Visual',
-            duracion_aura_minutos: 30,
-            en_menstruacion: 'No',
-            anticonceptivos: 'No'
-        },
-        {
-            id: 2,
-            duracion_cefalea_horas: 3,
-            severidad: 'Severa',
-            localizacion: 'Bilateral',
-            caracter_dolor: 'Opresivo',
-            empeora_actividad: 'No',
-            nauseas_vomitos: 'No',
-            fotofobia: 'Sí',
-            fonofobia: 'Sí',
-            presencia_aura: 'No',
-            sintomas_aura: '-',
-            duracion_aura_minutos: 0,
-            en_menstruacion: 'Sí',
-            anticonceptivos: 'Sí'
-        },
-        {
-            id: 3,
-            duracion_cefalea_horas: 8,
-            severidad: 'Moderada',
-            localizacion: 'Unilateral',
-            caracter_dolor: 'Pulsátil',
-            empeora_actividad: 'Sí',
-            nauseas_vomitos: 'Sí',
-            fotofobia: 'Sí',
-            fonofobia: 'No',
-            presencia_aura: 'Sí',
-            sintomas_aura: 'Sensitivo',
-            duracion_aura_minutos: 20,
-            en_menstruacion: 'No',
-            anticonceptivos: 'No'
-        },
-        {
-            id: 4,
-            duracion_cefalea_horas: 2,
-            severidad: 'Leve',
-            localizacion: 'Frontal',
-            caracter_dolor: 'Punzante',
-            empeora_actividad: 'No',
-            nauseas_vomitos: 'No',
-            fotofobia: 'No',
-            fonofobia: 'No',
-            presencia_aura: 'No',
-            sintomas_aura: '-',
-            duracion_aura_minutos: 0,
-            en_menstruacion: 'No',
-            anticonceptivos: 'No'
-        },
-        {
-            id: 5,
-            duracion_cefalea_horas: 6,
-            severidad: 'Severa',
-            localizacion: 'Unilateral',
-            caracter_dolor: 'Pulsátil',
-            empeora_actividad: 'Sí',
-            nauseas_vomitos: 'Sí',
-            fotofobia: 'Sí',
-            fonofobia: 'Sí',
-            presencia_aura: 'Sí',
-            sintomas_aura: 'Visual y Sensitivo',
-            duracion_aura_minutos: 45,
-            en_menstruacion: 'Sí',
-            anticonceptivos: 'Sí'
-        },
-        {
-            id: 6,
-            duracion_cefalea_horas: 4,
-            severidad: 'Moderada',
-            localizacion: 'Bilateral',
-            caracter_dolor: 'Opresivo',
-            empeora_actividad: 'No',
-            nauseas_vomitos: 'No',
-            fotofobia: 'No',
-            fonofobia: 'No',
-            presencia_aura: 'No',
-            sintomas_aura: '-',
-            duracion_aura_minutos: 0,
-            en_menstruacion: 'No',
-            anticonceptivos: 'No'
-        }
-    ]);
+    const navigate = useNavigate();
+    const [episodios, setEpisodios] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const columnasEpisodios = [
-        { key: 'duracion_cefalea_horas', header: 'Duración Cefalea (horas)' },
-        { key: 'severidad', header: 'Severidad del Dolor' },
-        { key: 'localizacion', header: 'Localización del Dolor' },
-        { key: 'caracter_dolor', header: 'Carácter del Dolor' },
-        { key: 'empeora_actividad', header: 'Empeora con Actividad' },
-        { key: 'nauseas_vomitos', header: 'Náuseas o Vómitos' },
-        { key: 'fotofobia', header: 'Sensibilidad a la Luz' },
-        { key: 'fonofobia', header: 'Sensibilidad al Sonido' },
-        { key: 'presencia_aura', header: 'Presencia de Aura' },
-        { key: 'sintomas_aura', header: 'Síntomas del Aura' },
-        { key: 'duracion_aura_minutos', header: 'Duración del Aura (min)' },
-        { key: 'en_menstruacion', header: 'En menstruación' },
-        { key: 'anticonceptivos', header: 'Anticonceptivos' }
-    ];
+    useEffect(() => {
+        const fetchEpisodios = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+
+                const url = getApiUrl(EPISODIOS_ENDPOINT);
+                console.log('Intentando conectar a:', url);
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: getAuthHeaders(null, 'paciente')
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Datos recibidos de la API:', data);
+
+                const episodiosArray = parseApiResponse(data);
+                const episodiosTransformados = episodiosArray.map(transformEpisodio);
+
+                setEpisodios(episodiosTransformados);
+            } catch (err) {
+                console.error('Error al cargar episodios:', err);
+                setError(getErrorMessage(err));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEpisodios();
+    }, []);
 
     const handleNuevoEpisodio = () => {
-        console.log('Nuevo episodio clickeado');
+        navigate('/registro');
     };
 
     const handleVolver = () => {
-        console.log('Volver clickeado');
+        navigate('/dashboard-paciente');
     };
 
     return (
@@ -134,12 +65,24 @@ export default function BitacoraDigital() {
                 primaryButtonText="Nuevo episodio"
                 onPrimaryClick={handleNuevoEpisodio}
             />
-            <Tabla
-                data={episodios}
-                columns={columnasEpisodios}
-                keyField="id"
-                emptyMessage="No hay episodios de cefalea registrados"
-            />
+            {loading && (
+                <div style={{ padding: '20px', textAlign: 'center' }}>
+                    Cargando episodios...
+                </div>
+            )}
+            {error && (
+                <div style={{ padding: '20px', color: 'red', textAlign: 'center' }}>
+                    {error}
+                </div>
+            )}
+            {!loading && !error && (
+                <Tabla
+                    data={episodios}
+                    columns={COLUMNAS_EPISODIOS}
+                    keyField="id"
+                    emptyMessage="No hay episodios de cefalea registrados"
+                />
+            )}
         </div>
     );
 }

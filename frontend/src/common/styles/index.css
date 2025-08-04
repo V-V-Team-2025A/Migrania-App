@@ -4,6 +4,7 @@
 :root {
     /* === COLORES === */
     --secondary-light: #D2D9B8;
+    --terciary-light: #DFF2F2;
     --color-secondary-dark: #9DB9D0;
     --color-action: #03A6A6;
     --color-action-hover: #2E7474;
@@ -11,6 +12,7 @@
     --color-background-hover: #4A5A69;
     --color-body-background: #2A353F;
     --color-text: #FFFFFF;
+    --color-text-dark: #000000;
     --color-text-muted: #ccc;
     --color-text-disabled: #999;
     --color-error: #AA4D53;
@@ -114,6 +116,7 @@ label {
 /* === INPUTS BASE === */
 input[type="text"],
 input[type="email"],
+input[type="number"],
 input[type="password"] {
     flex: 1;
     padding: var(--spacing-s);
@@ -219,6 +222,7 @@ table {
     min-width: 100%;
     border-collapse: collapse;
     background-color: var(--color-background);
+    user-select: none;
 }
 
 table thead {

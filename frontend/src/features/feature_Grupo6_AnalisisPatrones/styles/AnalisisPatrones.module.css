@@ -1,0 +1,122 @@
+/* --- Estilos de la Página principal --- */
+.patrones__cabecera {
+    padding: var(--spacing-l);
+}
+
+.patrones__botonVolver {
+    background-color: transparent;
+    border: none;
+    color: var(--color-text);
+    font-size: var(--font-size-l);
+    font-weight: var(--font-weight-semibold);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-m);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.patrones__contenido {
+    
+    max-width: var(--max-width); 
+    margin: 0 auto;             
+    padding: 0 var(--spacing-l) var(--spacing-l); 
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-l);
+}
+
+.patrones__resumen {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-l);
+}
+
+.patrones__analisis {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-l);
+}
+
+/* --- Estilos para TarjetaResumen --- */
+.tarjetaResumen {
+    padding: var(--spacing-l);
+    border-radius: var(--border-radius);
+    color: var(--color-background);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-s);
+    min-height: 200px;
+}
+.tarjetaResumen__titulo {
+    font-size: var(--font-size-l);
+    font-weight: var(--font-weight-semibold);
+    margin: 0;
+}
+.tarjetaResumen__contenido {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-m);
+}
+.tarjetaResumen__icono {
+    display: flex;
+    align-items: center;
+}
+.tarjetaResumen__valor {
+    font-size: 72px;
+    font-weight: var(--font-weight-bold);
+    line-height: 1;
+}
+.tarjetaResumen__subtitulo {
+    font-size: var(--font-size-s);
+    margin: 0;
+}
+
+/* --- Estilos para TarjetaAnalisis --- */
+.tarjetaAnalisis {
+    background-color: var(--color-background);
+    padding: var(--spacing-l);
+    border-radius: var(--border-radius);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-l);
+}
+.tarjetaAnalisis__cabecera {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-m);
+}
+.tarjetaAnalisis__icono {
+    margin-top: 4px;
+    color: var(--color-error);
+}
+.tarjetaAnalisis__texto {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-s);
+}
+.tarjetaAnalisis__titulo {
+    font-size: var(--font-size-l);
+    font-weight: var(--font-weight-semibold);
+    margin: 0;
+}
+.tarjetaAnalisis__descripcion {
+    font-size: var(--font-size-s);
+    margin: 0;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+}
+.tarjetaAnalisis__recomendacion {
+    border: 1px solid var(--color-border);
+    background-color: var(--color-body-background);
+    padding: var(--spacing-m);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-s);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+}
+.tarjetaAnalisis__recomendacion p {
+    margin: 0;
+}
