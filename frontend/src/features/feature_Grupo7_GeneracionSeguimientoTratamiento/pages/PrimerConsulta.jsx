@@ -18,68 +18,57 @@ function PrimerConsulta() {
         ]);
     }, []);
 
-    const handleCancel = () => {
-        setIsModalVisible(true);
-    };
-
-    const handleCloseModal = () => {
-        setIsModalVisible(false);
-    };
-
-    const handleNavigateHistorial = () => {
-        navigate("/historial");
-    };
-
-    const handleNavigateCrearTratamiento = () => {
-        navigate("/primerConsulta/crearTratamiento");
-    };
+    const handleCancel = () => setIsModalVisible(true);
+    const handleCloseModal = () => setIsModalVisible(false);
+    const handleNavigateHistorial = () => navigate("/historial");
+    const handleNavigateCrearTratamiento = () => navigate("/primerConsulta/crearTratamiento");
 
     const hasOneEpisode = episodeData.length === 1;
 
     return (
-        <div className="container">
-            <header>
-                <div className="user-info">
-                    <span className="user-icon">👤</span>
-                    <span className="user-name">{doctorName}</span>
+        <div className="primerConsulta__container">
+            <header className="primerConsulta__header">
+                <div className="primerConsulta__user-info">
+                    <span className="primerConsulta__user-icon">👤</span>
+                    <span className="primerConsulta__user-name">{doctorName}</span>
                 </div>
             </header>
 
             {hasOneEpisode && (
                 <>
-                    <div className="patient-info">
+                    <div className="primerConsulta__patient-info">
                         <h1>{patientName} - Primer Consulta</h1>
-                        <button className="history-button" onClick={handleNavigateHistorial}>
+                        <button className="primerConsulta__history-button" onClick={handleNavigateHistorial}>
                             Historial
                         </button>
                     </div>
 
-                    <div className="table-container">
-                        <table>
+                    <div className="primerConsulta__table-container">
+                        <table className="primerConsulta__table">
                             <thead>
-                            <tr>
-                                <th>Num. Episodio</th>
-                                <th>Tipo Episodio</th>
-                                <th>Fecha</th>
-                            </tr>
+                                <tr>
+                                    <th>Num. Episodio</th>
+                                    <th>Tipo Episodio</th>
+                                    <th>Fecha</th>
+                                </tr>
                             </thead>
                             <tbody>
-                            {episodeData.map((episode) => (
-                                <tr key={episode.num}>
-                                    <td>{episode.num}</td>
-                                    <td>{episode.tipo}</td>
-                                    <td>{episode.fecha}</td>
-                                </tr>
-                            ))}
+                                {episodeData.map((episode) => (
+                                    <tr key={episode.num}>
+                                        <td>{episode.num}</td>
+                                        <td>{episode.tipo}</td>
+                                        <td>{episode.fecha}</td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>
 
-                    <div className="actions">
-                        <button className="action-button create-treatment" onClick={handleNavigateCrearTratamiento}>
+                    <div className="primerConsulta__actions">
+                        <button className="primerConsulta__crear" onClick={handleNavigateCrearTratamiento}>
                             Crear tratamiento
                         </button>
-                        <button className="action-button cancel" onClick={handleCancel}>
+                        <button className="primerConsulta__cancelar" onClick={handleCancel}>
                             Cancelar
                         </button>
                     </div>
