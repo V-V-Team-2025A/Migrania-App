@@ -88,14 +88,14 @@ export default function Dashboard() {
         navigate(ruta);
     };
 
-    const TarjetaDashboard = ({  color, backgroundColor, titulo, descripcion, onClick }) => (
+    const TarjetaDashboard = ({ icono, color, backgroundColor, titulo, descripcion, onClick }) => (
         <div
             className={styles["dashboard__tarjeta"]}
             onClick={onClick}
             style={{ cursor: onClick ? 'pointer' : 'default' }}
         >
             <div className={styles["dashboard__icono"]} style={{ backgroundColor }}>
-                <Icono size={32} color={color} />
+                <icono size={32} color={color} />
             </div>
             <h4>{titulo}</h4>
             <p>{descripcion}</p>
