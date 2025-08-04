@@ -31,7 +31,7 @@ function PrimerConsulta() {
     };
 
     const handleNavigateCrearTratamiento = () => {
-        navigate("/crearTratamiento");
+        navigate("/primerConsulta/crearTratamiento");
     };
 
     const hasOneEpisode = episodeData.length === 1;

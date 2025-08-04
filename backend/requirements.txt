@@ -35,3 +35,5 @@ sqlparse==0.5.3
 tzdata==2025.2
 uritemplate==4.2.0
 urllib3==2.5.0
+behave==1.2.6
+behave-django==1.4.0

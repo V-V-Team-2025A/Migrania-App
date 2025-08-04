@@ -33,8 +33,12 @@ function Seguimiento() {
     };
 
     const handleNavigateCrearTratamiento = () => {
-        navigate("/crearTratamiento");
+        navigate("/seguimiento/crearTratamiento");
     };
+
+    const handleNavigateTratamientos = () => {
+        navigate("/seguimiento/tratamientos");
+    }
 
     return (
         <div className="container">
@@ -50,7 +54,8 @@ function Seguimiento() {
                 <button className="history-button" onClick={handleNavigateHistorial}>
                     Historial
                 </button>
-                <button className="tratamiento-button" onClick={handleNavigateCrearTratamiento}>
+
+                <button className="tratamiento-button" onClick={handleNavigateTratamientos}>
                     Tratamiento
                 </button>
             </div>

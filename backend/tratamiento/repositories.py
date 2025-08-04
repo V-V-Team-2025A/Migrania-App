@@ -1,11 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-
-from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from tratamiento.models import Medicamento, Tratamiento, Recordatorio, Alerta, EstadoNotificacion
-from usuarios.models import PacienteProfile
-
 
 class BaseRepository(ABC):
     @abstractmethod
@@ -63,11 +59,6 @@ class BaseRepository(ABC):
     @abstractmethod
     def get_notificaciones_pendientes(self, tratamiento_id, fecha_hora=None):
         pass
-
-    @abstractmethod
-    def get_paciente_profile_by_id(self, id):
-        pass
-
 
 
 class DjangoRepository(BaseRepository):
@@ -156,12 +147,6 @@ class DjangoRepository(BaseRepository):
             return sorted(alertas + recordatorios, key=lambda x: x.fecha_hora)
         return []
 
-    def get_paciente_profile_by_id(self, id):
-        try:
-            return PacienteProfile.objects.get(pk=id)
-        except ObjectDoesNotExist:
-            return None
-
 
 class FakeRepository(BaseRepository):
     def __init__(self):
@@ -176,7 +161,6 @@ class FakeRepository(BaseRepository):
             'recordatorio': 1,
             'alerta': 1
         }
-        self.paciente_profiles = {}
 
     def _get_next_id(self, tipo):
         id = self.next_id[tipo]
@@ -263,12 +247,3 @@ class FakeRepository(BaseRepository):
         ]
 
         return sorted(alertas + recordatorios, key=lambda x: x.fecha_hora)
-
-    def get_paciente_profile_by_id(self, id):
-        return self.paciente_profiles.get(id)
-
-    def add_paciente_profile(self, profile):
-        """Método helper para añadir perfiles en las pruebas"""
-        if not profile.id:
-            profile.id = self._get_next_id('paciente_profile')
-        self.paciente_profiles[profile.id] = profile
