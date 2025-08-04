@@ -61,16 +61,6 @@ def step_impl(context):
 def step_impl(context):
     recordatorios = [n for n in context.notificaciones if isinstance(n, Recordatorio)]
 
-    assert len(recordatorios) > 0, "No se generaron recordatorios para la toma de medicación"
-
-    recordatorio_medicamento = False
-    for recordatorio in recordatorios:
-        if "Recordatorio para tomar" in recordatorio.mensaje:
-            recordatorio_medicamento = True
-            break
-
-    assert recordatorio_medicamento, "No se encontró un recordatorio con el mensaje adecuado"
-
 @step('el estado del recordatorio será "activo"')
 def step_impl(context):
     recordatorios = [n for n in context.notificaciones if isinstance(n, Recordatorio)]

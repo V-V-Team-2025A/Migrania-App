@@ -200,10 +200,6 @@ class FakeRepository(BaseRepository):
             return True
         return False
 
-    def get_medicamentos_by_tratamiento_id(self, tratamiento_id):
-        ids = self.tratamiento_medicamentos.get(tratamiento_id, set())
-        return [self.medicamentos[mid] for mid in ids if mid in self.medicamentos]
-
     def get_recordatorios_by_tratamiento(self, tratamiento_id):
         return [r for r in self.recordatorios.values() if getattr(r, 'tratamiento_id', None) == tratamiento_id]
 
