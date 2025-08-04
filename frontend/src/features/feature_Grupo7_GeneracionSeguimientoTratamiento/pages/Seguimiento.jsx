@@ -13,35 +13,21 @@ function Seguimiento() {
     useEffect(() => {
         setDoctorName("Dr. X");
         setPatientName("Juan Pérez");
-        // Simulando los episodios de un paciente
         setEpisodeData([
             { num: 1, tipo: "Migraña", fecha: "10/08/2025", tratamiento: "Activo" },
             { num: 2, tipo: "Cefalea tensional", fecha: "12/08/2025", tratamiento: "S/T" },
         ]);
     }, []);
 
-    const handleCancel = () => {
-        setIsModalVisible(true);
-    };
+    const handleCancel = () => setIsModalVisible(true);
+    const handleCloseModal = () => setIsModalVisible(false);
 
-    const handleCloseModal = () => {
-        setIsModalVisible(false);
-    };
-
-    const handleNavigateHistorial = () => {
-        navigate("/historial");
-    };
-
-    const handleNavigateCrearTratamiento = () => {
-        navigate("/seguimiento/crearTratamiento");
-    };
-
-    const handleNavigateTratamientos = () => {
-        navigate("/seguimiento/tratamientos");
-    }
+    const handleNavigateHistorial = () => navigate("/historial");
+    const handleNavigateCrearTratamiento = () => navigate("/seguimiento/crearTratamiento");
+    const handleNavigateTratamientos = () => navigate("/seguimiento/tratamientos");
 
     return (
-        <div className="container">
+        <div className="seguimiento">
             <header>
                 <div className="user-info">
                     <span className="user-icon">👤</span>
@@ -49,47 +35,38 @@ function Seguimiento() {
                 </div>
             </header>
 
-            <div className="patient-info">
+            <div className="seguimiento__patient-info">
                 <h1>{patientName} - Seguimiento</h1>
-                <button className="history-button" onClick={handleNavigateHistorial}>
-                    Historial
-                </button>
-
-                <button className="tratamiento-button" onClick={handleNavigateTratamientos}>
-                    Tratamiento
-                </button>
+                <button className="seguimiento__history-button" onClick={handleNavigateHistorial}>Historial</button>
+                <button className="seguimiento__tratamiento-button" onClick={handleNavigateTratamientos}>Tratamiento</button>
             </div>
 
-            <div className="table-container">
+            <div className="seguimiento__table-container">
                 <table>
                     <thead>
-                    <tr>
-                        <th>Num. Episodio</th>
-                        <th>Tipo Episodio</th>
-                        <th>Fecha</th>
-                        <th>Tratamiento</th>
-                    </tr>
+                        <tr>
+                            <th>Num. Episodio</th>
+                            <th>Tipo Episodio</th>
+                            <th>Fecha</th>
+                            <th>Tratamiento</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    {episodeData.map((episode) => (
-                        <tr key={episode.num}>
-                            <td>{episode.num}</td>
-                            <td>{episode.tipo}</td>
-                            <td>{episode.fecha}</td>
-                            <td>{episode.tratamiento}</td>
-                        </tr>
-                    ))}
+                        {episodeData.map((episode) => (
+                            <tr key={episode.num}>
+                                <td>{episode.num}</td>
+                                <td>{episode.tipo}</td>
+                                <td>{episode.fecha}</td>
+                                <td>{episode.tratamiento}</td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             </div>
 
-            <div className="actions">
-                <button className="action-button create-treatment" onClick={handleNavigateCrearTratamiento}>
-                    Crear tratamiento
-                </button>
-                <button className="action-button cancel" onClick={handleCancel}>
-                    Cancelar
-                </button>
+            <div className="seguimiento__actions">
+                <button className="seguimiento__create-treatment" onClick={handleNavigateCrearTratamiento}>Crear tratamiento</button>
+                <button className="seguimiento__cancel" onClick={handleCancel}>Cancelar</button>
             </div>
 
             {isModalVisible && <ConfirmacionCancelar onClose={handleCloseModal} />}
