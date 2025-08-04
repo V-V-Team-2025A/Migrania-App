@@ -88,14 +88,49 @@ export default function Dashboard() {
         navigate(ruta);
     };
 
-    const TarjetaDashboard = ({ icono, color, backgroundColor, titulo, descripcion, onClick }) => (
+    const handleNavegacionMidas = async () => {
+
+        const token = localStorage.getItem("access");
+
+        try {
+            const response = await fetch("http://localhost:8000/api/evaluaciones/autoevaluaciones/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({}),
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                if (data.detail === "Debes esperar al menos 90 días para una nueva autoevaluación.") {
+                    alert(data.detail);
+                    return;
+                }
+
+                console.error("Error inesperado:", data);
+                return;
+            }
+            const idAutoevaluacion = data.id;
+            navigate("/midas", {
+                state: {
+                    idAutoevaluacion: idAutoevaluacion
+                }
+            });
+
+        } catch (error) {
+            console.error("Error en la petición:", error);
+        }
+    };
+
+    const TarjetaDashboard = ({ icono: Icono, color, backgroundColor, titulo, descripcion, onClick }) => (
         <div
             className={styles["dashboard__tarjeta"]}
             onClick={onClick}
             style={{ cursor: onClick ? 'pointer' : 'default' }}
         >
             <div className={styles["dashboard__icono"]} style={{ backgroundColor }}>
-                <icono size={32} color={color} />
+                <Icono size={32} color={color} />
             </div>
             <h4>{titulo}</h4>
             <p>{descripcion}</p>
@@ -164,10 +199,12 @@ export default function Dashboard() {
 
             <section className={styles["dashboard__contenedor-tarjetas"]}>
                 <TarjetaDashboard {...TARJETAS_DASHBOARD[0]} onClick={() => handleNavegacion('/bitacora-paciente')} />
-                <TarjetaDashboard {...TARJETAS_DASHBOARD[1]} onClick={() => handleNavegacion('/midas')} />
-                <TarjetaDashboard {...TARJETAS_DASHBOARD[2]} onClick={() => handleNavegacion('/historialTratamientos')} />
+
+                <TarjetaDashboard {...TARJETAS_DASHBOARD[1]} onClick={() => handleNavegacionMidas()} />
+                <TarjetaDashboard {...TARJETAS_DASHBOARD[2]} onClick={() => console.log('Navegando a tratamientos')} />
+
                 <TarjetaDashboard {...TARJETAS_DASHBOARD[3]} onClick={() => console.log('Navegando a progreso')} />
-                <TarjetaDashboard {...TARJETAS_DASHBOARD[4]} onClick={() =>  handleNavegacion('/analisis-patrones')} />
+                <TarjetaDashboard {...TARJETAS_DASHBOARD[4]} onClick={() => handleNavegacion('/analisis-patrones')} />
             </section>
 
             <div className={styles["dashboard__seccion-inferior"]}>
