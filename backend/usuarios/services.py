@@ -310,5 +310,6 @@ class UsuarioService:
         return errores
 
 
+
 # Instancia global del servicio para usar en viewsets y serializers
 usuario_service = UsuarioService()
