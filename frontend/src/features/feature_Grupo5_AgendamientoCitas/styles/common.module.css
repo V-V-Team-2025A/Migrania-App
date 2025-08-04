@@ -8,30 +8,57 @@
 .title {
   flex: 1;
   text-align: center;
-  font-size: 2rem;
-  color: #222;
+  font-size: 2.5rem;
+  color: #fff;
   font-weight: bold;
+  letter-spacing: 1px;
 }
 
 .btn-primary {
-  background: #1976d2;
+  background: #03a6a6;
   color: #fff;
   border: none;
-  padding: 8px 20px;
-  border-radius: 6px;
-  font-size: 1rem;
+  padding: 14px 32px;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
+  box-shadow: 2px 4px 0 #222c36;
   transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .btn-primary:hover {
-  background: #125ea2;
+  background: #2e7474;
+}
+
+.btn-cancel {
+  background: #aa4d53;
+  color: #fff;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 2px 4px 0 #222c36;
+  margin-left: 8px;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-cancel:hover {
+  background: #7a2328;
 }
 
 .btn-back {
   background: none;
   border: none;
-  color: #1976d2;
-  font-size: 1.2rem;
+  color: #03a6a6;
+  font-size: 1.3rem;
   cursor: pointer;
   padding: 0 10px;
+  font-weight: 600;
 }
