@@ -139,3 +139,16 @@ class EstadisticasHistorialCompletasSerializer(serializers.Serializer):
     asociacion_hormonal = AsociacionHormonalResponseSerializer()
     evolucion_midas = EvolucionMIDASResponseSerializer()
     desencadenantes_comunes = DesencadenanesComunes_ResponseSerializer()
+
+
+class EstadisticaGeneralSerializer(serializers.Serializer):
+    """Serializer general para todas las estadísticas"""
+    tipo_estadistica = serializers.ChoiceField(choices=[
+        'promedio_semanal',
+        'duracion_promedio', 
+        'intensidad_promedio',
+        'asociacion_hormonal',
+        'evolucion_midas',
+        'desencadenantes_comunes'
+    ])
+    datos = serializers.JSONField()

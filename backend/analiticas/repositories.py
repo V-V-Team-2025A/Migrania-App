@@ -148,6 +148,52 @@ class FakeEstadisticaHistorialRepository(AbstractEstadisticaHistorialRepository)
         self._load_models()
         return self.DesencadenantesComunes.calcular_desencadenantes_frecuentes(desencadenantes_dict)
 
+    def simular_episodios_desde_api_bitacora(self, paciente_id: int, cantidad: int = 10):
+        """
+        Simula el consumo de la API de bitácora digital de evaluacion_diagnostico
+        En el futuro, aquí haríamos requests.get() a los endpoints
+        """
+        # Simulamos episodios que vendrían de la API
+        episodios_simulados = []
+        for i in range(cantidad):
+            episodio = {
+                'id': i + 1,
+                'paciente_id': paciente_id,
+                'duracion_cefalea_horas': fake.random_int(min=2, max=24),
+                'severidad': fake.random_element(elements=['Leve', 'Moderada', 'Severa']),
+                'en_menstruacion': fake.boolean(chance_of_getting_true=30),
+                'anticonceptivos': fake.boolean(chance_of_getting_true=25),
+                'creado_en': fake.date_between(start_date='-3m', end_date='today')
+            }
+            episodios_simulados.append(episodio)
+        
+        self._episodios_simulados = episodios_simulados
+        return episodios_simulados
+
+    def simular_evaluaciones_midas_desde_api(self, paciente_id: int, cantidad: int = 3):
+        """
+        Simula el consumo de la API de evaluaciones MIDAS de evaluacion_diagnostico
+        En el futuro, aquí haríamos requests.get() a los endpoints
+        """
+        # Simulamos evaluaciones MIDAS que vendrían de la API
+        evaluaciones_simuladas = []
+        for i in range(cantidad):
+            evaluacion = {
+                'id': i + 1,
+                'paciente_id': paciente_id,
+                'puntaje_total': fake.random_int(min=0, max=50),
+                'fecha_evaluacion': fake.date_between(start_date='-6m', end_date='today')
+            }
+            evaluaciones_simuladas.append(evaluacion)
+        
+        self._evaluaciones_midas_simuladas = evaluaciones_simuladas
+        return evaluaciones_simuladas
+
+    def limpiar_simulaciones(self):
+        """Útil para resetear entre escenarios BDD"""
+        self._episodios_simulados.clear()
+        self._evaluaciones_midas_simuladas.clear()
+
 
 # Implementaciones para Análisis de Patrones
 class FakeAnalisisPatronesRepository(AnalisisPatronesRepository):
@@ -198,3 +244,8 @@ class DjangoAnalisisPatronesRepository(AnalisisPatronesRepository):
         Se implementa solo para cumplir con el contrato de la clase abstracta.
         """
         raise NotImplementedError("El repositorio de análisis es de solo lectura.")
+
+
+# Importar Faker para simulaciones
+from faker import Faker
+fake = Faker('es_ES')
