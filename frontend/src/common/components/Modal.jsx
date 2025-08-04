@@ -1,4 +1,3 @@
-import React from "react";
 import "../styles/modal.css";
 
 function Modal({ message, onConfirm, onCancel }) {
