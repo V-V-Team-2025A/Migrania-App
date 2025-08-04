@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Header from '@/common/components/Header.jsx';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { 
   Calendar, 
@@ -131,6 +132,10 @@ const PatientDashboard = ({ patientId = 1 }) => {
   useEffect(() => {
     setPatientData(mockPatientData);
   }, []);
+
+  const handleVolver = () => {
+    console.log('Volver clickeado');
+  };
 
   const summaryCards = [
     {
@@ -580,16 +585,11 @@ const PatientDashboard = ({ patientId = 1 }) => {
   }
 
   return (
-    <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <h1 style={styles.welcomeText}>
-          Historial y Estadisticas
-        </h1>
-        <p style={styles.subtitle}>
-          Visualiza tu progreso y historial médico
-        </p>
-      </div>
+     <div style={styles.container}>
+          <Header
+            title="Historial y Estadísticas"
+            onBack={handleVolver}
+          />
 
       {/* Summary Cards */}
       <div style={styles.summaryGrid}>

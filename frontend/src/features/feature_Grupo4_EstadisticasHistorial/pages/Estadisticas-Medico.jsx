@@ -164,20 +164,7 @@ const MedicalDashboard = () => {
       backgroundColor: 'var(--color-background)',
       color: '#9CA3AF'
     },
-    exportButton: {
-      padding: 'var(--spacing-s) var(--spacing-m)',
-      backgroundColor: 'var(--color-background)',
-      color: '#9CA3AF',
-      borderRadius: 'var(--border-radius)',
-      border: 'none',
-      fontFamily: 'var(--font-main)',
-      fontSize: '12px',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 'var(--spacing-xs)',
-      transition: 'all 0.2s ease'
-    },
+   
     contentArea: {
       backgroundColor: '#E5E7EB',
       borderRadius: 'var(--border-radius)',
@@ -276,11 +263,7 @@ const MedicalDashboard = () => {
             </button>
           ))}
           
-          {/* Export Button */}
-          <button style={styles.exportButton}>
-            <ClipboardList size={16} />
-            <span>Exportar</span>
-          </button>
+       
         </div>
       </div>
 
