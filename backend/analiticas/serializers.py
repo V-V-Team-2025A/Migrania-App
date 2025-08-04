@@ -1,3 +1,4 @@
+# analiticas/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from datetime import date
@@ -7,6 +8,18 @@ from typing import List, Dict
 User = get_user_model()
 
 
+class AnalisisPatronesSerializer(serializers.Serializer):
+    """
+    Serializador para empaquetar todas las conclusiones del análisis.
+    """
+    conclusion_clinica = serializers.CharField()
+    conclusiones_sintomas = serializers.DictField()
+    conclusion_aura = serializers.CharField()
+    dias_recurrentes = serializers.ListField(child=serializers.CharField())
+    conclusion_hormonal = serializers.CharField()
+
+
+# Serializers para Estadísticas Historial
 class PromedioSemanalEpisodiosSerializer(serializers.Serializer):
     """Serializer para promedio semanal de episodios"""
     total_episodios = serializers.IntegerField(min_value=0)
@@ -30,50 +43,48 @@ class PromedioSemanalEpisodiosResponseSerializer(serializers.Serializer):
 
 class DuracionPromedioEpisodiosSerializer(serializers.Serializer):
     """Serializer para duración promedio de episodios"""
-    total_episodios = serializers.IntegerField(min_value=1)
-    suma_duracion_total = serializers.FloatField(min_value=0)
+    total_episodios = serializers.IntegerField(min_value=0)
+    suma_duracion_total = serializers.FloatField(min_value=0.0)
 
 
 class DuracionPromedioEpisodiosResponseSerializer(serializers.Serializer):
     """Serializer de respuesta para duración promedio"""
     duracion_promedio = serializers.FloatField()
     total_episodios = serializers.IntegerField()
-    suma_duracion_total = serializers.FloatField()
-    severidad = serializers.CharField()
+    interpretacion = serializers.CharField()
 
 
-class IntensidadPromedioDolorSerializer(serializers.Serializer):
-    """Serializer para intensidad promedio del dolor"""
+class IntensidadPromedioDolor_InputSerializer(serializers.Serializer):
+    """Serializer para entrada de intensidades de dolor"""
     intensidades = serializers.ListField(
         child=serializers.IntegerField(min_value=1, max_value=10),
-        required=False,
-        allow_empty=True
+        allow_empty=True,
+        required=False
     )
+    
+    def validate_intensidades(self, value):
+        if value and len(value) > 1000:  # Límite razonable
+            raise serializers.ValidationError("Demasiadas intensidades proporcionadas")
+        return value
 
 
-class IntensidadPromedioDolorResponseSerializer(serializers.Serializer):
+class IntensidadPromedioDolor_ResponseSerializer(serializers.Serializer):
     """Serializer de respuesta para intensidad promedio"""
     intensidad_promedio = serializers.CharField()
-    gravedad = serializers.CharField()
-    intensidades_procesadas = serializers.IntegerField()
+    descripcion = serializers.CharField()
 
 
 class AsociacionHormonalSerializer(serializers.Serializer):
     """Serializer para asociación hormonal"""
-    total_episodios = serializers.IntegerField(min_value=1)
+    total_episodios = serializers.IntegerField(min_value=0)
     episodios_menstruacion = serializers.IntegerField(min_value=0)
     episodios_anticonceptivos = serializers.IntegerField(min_value=0)
     
     def validate(self, data):
-        total = data['total_episodios']
-        menstruacion = data['episodios_menstruacion']
-        anticonceptivos = data['episodios_anticonceptivos']
-        
-        if menstruacion > total:
-            raise serializers.ValidationError("Episodios menstruación no puede ser mayor al total")
-        if anticonceptivos > total:
-            raise serializers.ValidationError("Episodios anticonceptivos no puede ser mayor al total")
-        
+        if data['episodios_menstruacion'] > data['total_episodios']:
+            raise serializers.ValidationError("Los episodios durante menstruación no pueden ser más que el total")
+        if data['episodios_anticonceptivos'] > data['total_episodios']:
+            raise serializers.ValidationError("Los episodios con anticonceptivos no pueden ser más que el total")
         return data
 
 
@@ -81,61 +92,50 @@ class AsociacionHormonalResponseSerializer(serializers.Serializer):
     """Serializer de respuesta para asociación hormonal"""
     porcentaje_menstruacion = serializers.FloatField()
     porcentaje_anticonceptivos = serializers.FloatField()
-    correlacion_menstruacion = serializers.CharField()
-    correlacion_anticonceptivos = serializers.CharField()
-    total_episodios = serializers.IntegerField()
+    interpretacion_menstruacion = serializers.CharField()
+    interpretacion_anticonceptivos = serializers.CharField()
 
 
 class EvolucionMIDASSerializer(serializers.Serializer):
     """Serializer para evolución MIDAS"""
-    puntuacion_promedio = serializers.FloatField(min_value=0)
-    puntuacion_actual = serializers.FloatField(min_value=0)
+    puntuacion_promedio = serializers.FloatField(min_value=0.0)
+    puntuacion_actual = serializers.FloatField(min_value=0.0)
 
 
 class EvolucionMIDASResponseSerializer(serializers.Serializer):
     """Serializer de respuesta para evolución MIDAS"""
-    puntuacion_promedio = serializers.FloatField()
-    puntuacion_actual = serializers.FloatField()
-    diferencia = serializers.FloatField()
+    categoria_promedio = serializers.CharField()
+    categoria_actual = serializers.CharField()
     tendencia = serializers.CharField()
-    significancia = serializers.CharField()
+    interpretacion = serializers.CharField()
 
 
-class DesencadenantesFrecuenciaSerializer(serializers.Serializer):
-    """Serializer para frecuencia de desencadenantes"""
-    desencadenante = serializers.CharField()
-    frecuencia = serializers.IntegerField()
-    porcentaje = serializers.FloatField()
-    relevancia = serializers.CharField()
-
-
-class DesencadenantesComunesSerializer(serializers.Serializer):
-    """Serializer para desencadenantes comunes"""
-    desencadenantes = serializers.DictField(
-        child=serializers.IntegerField(min_value=0)
+class DesencadenanesComunes_InputSerializer(serializers.Serializer):
+    """Serializer para entrada de desencadenantes comunes"""
+    desencadenantes_dict = serializers.DictField(
+        child=serializers.IntegerField(min_value=0),
+        allow_empty=False
     )
     
-    def validate_desencadenantes(self, value):
-        if not value:
-            raise serializers.ValidationError("Debe proporcionar al menos un desencadenante")
+    def validate_desencadenantes_dict(self, value):
+        if len(value) > 50:  # Límite razonable de desencadenantes
+            raise serializers.ValidationError("Demasiados tipos de desencadenantes")
         return value
 
 
-class DesencadenantesComunesResponseSerializer(serializers.Serializer):
+class DesencadenanesComunes_ResponseSerializer(serializers.Serializer):
     """Serializer de respuesta para desencadenantes comunes"""
-    desencadenantes_frecuentes = DesencadenantesFrecuenciaSerializer(many=True)
-    total_menciones = serializers.IntegerField()
-    cantidad_desencadenantes = serializers.IntegerField()
+    desencadenantes_frecuentes = serializers.ListField(
+        child=serializers.DictField()
+    )
+    interpretacion = serializers.CharField()
 
 
-class EstadisticaGeneralSerializer(serializers.Serializer):
-    """Serializer general para todas las estadísticas"""
-    tipo_estadistica = serializers.ChoiceField(choices=[
-        'promedio_semanal',
-        'duracion_promedio', 
-        'intensidad_promedio',
-        'asociacion_hormonal',
-        'evolucion_midas',
-        'desencadenantes_comunes'
-    ])
-    datos = serializers.JSONField()
+class EstadisticasHistorialCompletasSerializer(serializers.Serializer):
+    """Serializer para estadísticas historial completas"""
+    promedio_semanal = PromedioSemanalEpisodiosResponseSerializer()
+    duracion_promedio = DuracionPromedioEpisodiosResponseSerializer()
+    intensidad_promedio = IntensidadPromedioDolor_ResponseSerializer()
+    asociacion_hormonal = AsociacionHormonalResponseSerializer()
+    evolucion_midas = EvolucionMIDASResponseSerializer()
+    desencadenantes_comunes = DesencadenanesComunes_ResponseSerializer()
