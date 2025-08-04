@@ -21,7 +21,9 @@ import PrimerConsulta from "./features/feature_Grupo7_GeneracionSeguimientoTrata
 import BDoctor from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/pages/Bitacora-Medico.jsx'
 import BPaciente from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/pages/Bitacora-Paciente.jsx'
 import Registro from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/pages/Registro-cefalea.jsx'
+
 import MidasMedico from './features/feature_Grupo1_EvaluacionMidas/pages/MidasMedico.jsx'
+
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -45,6 +47,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/seguimiento/crearTratamiento" element={<CrearTratamiento />} />
         <Route path="/seguimiento/tratamientos" element={<Tratamientos />} />
         <Route path="/seguimiento/tratamientos/crearTratamiento" element={<CrearTratamiento />} />
+
       </Routes>
     </Router>
   </StrictMode>,
