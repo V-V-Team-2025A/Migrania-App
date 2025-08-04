@@ -28,7 +28,7 @@ const DashboardMedico = ({ estadisticas, alertasRecientes, citasProximas }) => {
           <div className={estilos.statIcon}>👥</div>
           <div>
             <div className={estilos.statNumber}>
-              {estadisticas.pacientesTotales}
+               {estadisticas.pacientesTotales} 
             </div>
             <div className={estilos.statLabel}>Pacientes Totales</div>
           </div>
@@ -37,7 +37,7 @@ const DashboardMedico = ({ estadisticas, alertasRecientes, citasProximas }) => {
           <div className={estilos.statIcon}>🩺</div>
           <div>
             <div className={estilos.statNumber}>
-              {estadisticas.citasAgendadas}
+               {estadisticas.citasAgendadas} 
             </div>
             <div className={estilos.statLabel}>Citas Agendadas</div>
           </div>
@@ -46,7 +46,7 @@ const DashboardMedico = ({ estadisticas, alertasRecientes, citasProximas }) => {
           <div className={estilos.statIcon}>🚨</div>
           <div>
             <div className={estilos.statNumber}>
-              {estadisticas.casosUrgentes}
+               {estadisticas.casosUrgentes} 
             </div>
             <div className={estilos.statLabelAlert}>Casos Urgentes</div>
           </div>
@@ -57,7 +57,7 @@ const DashboardMedico = ({ estadisticas, alertasRecientes, citasProximas }) => {
         <section className={estilos.alertSection}>
           <h2>Alertas Recientes</h2>
           <div>
-            {alertasRecientes.map((a) => (
+             {alertasRecientes.map((a) => (
               <div key={a.id} className={estilos.alertCard}>
                 <div className={estilos.alertAvatar}></div>
                 <div>
@@ -70,13 +70,13 @@ const DashboardMedico = ({ estadisticas, alertasRecientes, citasProximas }) => {
                   </div>
                 </div>
               </div>
-            ))}
+            ))} 
           </div>
         </section>
         <section className={estilos.nextSection}>
           <h2>Citas Próximas</h2>
           <div>
-            {citasProximas.map((c) => (
+             {citasProximas.map((c) => (
               <div key={c.id} className={estilos.nextCard}>
                 <div className={estilos.nextFecha}>
                   <div className={estilos.nextDia}>{c.dia}</div>
@@ -88,7 +88,7 @@ const DashboardMedico = ({ estadisticas, alertasRecientes, citasProximas }) => {
                   <div className={estilos.nextHora}>🕘 {c.hora}</div>
                 </div>
               </div>
-            ))}
+            ))} 
           </div>
           <button className={comunes["btn-primary"]} onClick={manejarVerAgenda}>
             Ver Agenda

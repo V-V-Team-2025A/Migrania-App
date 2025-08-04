@@ -17,6 +17,7 @@ export default function Midas() {
     const token = localStorage.getItem("access");
     const location = useLocation();
     const idAutoevaluacion = location.state?.idAutoevaluacion;
+    const puedeHacerAutoevaluacion = location.state?.puedeHacerAutoevaluacion;
     useEffect(() => {
         const fetchPreguntas = async () => {
             try {
@@ -105,7 +106,7 @@ export default function Midas() {
 
     return (
         <div className={styles["midas__contenedor"]}>
-            {mostrarModal && <ModalDisponibilidad onClose={() => setMostrarModal(false)} />}
+            {mostrarModal && <ModalDisponibilidad puedeHacerAutoevaluacion={puedeHacerAutoevaluacion} onClose={() => setMostrarModal(false)} />}
             <h1>Autoevaluación MIDAS</h1>
             {loading ? (
                 <p>Cargando preguntas...</p>

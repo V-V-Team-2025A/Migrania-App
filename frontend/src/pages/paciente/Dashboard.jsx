@@ -89,39 +89,50 @@ export default function Dashboard() {
     };
 
     const handleNavegacionMidas = async () => {
+    const token = localStorage.getItem("access");
 
-        const token = localStorage.getItem("access");
+    try {
+        const response = await fetch("http://localhost:8000/api/evaluaciones/autoevaluaciones/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify({}),
+        });
 
-        try {
-            const response = await fetch("http://localhost:8000/api/evaluaciones/autoevaluaciones/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({}),
-            });
-            const data = await response.json();
-            if (!response.ok) {
-                if (data.detail === "Debes esperar al menos 90 días para una nueva autoevaluación.") {
-                    alert(data.detail);
-                    return;
-                }
+        const data = await response.json();
 
+        if (!response.ok) {
+            if (data.detail === "No disponible") {
+                navigate("/midas", {
+                    state: {
+                        puedeHacerAutoevaluacion: false,
+                        idAutoevaluacion: null
+                    }
+                });
+                return;
+            } else {
                 console.error("Error inesperado:", data);
                 return;
             }
-            const idAutoevaluacion = data.id;
-            navigate("/midas", {
-                state: {
-                    idAutoevaluacion: idAutoevaluacion
-                }
-            });
-
-        } catch (error) {
-            console.error("Error en la petición:", error);
         }
-    };
+
+        // Si llegamos aquí, la respuesta fue exitosa
+        const idAutoevaluacion = data.id;
+
+        navigate("/midas", {
+            state: {
+                puedeHacerAutoevaluacion: true,
+                idAutoevaluacion: idAutoevaluacion,
+            }
+        });
+
+    } catch (error) {
+        console.error("Error en la petición:", error);
+    }
+};
+
 
     const TarjetaDashboard = ({ icono: Icono, color, backgroundColor, titulo, descripcion, onClick }) => (
         <div
@@ -201,7 +212,7 @@ export default function Dashboard() {
                 <TarjetaDashboard {...TARJETAS_DASHBOARD[0]} onClick={() => handleNavegacion('/bitacora-paciente')} />
                 <TarjetaDashboard {...TARJETAS_DASHBOARD[1]} onClick={() => handleNavegacionMidas()} />
                 <TarjetaDashboard {...TARJETAS_DASHBOARD[2]} onClick={() => console.log('Navegando a tratamientos')} />
-                <TarjetaDashboard {...TARJETAS_DASHBOARD[3]} onClick={() => console.log('Navegando a progreso')} />
+                <TarjetaDashboard {...TARJETAS_DASHBOARD[3]} onClick={() => handleNavegacion('/estadisticas')} />
                 <TarjetaDashboard {...TARJETAS_DASHBOARD[4]} onClick={() => handleNavegacion('/analisis-patrones')} />
             </section>
 
@@ -244,7 +255,7 @@ export default function Dashboard() {
                         <div style={{ color: "var(--color-secondary-dark)" }}>Propranolol 40mg</div>
                     </div>
 
-                    <button className="btn-primary">Agendar</button>
+                    <button className="btn-primary" onClick={() => navigate("/formulario-cita")}>Agendar</button>
                 </section>
             </div>
         </>
