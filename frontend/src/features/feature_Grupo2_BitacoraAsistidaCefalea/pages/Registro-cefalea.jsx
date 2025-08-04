@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '@/common/components/Header.jsx';
-import classes from '@/features/feature_Grupo2_BitacoraAsistidaCefalea/styles/bitacora.module.css';
+import Header from '../components/Header.jsx';
+import styles from '../styles/bitacora.module.css';
 import { INITIAL_FORM_DATA } from '../utils/constants.js';
 import { fetchUserInfoPaciente, createEpisodioPaciente, getErrorMessage } from '../utils/apiUtils.js';
 import { transformFormDataForAPI, validateEpisodioForm } from '../utils/episodioUtils.js';
@@ -85,7 +85,7 @@ export default function IngresarCefalea() {
     };
 
     const renderLoadingState = () => (
-        <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+        <div className={styles.loading}>
             Cargando información del usuario...
         </div>
     );
@@ -93,35 +93,19 @@ export default function IngresarCefalea() {
     const renderSubmissionState = () => (
         <>
             {loading && (
-                <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+                <div className={styles.loading}>
                     Guardando episodio...
                 </div>
             )}
 
             {error && (
-                <div style={{
-                    padding: '20px',
-                    color: 'red',
-                    textAlign: 'center',
-                    background: '#ffebee',
-                    border: '1px solid #ffcdd2',
-                    borderRadius: '4px',
-                    margin: '20px 0'
-                }}>
+                <div className={styles.error}>
                     {error}
                 </div>
             )}
 
             {success && (
-                <div style={{
-                    padding: '20px',
-                    color: 'green',
-                    textAlign: 'center',
-                    background: '#e8f5e8',
-                    border: '1px solid #c8e6c9',
-                    borderRadius: '4px',
-                    margin: '20px 0'
-                }}>
+                <div className={styles.success}>
                     ¡Episodio registrado exitosamente!
                 </div>
             )}
@@ -135,8 +119,8 @@ export default function IngresarCefalea() {
                 onBack={() => navigate('/bitacora-paciente')}
             />
 
-            <div className="form-container">
-                <h2 className="form-title">
+            <div className={styles.formContainer}>
+                <h2 className={styles.formTitle}>
                     Registrar nuevo episodio
                 </h2>
 
@@ -145,10 +129,10 @@ export default function IngresarCefalea() {
 
                 {!loadingUser && userInfo && (
                     <form onSubmit={handleSubmit}>
-                        <div className={classes.formGrid}>
+                        <div className={styles.formGrid}>
 
-                            <div className="form-field">
-                                <label htmlFor="duracion_cefalea_horas" className={classes.labelStyled}>Duración (h) *</label>
+                            <div className={styles.formField}>
+                                <label htmlFor="duracion_cefalea_horas" className={styles.labelStyled}>Duración (h) *</label>
                                 <input
                                     type="number"
                                     id="duracion_cefalea_horas"
@@ -158,19 +142,19 @@ export default function IngresarCefalea() {
                                     max="72"
                                     value={formData.duracion_cefalea_horas}
                                     onChange={handleInputChange}
-                                    className={classes.inputDefault}
+                                    className={styles.inputDefault}
                                     required
                                 />
                             </div>
 
-                            <div className="form-field">
-                                <label htmlFor="severidad" className={classes.labelStyled}>Severidad *</label>
+                            <div className={styles.formField}>
+                                <label htmlFor="severidad" className={styles.labelStyled}>Severidad *</label>
                                 <select
                                     id="severidad"
                                     name="severidad"
                                     value={formData.severidad}
                                     onChange={handleInputChange}
-                                    className={classes.selectDefault}
+                                    className={styles.selectDefault}
                                     required
                                 >
                                     <option value="" disabled>Seleccione una opción</option>
@@ -180,14 +164,14 @@ export default function IngresarCefalea() {
                                 </select>
                             </div>
 
-                            <div className="form-field">
-                                <label htmlFor="caracter_dolor" className={classes.labelStyled}>Carácter *</label>
+                            <div className={styles.formField}>
+                                <label htmlFor="caracter_dolor" className={styles.labelStyled}>Carácter *</label>
                                 <select
                                     id="caracter_dolor"
                                     name="caracter_dolor"
                                     value={formData.caracter_dolor}
                                     onChange={handleInputChange}
-                                    className={classes.selectDefault}
+                                    className={styles.selectDefault}
                                     required
                                 >
                                     <option value="" disabled>Seleccione una opción</option>
@@ -197,14 +181,14 @@ export default function IngresarCefalea() {
                                 </select>
                             </div>
 
-                            <div className="form-field">
-                                <label htmlFor="localizacion" className={classes.labelStyled}>Localización *</label>
+                            <div className={styles.formField}>
+                                <label htmlFor="localizacion" className={styles.labelStyled}>Localización *</label>
                                 <select
                                     id="localizacion"
                                     name="localizacion"
                                     value={formData.localizacion}
                                     onChange={handleInputChange}
-                                    className={classes.selectDefault}
+                                    className={styles.selectDefault}
                                     required
                                 >
                                     <option value="" disabled>Seleccione una opción</option>
@@ -213,14 +197,14 @@ export default function IngresarCefalea() {
                                 </select>
                             </div>
 
-                            <div className="form-field">
-                                <label htmlFor="empeora_actividad" className={classes.labelStyled}>Empeora con actividad</label>
+                            <div className={styles.formField}>
+                                <label htmlFor="empeora_actividad" className={styles.labelStyled}>Empeora con actividad</label>
                                 <select
                                     id="empeora_actividad"
                                     name="empeora_actividad"
                                     value={formData.empeora_actividad}
                                     onChange={handleInputChange}
-                                    className={`${classes.selectDefault} ${formData.empeora_actividad === '' ? classes.selectPlaceholder : ''}`}
+                                    className={`${styles.selectDefault} ${formData.empeora_actividad === '' ? styles.selectPlaceholder : ''}`}
                                 >
                                     <option value="" disabled>Seleccione una opción</option>
                                     <option value="Sí">Sí</option>
@@ -228,14 +212,14 @@ export default function IngresarCefalea() {
                                 </select>
                             </div>
 
-                            <div className="form-field">
-                                <label htmlFor="nauseas_vomitos" className={classes.labelStyled}>Náuseas o vómitos</label>
+                            <div className={styles.formField}>
+                                <label htmlFor="nauseas_vomitos" className={styles.labelStyled}>Náuseas o vómitos</label>
                                 <select
                                     id="nauseas_vomitos"
                                     name="nauseas_vomitos"
                                     value={formData.nauseas_vomitos}
                                     onChange={handleInputChange}
-                                    className={`${classes.selectDefault} ${formData.nauseas_vomitos === '' ? classes.selectPlaceholder : ''}`}
+                                    className={`${styles.selectDefault} ${formData.nauseas_vomitos === '' ? styles.selectPlaceholder : ''}`}
                                 >
                                     <option value="" disabled>Seleccione una opción</option>
                                     <option value="Sí">Sí</option>
@@ -243,14 +227,14 @@ export default function IngresarCefalea() {
                                 </select>
                             </div>
 
-                            <div className="form-field">
-                                <label htmlFor="fotofobia" className={classes.labelStyled}>Sensibilidad a la luz</label>
+                            <div className={styles.formField}>
+                                <label htmlFor="fotofobia" className={styles.labelStyled}>Sensibilidad a la luz</label>
                                 <select
                                     id="fotofobia"
                                     name="fotofobia"
                                     value={formData.fotofobia}
                                     onChange={handleInputChange}
-                                    className={`${classes.selectDefault} ${formData.fotofobia === '' ? classes.selectPlaceholder : ''}`}
+                                    className={`${styles.selectDefault} ${formData.fotofobia === '' ? styles.selectPlaceholder : ''}`}
                                 >
                                     <option value="" disabled>Seleccione una opción</option>
                                     <option value="Sí">Sí</option>
@@ -258,14 +242,14 @@ export default function IngresarCefalea() {
                                 </select>
                             </div>
 
-                            <div className="form-field">
-                                <label htmlFor="fonofobia" className={classes.labelStyled}>Sensibilidad al sonido</label>
+                            <div className={styles.formField}>
+                                <label htmlFor="fonofobia" className={styles.labelStyled}>Sensibilidad al sonido</label>
                                 <select
                                     id="fonofobia"
                                     name="fonofobia"
                                     value={formData.fonofobia}
                                     onChange={handleInputChange}
-                                    className={`${classes.selectDefault} ${formData.fonofobia === '' ? classes.selectPlaceholder : ''}`}
+                                    className={`${styles.selectDefault} ${formData.fonofobia === '' ? styles.selectPlaceholder : ''}`}
                                 >
                                     <option value="" disabled>Seleccione una opción</option>
                                     <option value="Sí">Sí</option>
@@ -273,14 +257,14 @@ export default function IngresarCefalea() {
                                 </select>
                             </div>
 
-                            <div className="form-field">
-                                <label htmlFor="presencia_aura" className={classes.labelStyled}>Presencia de aura</label>
+                            <div className={styles.formField}>
+                                <label htmlFor="presencia_aura" className={styles.labelStyled}>Presencia de aura</label>
                                 <select
                                     id="presencia_aura"
                                     name="presencia_aura"
                                     value={formData.presencia_aura}
                                     onChange={handleInputChange}
-                                    className={`${classes.selectDefault} ${formData.presencia_aura === '' ? classes.selectPlaceholder : ''}`}
+                                    className={`${styles.selectDefault} ${formData.presencia_aura === '' ? styles.selectPlaceholder : ''}`}
                                 >
                                     <option value="" disabled>Seleccione una opción</option>
                                     <option value="Sí">Sí</option>
@@ -288,14 +272,14 @@ export default function IngresarCefalea() {
                                 </select>
                             </div>
 
-                            <div className="form-field">
-                                <label htmlFor="sintomas_aura" className={classes.labelStyled}>Síntomas del aura</label>
+                            <div className={styles.formField}>
+                                <label htmlFor="sintomas_aura" className={styles.labelStyled}>Síntomas del aura</label>
                                 <select
                                     id="sintomas_aura"
                                     name="sintomas_aura"
                                     value={formData.sintomas_aura}
                                     onChange={handleInputChange}
-                                    className={`${classes.selectDefault} ${formData.sintomas_aura === '' ? classes.selectPlaceholder : ''}`}
+                                    className={`${styles.selectDefault} ${formData.sintomas_aura === '' ? styles.selectPlaceholder : ''}`}
                                 >
                                     <option value="" disabled>Seleccione una opción</option>
                                     <option value="Ninguno">Ninguno</option>
@@ -309,8 +293,8 @@ export default function IngresarCefalea() {
                                 </select>
                             </div>
 
-                            <div className="form-field">
-                                <label htmlFor="duracion_aura_minutos" className={classes.labelStyled}>Duración del aura (min)</label>
+                            <div className={styles.formField}>
+                                <label htmlFor="duracion_aura_minutos" className={styles.labelStyled}>Duración del aura (min)</label>
                                 <input
                                     type="number"
                                     id="duracion_aura_minutos"
@@ -320,21 +304,21 @@ export default function IngresarCefalea() {
                                     max="120"
                                     value={formData.duracion_aura_minutos}
                                     onChange={handleInputChange}
-                                    className={classes.inputDefault}
+                                    className={styles.inputDefault}
                                 />
                             </div>
 
                             {/* Campos específicos para mujeres */}
                             {userInfo?.genero === 'F' && (
                                 <>
-                                    <div className="form-field">
-                                        <label htmlFor="en_menstruacion" className={classes.labelStyled}>En menstruación</label>
+                                    <div className={styles.formField}>
+                                        <label htmlFor="en_menstruacion" className={styles.labelStyled}>En menstruación</label>
                                         <select
                                             id="en_menstruacion"
                                             name="en_menstruacion"
                                             value={formData.en_menstruacion}
                                             onChange={handleInputChange}
-                                            className={`${classes.selectDefault} ${formData.en_menstruacion === '' ? classes.selectPlaceholder : ''}`}
+                                            className={`${styles.selectDefault} ${formData.en_menstruacion === '' ? styles.selectPlaceholder : ''}`}
                                         >
                                             <option value="" disabled>Seleccione una opción</option>
                                             <option value="Sí">Sí</option>
@@ -342,14 +326,14 @@ export default function IngresarCefalea() {
                                         </select>
                                     </div>
 
-                                    <div className="form-field">
-                                        <label htmlFor="anticonceptivos" className={classes.labelStyled}>Anticonceptivos</label>
+                                    <div className={styles.formField}>
+                                        <label htmlFor="anticonceptivos" className={styles.labelStyled}>Anticonceptivos</label>
                                         <select
                                             id="anticonceptivos"
                                             name="anticonceptivos"
                                             value={formData.anticonceptivos}
                                             onChange={handleInputChange}
-                                            className={`${classes.selectDefault} ${formData.anticonceptivos === '' ? classes.selectPlaceholder : ''}`}
+                                            className={`${styles.selectDefault} ${formData.anticonceptivos === '' ? styles.selectPlaceholder : ''}`}
                                         >
                                             <option value="" disabled>Seleccione una opción</option>
                                             <option value="Sí">Sí</option>
@@ -360,11 +344,11 @@ export default function IngresarCefalea() {
                             )}
                         </div>
 
-                        <div className="form-buttons">
-                            <button type="submit" className={classes.btnPrimary} disabled={loading}>
+                        <div className={styles.formButtons}>
+                            <button type="submit" className={styles.btnPrimary} disabled={loading}>
                                 {loading ? 'Guardando...' : 'Registrar'}
                             </button>
-                            <button type="button" className={classes.btnCancel} onClick={handleCancel} disabled={loading}>
+                            <button type="button" className={styles.btnCancel} onClick={handleCancel} disabled={loading}>
                                 Cancelar
                             </button>
                         </div>

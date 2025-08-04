@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import Header from '@/common/components/Header.jsx';
-import Tabla from '@/common/components/Tabla.jsx';
+import Header from '../components/Header.jsx';
+import Tabla from '../components/Tabla.jsx';
 import ModalFiltro from '../components/ModalFiltro.jsx';
 import { parseApiResponse, getErrorMessageMedico, fetchPacienteInfo, getAuthHeaders } from '../utils/apiUtils.js';
 import { transformEpisodioMedico, COLUMNAS_EPISODIOS_MEDICO } from '../utils/episodioUtils.js';
 import { BASE_URL, EPISODIOS_ENDPOINT } from '../utils/constants.js';
-import '@/features/feature_Grupo2_BitacoraAsistidaCefalea/styles/bitacora.module.css';
+import styles from '../styles/bitacora.module.css';
 
 export default function BitacoraDigitalMedico() {
     const { pacienteId } = useParams(); // Obtener el ID del paciente desde la URL
@@ -108,12 +108,12 @@ export default function BitacoraDigitalMedico() {
                 patientName={nombrePaciente}
             />
             {loading && (
-                <div style={{ padding: '20px', textAlign: 'center' }}>
+                <div className={styles.loading}>
                     Cargando episodios...
                 </div>
             )}
             {error && (
-                <div style={{ padding: '20px', color: 'red', textAlign: 'center' }}>
+                <div className={styles.error}>
                     {error}
                 </div>
             )}
@@ -122,6 +122,7 @@ export default function BitacoraDigitalMedico() {
                     data={episodios}
                     columns={COLUMNAS_EPISODIOS_MEDICO}
                     keyField="id"
+                    className={styles.tableContainer}
                     emptyMessage="No hay episodios de cefalea registrados"
                 />
             )}
