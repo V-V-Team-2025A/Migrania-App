@@ -22,6 +22,7 @@ class EpisodioData:
     presencia_aura: bool = False
     sintomas_aura: Optional[str] = 'Ninguno'
     duracion_aura_minutos: int = 0
+    duracion_cefalea_horas: float = 0.0
     en_menstruacion: bool = False
     anticonceptivos: bool = False
     categoria_diagnostica: str = 'No especificada'
