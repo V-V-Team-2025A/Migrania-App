@@ -7,7 +7,6 @@ class TratamientoService:
     def __init__(self, repository):
         self.repository = repository
 
-
     def crear_medicamento(self, nombre, dosis, caracteristica, hora_inicio, frecuencia_horas, duracion_dias):
         """Crear un nuevo medicamento"""
         medicamento = Medicamento(
@@ -20,23 +19,23 @@ class TratamientoService:
         )
         return self.repository.save_medicamento(medicamento)
 
-    def crear_tratamiento(self, paciente_id, recomendaciones=None, fecha_inicio=None, activo=True):
-        """Crear un nuevo tratamiento"""
-        if fecha_inicio is None:
-            fecha_inicio = timezone.now().date()
-
-        paciente_profile = self.repository.get_paciente_profile_by_id(paciente_id)
-        if not paciente_profile:
-            raise ValueError("Paciente no encontrado.")
+    def crear_tratamiento(self, paciente, episodio=None, recomendaciones=None, fecha_inicio=None, activo=True):
+        tratamiento_existente = Tratamiento.objects.filter(episodio=episodio).first()
+        if tratamiento_existente:
+            return tratamiento_existente
 
         tratamiento = Tratamiento(
-            paciente=paciente_profile,
+            paciente=paciente,
+            episodio=episodio,
             fecha_inicio=fecha_inicio,
-            activo=activo,
-            recomendaciones=recomendaciones or []
+            activo=activo
         )
-        return self.repository.save_tratamiento(tratamiento)
+        tratamiento.save()
 
+        if recomendaciones:
+            tratamiento.recomendaciones.set(recomendaciones)
+
+        return tratamiento
 
     def agregar_medicamento_a_tratamiento(self, tratamiento_id, medicamento):
         """Agregar un medicamento al tratamiento"""
@@ -133,12 +132,3 @@ class TratamientoService:
         )
 
         return self.repository.save_recordatorio(recordatorio)
-
-    def obtener_tratamientos_por_paciente(self, paciente_id):
-        """Obtener todos los tratamientos de un paciente específico."""
-        paciente_profile = self.repository.get_paciente_profile_by_id(paciente_id)
-        if not paciente_profile:
-            return []
-
-        # Usando el related_name='tratamientos' del ForeignKey
-        return paciente_profile.tratamientos.all()
