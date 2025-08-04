@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from rest_framework import serializers
 from .models import AutoevaluacionMidas, Pregunta, Respuesta
 
@@ -58,9 +60,17 @@ class AutoevaluacionMidasSerializer(serializers.ModelSerializer):
     """
 
     respuestas_midas_individuales = RespuestaSerializer(many=True, read_only=True)
+    fecha_autoevaluacion = serializers.SerializerMethodField()
 
     class Meta:
         model = AutoevaluacionMidas
         fields = ['id', 'fecha_autoevaluacion',
                   'puntaje_total', 'grado_discapacidad',
-                  'respuestas_midas_individuales']
+                  'respuestas_midas_individuales'
+                  ]
+
+    def get_fecha_autoevaluacion(self, obj):
+        # Forzar a date en caso de que sea datetime
+        if isinstance(obj.fecha_autoevaluacion, datetime):
+            return obj.fecha_autoevaluacion.date()
+        return obj.fecha_autoevaluacion
