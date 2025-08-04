@@ -209,7 +209,7 @@ button {
 }
 
 /* === TABLA === */
-.table-container {
+.table-container-PC {
     width: 100%;
     overflow-x: auto;
     margin-top: var(--spacing-l);
