@@ -2,32 +2,40 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from tratamiento.models import Medicamento, Tratamiento, Recordatorio, Alerta, EstadoNotificacion
 
+
 class TratamientoService:
     def __init__(self, repository):
         self.repository = repository
 
-    def crear_medicamento(self, nombre, dosis, hora_inicio, frecuencia_horas, duracion_dias):
+    def crear_medicamento(self, nombre, dosis, caracteristica, hora_inicio, frecuencia_horas, duracion_dias):
         """Crear un nuevo medicamento"""
         medicamento = Medicamento(
             nombre=nombre,
             dosis=dosis,
+            caracteristica=caracteristica,
             hora_de_inicio=hora_inicio,
             frecuencia_horas=frecuencia_horas,
             duracion_dias=duracion_dias
         )
         return self.repository.save_medicamento(medicamento)
 
-    def crear_tratamiento(self, recomendaciones=None, fecha_inicio=None, activo=True):
-        """Crear un nuevo tratamiento"""
-        if fecha_inicio is None:
-            fecha_inicio = timezone.now().date()
+    def crear_tratamiento(self, paciente, episodio=None, recomendaciones=None, fecha_inicio=None, activo=True):
+        tratamiento_existente = Tratamiento.objects.filter(episodio=episodio).first()
+        if tratamiento_existente:
+            return tratamiento_existente
 
         tratamiento = Tratamiento(
+            paciente=paciente,
+            episodio=episodio,
             fecha_inicio=fecha_inicio,
-            activo=activo,
-            recomendaciones=recomendaciones or []
+            activo=activo
         )
-        return self.repository.save_tratamiento(tratamiento)
+        tratamiento.save()
+
+        if recomendaciones:
+            tratamiento.recomendaciones.set(recomendaciones)
+
+        return tratamiento
 
     def agregar_medicamento_a_tratamiento(self, tratamiento_id, medicamento):
         """Agregar un medicamento al tratamiento"""
@@ -124,4 +132,3 @@ class TratamientoService:
         )
 
         return self.repository.save_recordatorio(recordatorio)
-
