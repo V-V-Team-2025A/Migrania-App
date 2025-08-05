@@ -1,0 +1,10 @@
+frontend/
+*.pyc
+__pycache__/
+.env
+.git/
+.gitignore
+.vscode/
+.idea/
+*.log
+.DS_Store
