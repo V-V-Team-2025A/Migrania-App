@@ -22,7 +22,7 @@ function Seguimiento() {
     const handleCancel = () => setIsModalVisible(true);
     const handleCloseModal = () => setIsModalVisible(false);
 
-    const handleNavigateHistorial = () => navigate("/historial");
+    const handleNavigateHistorial = () => navigate("/bitacora-medico/:pacienteId");
     const handleNavigateCrearTratamiento = () => navigate("/seguimiento/crearTratamiento");
     const handleNavigateTratamientos = () => navigate("/seguimiento/tratamientos");
 
@@ -44,22 +44,22 @@ function Seguimiento() {
             <div className="seguimiento__table-container">
                 <table>
                     <thead>
-                        <tr>
-                            <th>Num. Episodio</th>
-                            <th>Tipo Episodio</th>
-                            <th>Fecha</th>
-                            <th>Tratamiento</th>
-                        </tr>
+                    <tr>
+                        <th>Num. Episodio</th>
+                        <th>Tipo Episodio</th>
+                        <th>Fecha</th>
+                        <th>Tratamiento</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        {episodeData.map((episode) => (
-                            <tr key={episode.num}>
-                                <td>{episode.num}</td>
-                                <td>{episode.tipo}</td>
-                                <td>{episode.fecha}</td>
-                                <td>{episode.tratamiento}</td>
-                            </tr>
-                        ))}
+                    {episodeData.map((episode) => (
+                        <tr key={episode.num}>
+                            <td>{episode.num}</td>
+                            <td>{episode.tipo}</td>
+                            <td>{episode.fecha}</td>
+                            <td>{episode.tratamiento}</td>
+                        </tr>
+                    ))}
                     </tbody>
                 </table>
             </div>
