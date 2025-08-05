@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import AutoevaluacionMidas, Pregunta, Respuesta, EpisodioCefalea
 from rest_framework import serializers
 from usuarios.models import Usuario
-
+from drf_spectacular.utils import extend_schema_field
 
 class PreguntaSerializer(serializers.ModelSerializer):
     """
@@ -69,11 +69,6 @@ class AutoevaluacionMidasSerializer(serializers.ModelSerializer):
                   'puntaje_total', 'grado_discapacidad',
                   'respuestas_midas_individuales']
 
-    def get_fecha_autoevaluacion(self, obj):
-            # Forzar a date en caso de que sea datetime
-            if isinstance(obj.fecha_autoevaluacion, datetime):
-                return obj.fecha_autoevaluacion.date()
-            return obj.fecha_autoevaluacion
 
 class CrearEpisodioCefaleaSerializer(serializers.ModelSerializer):
     """

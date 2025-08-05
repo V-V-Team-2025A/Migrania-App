@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import TratamientoHeader from "../components/TratamientoHeader";
 import "../styles/PrimerConsulta.css";
 import ConfirmacionCancelar from "../components/ConfirmacionCancelar";
 
@@ -18,33 +19,44 @@ function PrimerConsulta() {
         ]);
     }, []);
 
-    const handleCancel = () => setIsModalVisible(true);
-    const handleCloseModal = () => setIsModalVisible(false);
-    const handleNavigateHistorial = () => navigate("/historial");
-    const handleNavigateCrearTratamiento = () => navigate("/primerConsulta/crearTratamiento");
+    const handleCancel = () => {
+        setIsModalVisible(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalVisible(false);
+    };
+
+    const handleNavigateHistorial = () => {
+        navigate("/historial");
+    };
+
+    const handleNavigateCrearTratamiento = () => {
+        navigate("/primerConsulta/crearTratamiento");
+    };
 
     const hasOneEpisode = episodeData.length === 1;
 
     return (
-        <div className="primerConsulta__container">
-            <header className="primerConsulta__header">
-                <div className="primerConsulta__user-info">
-                    <span className="primerConsulta__user-icon">👤</span>
-                    <span className="primerConsulta__user-name">{doctorName}</span>
+        <div className="container">
+            <header>
+                <div className="user-info">
+                    <span className="user-icon">👤</span>
+                    <span className="user-name">{doctorName}</span>
                 </div>
             </header>
 
             {hasOneEpisode && (
                 <>
-                    <div className="primerConsulta__patient-info">
+                    <div className="patient-info">
                         <h1>{patientName} - Primer Consulta</h1>
-                        <button className="primerConsulta__history-button" onClick={handleNavigateHistorial}>
+                        <button className="history-button" onClick={handleNavigateHistorial}>
                             Historial
                         </button>
                     </div>
 
-                    <div className="primerConsulta__table-container">
-                        <table className="primerConsulta__table">
+                    <div className="table-container">
+                        <table>
                             <thead>
                                 <tr>
                                     <th>Num. Episodio</th>
@@ -64,17 +76,16 @@ function PrimerConsulta() {
                         </table>
                     </div>
 
-                    <div className="primerConsulta__actions">
-                        <button className="primerConsulta__crear" onClick={handleNavigateCrearTratamiento}>
+                    <div className="actions">
+                        <button className="action-button create-treatment" onClick={handleNavigateCrearTratamiento}>
                             Crear tratamiento
                         </button>
-                        <button className="primerConsulta__cancelar" onClick={handleCancel}>
+                        <button className="action-button cancel" onClick={handleCancel}>
                             Cancelar
                         </button>
                     </div>
                 </>
             )}
-
             {isModalVisible && <ConfirmacionCancelar onClose={handleCloseModal} />}
         </div>
     );

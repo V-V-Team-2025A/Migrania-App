@@ -8,7 +8,58 @@
     flex-direction: column;
 }
 
-.tratamientos .table-container-PC {
+.tratamientos-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 16px 24px;
+    background-color: var(--color-text);
+    border-radius: 13px;
+    height: 50px;
+}
+
+.tratamientos-header .user-icon {
+    font-size: 2rem;
+}
+
+.tratamientos-header .user-name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-left: 10px;
+    color: var(--color-text-dark);
+}
+
+.tratamientos .patient-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 15px;
+}
+
+.tratamientos .patient-info h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 15px;
+}
+
+.tratamientos .history-button {
+    background-color: var(--color-action);
+    color: var(--color-text);
+    padding: 8px 20px;
+    border-radius: var(--border-radius);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    margin-left: 10px;
+    width: 200px;
+    justify-content: center;
+}
+
+.tratamientos .history-button:hover {
+    background-color: var(--color-action-hover);
+}
+
+.tratamientos .table-container {
     width: 100%;
     overflow-x: hidden;
 }
@@ -49,9 +100,10 @@
     justify-content: center;
     align-items: center;
     gap: 10px;
-    height: 100%;
-    width: 100%;
-    margin-left: 100px;
+    height: auto;
+    width: auto;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .tratamientos .edit-button,
@@ -94,6 +146,7 @@
     font-weight: 600;
     font-size: 1rem;
     width: 300px;
+    justify-content: center;
 }
 
 .tratamientos .cancel {
@@ -104,4 +157,5 @@
     font-weight: 600;
     font-size: 1rem;
     width: 300px;
+    justify-content: center;
 }

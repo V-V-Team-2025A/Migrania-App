@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import TratamientoHeader from "../components/TratamientoHeader";
 import "../styles/crearTratamiento.css";
 
 const recomendacionesHombre = [
@@ -25,6 +26,7 @@ function CrearTratamiento({ genero = "hombre" }) {
         { cantidad: 1, medicamento: "", caracteristica: "", frecuencia: "", duracion: "" }
     ]);
     const [recomendacionesSeleccionadas, setRecomendacionesSeleccionadas] = useState([]);
+    const [mostrarModal, setMostrarModal] = useState(false);  // Estado para mostrar el modal
 
     const recomendaciones = genero === "mujer" ? recomendacionesMujer : recomendacionesHombre;
 
@@ -54,22 +56,31 @@ function CrearTratamiento({ genero = "hombre" }) {
         );
     };
 
+    const handleEnviarTratamiento = () => {
+        setMostrarModal(true);  // Mostrar el modal cuando se envíe el tratamiento
+    };
+
+    const handleCerrarModal = () => {
+        setMostrarModal(false);  // Cerrar el modal
+        navigate("/home");  // Redirigir a la página anterior
+    };
+
     return (
-        <div className="crear-tratamiento-container">
-            <header className="crear-tratamiento-header">
-                <div className="crear-tratamiento-user-info">
-                    <span className="crear-tratamiento-user-icon">👤</span>
-                    <span className="crear-tratamiento-user-name">Dr. X</span>
+        <div className="container">
+            <header>
+                <div className="user-info">
+                    <span className="user-icon">👤</span>
+                    <span className="user-name">Dr. X</span>
                 </div>
             </header>
 
-            <div className="crear-tratamiento-patient-info">
+            <div className="patient-info">
                 <h1>Paciente X – Crear Tratamiento</h1>
             </div>
 
-            <div className="crear-tratamiento-tabla-container">
-                <table className="crear-tratamiento-tabla">
-                    <thead>
+                <div className="table-container">
+                    <table>
+                        <thead>
                         <tr>
                             <th>Cantidad</th>
                             <th>Medicamento</th>
@@ -78,8 +89,8 @@ function CrearTratamiento({ genero = "hombre" }) {
                             <th>Duración Tratamiento</th>
                             <th>Acciones</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                        </thead>
+                        <tbody>
                         {tratamientos.map((fila, index) => (
                             <tr key={index}>
                                 <td>
@@ -123,38 +134,48 @@ function CrearTratamiento({ genero = "hombre" }) {
                                         onChange={(e) => handleInputChange(index, "duracion", e.target.value)}
                                     />
                                 </td>
-                                <td className="crear-tratamiento-botones">
-                                    <button className="crear-tratamiento-add" onClick={handleAddFila}>+</button>
+                                <td className="acciones-botones">
+                                    <button className="add-button" onClick={handleAddFila}>+</button>
                                     {tratamientos.length > 1 && (
-                                        <button className="crear-tratamiento-remove" onClick={() => handleRemoveFila(index)}>-</button>
+                                        <button className="remove-button" onClick={() => handleRemoveFila(index)}>-</button>
                                     )}
                                 </td>
                             </tr>
                         ))}
-                    </tbody>
-                </table>
-
-                <div className="crear-tratamiento-recomendaciones">
-                    <h3>Recomendaciones</h3>
-                    <div className="crear-tratamiento-lista-recomendaciones">
-                        {recomendaciones.map((texto, i) => (
-                            <label key={i}>
-                                <input
-                                    type="checkbox"
-                                    checked={recomendacionesSeleccionadas.includes(texto)}
-                                    onChange={() => handleToggleRecomendacion(texto)}
-                                />
-                                {" "}{texto}
-                            </label>
-                        ))}
+                        </tbody>
+                    </table>
+                    <div className="recomendaciones">
+                        <h3>Recomendaciones</h3>
+                        <div className="lista-recomendaciones">
+                            {recomendaciones.map((texto, i) => (
+                                <label key={i}>
+                                    <input
+                                        type="checkbox"
+                                        checked={recomendacionesSeleccionadas.includes(texto)}
+                                        onChange={() => handleToggleRecomendacion(texto)}
+                                    />
+                                    {" "}{texto}
+                                </label>
+                            ))}
+                        </div>
                     </div>
                 </div>
+
+
+            <div className="actions">
+                <button className="create-treatment">Enviar tratamiento</button>
+                <button className="cancel" onClick={() => navigate(-1)}>↩ Regresar</button>
             </div>
 
-            <div className="crear-tratamiento-acciones">
-                <button className="crear-tratamiento-enviar">Enviar tratamiento</button>
-                <button className="crear-tratamiento-cancelar" onClick={() => navigate(-1)}>↩ Regresar</button>
-            </div>
+            {/* Modal para confirmación */}
+            {mostrarModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2>Tratamiento enviado</h2>
+                        <button onClick={handleCerrarModal}>Aceptar</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -22,9 +22,17 @@ function Seguimiento() {
     const handleCancel = () => setIsModalVisible(true);
     const handleCloseModal = () => setIsModalVisible(false);
 
-    const handleNavigateHistorial = () => navigate("/historial");
-    const handleNavigateCrearTratamiento = () => navigate("/seguimiento/crearTratamiento");
-    const handleNavigateTratamientos = () => navigate("/seguimiento/tratamientos");
+    const handleNavigateHistorial = () => {
+        navigate("/historial");
+    };
+
+    const handleNavigateCrearTratamiento = () => {
+        navigate("/seguimiento/crearTratamiento");
+    };
+
+    const handleNavigateTratamientos = () => {
+        navigate("/seguimiento/tratamientos");
+    }
 
     return (
         <div className="seguimiento">
