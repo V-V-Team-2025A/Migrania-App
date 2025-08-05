@@ -25,12 +25,13 @@ ALLOWED_HOSTS = [
     "127.0.0.1", 
     "0.0.0.0",
     ".railway.app",  # Allow Railway app domain
+    os.getenv('RAILWAY_STATIC_URL', ''),
     os.getenv('RAILWAY_PUBLIC_DOMAIN', ''),  # Allow Railway public domain if set
 ]
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = []
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Application definition
 
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     "djoser",
     "corsheaders",
     "drf_spectacular",
+    "whitenoise.runserver_nostatic",
     # Aplicaciones locales
     "usuarios",
     "tratamiento",
@@ -57,6 +59,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware", 
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -93,22 +96,29 @@ user = os.getenv("POSTGRES_USER")
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB", "postgres"),
-        "USER": os.getenv("POSTGRES_USER"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
-        "HOST": os.getenv("POSTGRES_HOST"),
-        "PORT": os.getenv("POSTGRES_PORT", "5432"),
-        "OPTIONS": {
-            "sslmode": "require",
-            "connect_timeout": 60,
-            "options": "-c statement_timeout=300000",
-        },
+# Database configuration
+if os.getenv('DATABASE_URL'):
+    # Railway proporciona DATABASE_URL automáticamente
+    DATABASES = {
+        'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
     }
-}
+else:
+    # Tu configuración actual de Supabase
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("POSTGRES_DB", "postgres"),
+            "USER": os.getenv("POSTGRES_USER"),
+            "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+            "HOST": os.getenv("POSTGRES_HOST"),
+            "PORT": os.getenv("POSTGRES_PORT", "5432"),
+            "OPTIONS": {
+                "sslmode": "require",
+                "connect_timeout": 60,
+                "options": "-c statement_timeout=300000",
+            },
+        }
+    }
 CORS_ALLOW_ALL_ORIGINS = True 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 
