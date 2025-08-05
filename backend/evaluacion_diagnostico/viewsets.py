@@ -59,7 +59,7 @@ class AutoevaluacionMidasViewSet(viewsets.ModelViewSet):
             delta = serializer.validated_data.get("fecha_autoevaluacion") or ultima.fecha_autoevaluacion
             dias = (delta - ultima.fecha_autoevaluacion).days
             if dias < 90:
-                raise PermissionDenied("No disponible")
+                raise PermissionDenied("Debes esperar al menos 90 días para una nueva autoevaluación.")
         serializer.save(paciente=paciente)
 
 

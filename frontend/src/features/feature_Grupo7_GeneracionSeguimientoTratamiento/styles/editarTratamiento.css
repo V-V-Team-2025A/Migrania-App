@@ -7,32 +7,6 @@
     height: 100vh;
 }
 
-.editar-tratamiento-header {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 16px 24px;
-    background-color: var(--color-text);
-    border-radius: 13px;
-    height: 50px;
-}
-
-.editar-tratamiento-user-info {
-    display: flex;
-    align-items: center;
-}
-
-.editar-tratamiento-header .user-icon {
-    font-size: 2rem;
-}
-
-.editar-tratamiento-header .user-name {
-    font-size: 1.6rem;
-    font-weight: 700;
-    margin-left: 10px;
-    color: var(--color-text-dark);
-}
-
 .editar-tratamiento-container h1 {
     font-size: 1.6rem;
     font-weight: 700;
@@ -149,7 +123,6 @@
     border-radius: var(--border-radius);
     font-weight: 600;
     font-size: 1rem;
-    justify-content: center;
 }
 
 .editar-tratamiento-cancelar {
@@ -160,7 +133,6 @@
     border-radius: var(--border-radius);
     font-weight: 600;
     font-size: 1rem;
-    justify-content: center;
 }
 
 .modal-overlay {
@@ -177,15 +149,12 @@
 }
 
 .modal-content {
-    background-color: var(--color-body-background);
-    padding: 40px;
-    border-radius: 12px;
+    background-color: var(--color-background);
+    padding: 24px 32px;
+    border-radius: var(--border-radius);
     text-align: center;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;}
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
 
 .modal-content h2 {
     font-size: 1.3rem;
@@ -194,16 +163,14 @@
 }
 
 .modal-content button {
-    margin-top: 20px;
-    padding: 10px 30px;
-    border: none;
-    border-radius: var(--border-radius);
     background-color: var(--color-action);
     color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--border-radius);
     font-weight: 600;
-    font-size: 1rem;
     cursor: pointer;
-    align-self: center;
+    font-size: 1rem;
 }
 
 .modal-content button:hover {

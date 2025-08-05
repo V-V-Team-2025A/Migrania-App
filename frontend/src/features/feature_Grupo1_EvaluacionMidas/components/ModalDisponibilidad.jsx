@@ -1,7 +1,13 @@
 import { useState } from "react";
 import styles from "../styles/ModalDisponibilidad.module.css";
+import { useNavigate } from "react-router-dom";
 
 export default function ModalDisponibilidad({ onClose }) {
+
+    const navigate = useNavigate()
+
+    const [puedeHacerAutoevaluacion, setPuedeHacerAutoevaluacion] = useState(true)
+
     return (
         <div className={styles["modal__overlay"]}>
             <div className={styles["modal__contenedor"]}>

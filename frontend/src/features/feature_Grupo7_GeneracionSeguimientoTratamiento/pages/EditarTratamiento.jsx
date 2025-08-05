@@ -25,12 +25,17 @@ function EditarTratamiento({ genero = "hombre" }) {
     const [tratamientos, setTratamientos] = useState([
         { cantidad: 1, medicamento: "Analgésicos", caracteristica: "500mg", frecuencia: "C/8h", duracion: "3 días" }
     ]);
-    const [recomendacionesSeleccionadas, setRecomendacionesSeleccionadas] = useState([ "Mantener una rutina regular de sueño" ]);
+    const [recomendacionesSeleccionadas, setRecomendacionesSeleccionadas] = useState([
+        "Mantener una rutina regular de sueño"
+    ]);
 
     const recomendaciones = genero === "mujer" ? recomendacionesMujer : recomendacionesHombre;
 
     const handleAddFila = () => {
-        setTratamientos([ ...tratamientos, { cantidad: 1, medicamento: "", caracteristica: "", frecuencia: "", duracion: "" } ]);
+        setTratamientos([
+            ...tratamientos,
+            { cantidad: 1, medicamento: "", caracteristica: "", frecuencia: "", duracion: "" }
+        ]);
     };
 
     const handleRemoveFila = (index) => {
@@ -63,8 +68,8 @@ function EditarTratamiento({ genero = "hombre" }) {
 
     return (
         <div className="editar-tratamiento-container">
-            <header className="editar-tratamiento-header">
-                <div className="editar-tratamiento-user-info">
+            <header>
+                <div className="user-info">
                     <span className="user-icon">👤</span>
                     <span className="user-name">Dr. X</span>
                 </div>

@@ -11,15 +11,9 @@ from .repositories import DjangoAnalisisPatronesRepository
 from .serializers import AnalisisPatronesSerializer
 from .estadisticas_service import EstadisticasHistorialService
 from .estadisticas_serializers import EstadisticasHistorialSerializer, PromediaSemanalRequestSerializer
-from drf_spectacular.utils import extend_schema
-from rest_framework.views import APIView
 from usuarios.models import Usuario
 
-@extend_schema(
-    summary="Análisis de patrones de migraña",
-    description="Endpoint para analizar y devolver patrones en los datos de migraña del usuario.",
-    responses={200: {'type': 'object', 'example': {'patron_comun': 'estres', 'frecuencia': 10}}}
-)
+
 class AnalisisPatronesView(APIView):
     permission_classes = [IsAuthenticated] # Solo usuarios autenticados pueden ver su análisis
 
@@ -46,10 +40,7 @@ class AnalisisPatronesView(APIView):
 
         return Response(serializer.data)
 
-@extend_schema(
-    summary="Estadísticas del historial de migrañas",
-    responses={200: {'type': 'object'}} # Ajusta la respuesta según lo que devuelvas
-)
+
 class EstadisticasHistorialView(APIView):
     """
     API View para estadísticas del historial de episodios de bitácora digital.
@@ -148,18 +139,7 @@ class EstadisticasHistorialView(APIView):
         
         return Response(serializer.data)
 
-@extend_schema(
-    summary="Promedio Semanal de Episodios",
-    description="Calcula y devuelve el promedio de episodios de migraña por semana.",
-    responses={
-        200: { # Describe la respuesta exitosa
-            'type': 'object',
-            'properties': {
-                'promedio_semanal': {'type': 'number', 'example': 1.5}
-            }
-        }
-    }
-)
+
 class PromedioSemanalView(APIView):
     """
     API View para el cálculo de promedio semanal de episodios.

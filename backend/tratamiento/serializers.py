@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from drf_spectacular.utils import extend_schema_field 
 
 from .models import Tratamiento, Medicamento
 from usuarios.models import PacienteProfile
@@ -92,7 +91,7 @@ class TratamientoUpdateSerializer(serializers.ModelSerializer):
 
 
 class TratamientoResumenSerializer(serializers.ModelSerializer):
-    episodio = serializers.StringRelatedField(read_only=True)
+    episodio = serializers.CharField(source='episodio')
     porcentaje_cumplimiento = serializers.FloatField(source='cumplimiento')
 
     class Meta:
@@ -111,6 +110,6 @@ class TratamientoSerializer(serializers.ModelSerializer):
             'id', 'episodio', 'paciente', 'paciente_nombre', 'fecha_inicio',
             'activo', 'cumplimiento', 'medicamentos', 'recomendaciones', 'motivo_cancelacion'
         ]
-    @extend_schema_field(serializers.CharField())
+
     def get_recomendaciones(self, obj):
         return [str(r) for r in obj.recomendaciones.all()]

@@ -95,7 +95,6 @@ button {
     margin-top: 20px;
 }
 
-/* Botón Confirmar */
 .suspender-tratamiento .confirmar {
     padding: var(--spacing-s) var(--spacing-m);
     border-radius: var(--border-radius);
@@ -106,14 +105,12 @@ button {
     color: var(--color-text);
     height: 40px;
     width: 300px;
-    justify-content: center;
 }
 
 .suspender-tratamiento .confirmar:hover {
     background-color: var(--color-action-hover);
 }
 
-/* Botón Cancelar */
 .suspender-tratamiento .cancelar {
     padding: var(--spacing-s) var(--spacing-m);
     border-radius: var(--border-radius);
@@ -123,7 +120,6 @@ button {
     background-color: var(--color-error);
     color: white;
     width: 300px;
-    justify-content: center;
 }
 
 .suspender-tratamiento .cancelar:hover {
@@ -172,4 +168,3 @@ button {
 .modal-aceptar:hover {
     background-color: var(--color-action-hover);
 }
-

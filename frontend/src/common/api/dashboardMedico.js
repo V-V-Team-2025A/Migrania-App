@@ -1,4 +1,4 @@
-export function getDashboardMedico() {
+export async function getDashboardMedico() {
   // Cuando conectes con el backend, cambia la URL:
   // const response = await fetch("/api/dashboard-medico/");
   // return await response.json();

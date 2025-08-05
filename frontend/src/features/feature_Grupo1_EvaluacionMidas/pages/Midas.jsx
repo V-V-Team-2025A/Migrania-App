@@ -14,12 +14,13 @@ export default function Midas() {
     const [mostrarModal, setMostrarModal] = useState(true);
     const [loading, setLoading] = useState(true);
 
+    const token = localStorage.getItem("access");
+    const location = useLocation();
+    const idAutoevaluacion = location.state?.idAutoevaluacion;
     useEffect(() => {
         const fetchPreguntas = async () => {
             try {
                 setLoading(true);
-                const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU0MjY4MjE0LCJpYXQiOjE3NTQyNjQ2MTQsImp0aSI6IjFkNDk1NWZjN2Y0YjQyYWM5NTg0OWFmNDcxNWVjYTRmIiwidXNlcl9pZCI6Ijk4NSJ9.z43h4CahAjL8dt63WjV5dQ2Sm6sfDgt0-VEfW2Ds-Z0"; // o donde lo tengas guardado
-
                 const response = await fetch('http://localhost:8000/api/evaluaciones/preguntas/', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -49,7 +50,26 @@ export default function Midas() {
         setMostrarModal(true);
     }, []);
 
-    const responderPregunta = () => {
+    const enviarRespuesta = async (idPregunta, valor) => {
+        try {
+            await fetch("http://localhost:8000/api/evaluaciones/respuestas/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    autoevaluacion: idAutoevaluacion,
+                    pregunta: idPregunta,
+                    valor_respuesta: valor,
+                })
+            });
+        } catch (error) {
+            console.error("Error al enviar respuesta:", error);
+        }
+    };
+
+    const responderPregunta = async () => {
         const nuevasRespuestas = [...respuestas];
         nuevasRespuestas[indice] = valorRespuesta;
         setRespuestas(nuevasRespuestas);
@@ -85,7 +105,7 @@ export default function Midas() {
 
     return (
         <div className={styles["midas__contenedor"]}>
-            {mostrarModal && <ModalDisponibilidad puedeHacerAutoevaluacion={puedeHacerAutoevaluacion} onClose={() => setMostrarModal(false)} />}
+            {mostrarModal && <ModalDisponibilidad onClose={() => setMostrarModal(false)} />}
             <h1>Autoevaluación MIDAS</h1>
             {loading ? (
                 <p>Cargando preguntas...</p>

@@ -1,4 +1,3 @@
-/* HISTORIAL DE TRATAMIENTOS */
 .historial-container {
     padding: var(--spacing-m);
     background-color: var(--color-body-background);
@@ -14,7 +13,6 @@
     margin-bottom: var(--spacing-m);
 }
 
-/* Botón regresar alineado a la derecha */
 .historial-header {
     display: flex;
     justify-content: flex-end;
@@ -57,7 +55,6 @@
     background-color: var(--color-background);
 }
 
-/* Asignar anchos fijos a las columnas */
 .historial-table th:nth-child(1),
 .historial-table td:nth-child(1) {
     width: 15%;
@@ -111,7 +108,6 @@
     background-color: var(--color-action-hover);
 }
 
-/* MODAL DE VER DETALLE */
 .ver-modal {
     position: fixed;
     top: 0;
@@ -173,7 +169,6 @@
     margin-left: 20px;
 }
 
-/* CENTRAR BOTÓN ACEPTAR */
 .ver-modal-content .aceptar {
     display: block;
     margin: var(--spacing-m) auto 0 auto;

@@ -1,6 +1,5 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import TratamientoHeader from "../components/TratamientoHeader";
 import "../styles/tratamientos.css";
 
 function Tratamientos() {
@@ -10,38 +9,31 @@ function Tratamientos() {
         {
             id: 1,
             episodio: 2,
-            fecha: "03/08/2025",
+            fecha: "dd/mm/aa",
             estado: "Activo",
-            cumplimiento: "75%",
-            medicamento: "Propranolol 40mg"
+            cumplimiento: "50%",
         },
         {
             id: 2,
             episodio: 1,
-            fecha: "01/08/2025",
+            fecha: "dd/mm/aa",
             estado: "Finalizado",
-            cumplimiento: "90%",
-            medicamento: "Sumatriptán 50mg"
+            cumplimiento: "50%",
         },
     ];
 
     return (
         <div className="tratamientos">
-            <TratamientoHeader 
-                title="Gestión de Tratamientos"
-                showBackButton={true}
-                customBackAction={() => navigate('/dashboard-paciente')}
-                userName="Dr. X"
-                patientName="Juan Pérez"
-            />
+            <header>
+                <div className="user-info">
+                    <span className="user-icon">👤</span>
+                    <span className="user-name">Dr. X</span>
+                </div>
+            </header>
 
             <div className="patient-info">
-                <button
-                    className="history-button"
-                    onClick={() => navigate("/historial-tratamientos")}
-                >
-                    Historial
-                </button>
+                <h1>Paciente X - Tratamientos</h1>
+                <button className="history-button">Historial</button>
             </div>
 
             <div className="table-container-PC">

@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from "../../common/styles/dashboardPaciente.module.css";
-import { BellIcon, StethoscopeIcon, ChartLineIcon, FilesIcon, PillIcon, PlusIcon, BrainIcon, SignOut } from "@phosphor-icons/react";
-import { 
-    parseApiResponse, 
-    getApiUrl, 
-    getAuthHeaders,
-    fetchEpisodiosPaciente 
-} from "../../features/feature_Grupo2_BitacoraAsistidaCefalea/utils/apiUtils.js";
-import { transformEpisodio } from "../../features/feature_Grupo2_BitacoraAsistidaCefalea/utils/episodioUtils.js";
-import { EPISODIOS_ENDPOINT } from "../../features/feature_Grupo2_BitacoraAsistidaCefalea/utils/constants.js";
+import { BellIcon, StethoscopeIcon, ChartLineIcon, FilesIcon, PillIcon, PlusIcon, BrainIcon } from "@phosphor-icons/react";
+import { fetchEpisodiosPaciente } from "../../utils/apiUtils.js";
+import {
+    obtenerFechaEpisodio,
+    compararFechas,
+    formatearFecha
+} from "../../utils/funciones.js";
 
 const TARJETAS_DASHBOARD = [
     {
@@ -61,8 +59,8 @@ export default function Dashboard() {
         }
 
         return episodios
-            .filter(episodio => episodio && episodio.creado_en)
-            .sort((a, b) => new Date(b.creado_en) - new Date(a.creado_en))
+            .filter(episodio => episodio && obtenerFechaEpisodio(episodio))
+            .sort(compararFechas)
             .slice(0, 4);
     };
 
@@ -72,14 +70,12 @@ export default function Dashboard() {
                 setCargandoEpisodios(true);
                 setErrorEpisodios(null);
 
-                const episodiosArray = await fetchEpisodiosPaciente();
-                const episodiosTransformados = episodiosArray.map(transformEpisodio);
-                const episodiosOrdenados = procesarEpisodios(episodiosTransformados);
-                
+                const episodios = await fetchEpisodiosPaciente();
+                const episodiosOrdenados = procesarEpisodios(episodios);
                 setEpisodiosRecientes(episodiosOrdenados);
             } catch (error) {
                 console.error('Error al cargar episodios recientes:', error);
-                setErrorEpisodios(error.message || 'Error al cargar episodios');
+                setErrorEpisodios(error.message);
             } finally {
                 setCargandoEpisodios(false);
             }
@@ -92,7 +88,42 @@ export default function Dashboard() {
         navigate(ruta);
     };
 
-    const TarjetaDashboard = ({  color, backgroundColor, titulo, descripcion, onClick }) => (
+    const handleNavegacionMidas = async () => {
+
+        const token = localStorage.getItem("access");
+
+        try {
+            const response = await fetch("http://localhost:8000/api/evaluaciones/autoevaluaciones/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({}),
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                if (data.detail === "Debes esperar al menos 90 días para una nueva autoevaluación.") {
+                    alert(data.detail);
+                    return;
+                }
+
+                console.error("Error inesperado:", data);
+                return;
+            }
+            const idAutoevaluacion = data.id;
+            navigate("/midas", {
+                state: {
+                    idAutoevaluacion: idAutoevaluacion
+                }
+            });
+
+        } catch (error) {
+            console.error("Error en la petición:", error);
+        }
+    };
+
+    const TarjetaDashboard = ({ icono: Icono, color, backgroundColor, titulo, descripcion, onClick }) => (
         <div
             className={styles["dashboard__tarjeta"]}
             onClick={onClick}
@@ -130,8 +161,7 @@ export default function Dashboard() {
     );
 
     const EpisodioItem = ({ episodio, index }) => {
-        // Usar directamente la fecha formateada que viene de transformEpisodio
-        const fechaFormateada = episodio.creado_en;
+        const fechaFormateada = formatearFecha(obtenerFechaEpisodio(episodio));
         const severidadClass = episodio.severidad
             ? styles[`dashboard__episodio-severidad--${episodio.severidad.toLowerCase()}`]
             : '';
@@ -146,10 +176,10 @@ export default function Dashboard() {
                         </div>
                     </div>
                     <div className={styles["dashboard__episodio-detalles"]}>
-                        <DetalleEpisodio icono="⏱" texto={episodio.duracion_cefalea_horas ? `${episodio.duracion_cefalea_horas}h` : 'N/A'} />
+                        <DetalleEpisodio icono="⏱" texto={episodio.duracion_cefalea_horas || episodio.duracion || 'N/A'} />
                         {episodio.localizacion && <DetalleEpisodio icono="📍" texto={episodio.localizacion} />}
-                        {episodio.caracter_dolor && (
-                            <DetalleEpisodio icono="💫" texto={episodio.caracter_dolor} />
+                        {(episodio.caracter_dolor || episodio.desencadenante) && (
+                            <DetalleEpisodio icono="💫" texto={episodio.caracter_dolor || episodio.desencadenante} />
                         )}
                     </div>
                 </div>
@@ -164,36 +194,17 @@ export default function Dashboard() {
                     <h2>¿Cómo te sientes hoy?</h2>
                     <p>¡Vas 5 días sin episodios! Sigue cuidándote y registrando tus síntomas.</p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <BellIcon size={32} color="var(--color-text)" />
-                    <button 
-                        onClick={handleLogout}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: '8px',
-                            borderRadius: '6px',
-                            transition: 'background-color 0.2s',
-                            backgroundColor: 'transparent'
-                        }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--color-background-light)'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                        title="Cerrar sesión"
-                    >
-                        <SignOut size={32} color="var(--color-text)" />
-                    </button>
-                </div>
+                <BellIcon size={32} color="var(--color-text)" />
             </div>
 
             <section className={styles["dashboard__contenedor-tarjetas"]}>
                 <TarjetaDashboard {...TARJETAS_DASHBOARD[0]} onClick={() => handleNavegacion('/bitacora-paciente')} />
-                <TarjetaDashboard {...TARJETAS_DASHBOARD[1]} onClick={() => handleNavegacion('/midas')} />
-                <TarjetaDashboard {...TARJETAS_DASHBOARD[2]} onClick={() => handleNavegacion('/historialTratamientos')} />
+
+                <TarjetaDashboard {...TARJETAS_DASHBOARD[1]} onClick={() => handleNavegacionMidas()} />
+                <TarjetaDashboard {...TARJETAS_DASHBOARD[2]} onClick={() => console.log('Navegando a tratamientos')} />
+
                 <TarjetaDashboard {...TARJETAS_DASHBOARD[3]} onClick={() => console.log('Navegando a progreso')} />
-                <TarjetaDashboard {...TARJETAS_DASHBOARD[4]} onClick={() =>  handleNavegacion('/analisis-patrones')} />
+                <TarjetaDashboard {...TARJETAS_DASHBOARD[4]} onClick={() => handleNavegacion('/analisis-patrones')} />
             </section>
 
             <div className={styles["dashboard__seccion-inferior"]}>
@@ -235,7 +246,7 @@ export default function Dashboard() {
                         <div style={{ color: "var(--color-secondary-dark)" }}>Propranolol 40mg</div>
                     </div>
 
-                    <button className="btn-primary" onClick={() => navigate("/formulario-cita")}>Agendar</button>
+                    <button className="btn-primary">Agendar</button>
                 </section>
             </div>
         </>
