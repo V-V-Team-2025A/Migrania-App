@@ -20,7 +20,7 @@ export default function Login() {
 
     try {
       // 1. Obtener el token de autenticación
-      const loginResponse = await fetch("http://127.0.0.1:8000/api/auth/jwt/create/", {
+      const loginResponse = await fetch("https://migrania-app-pruebas-production-1be5.up.railway.app/api/auth/jwt/create/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
@@ -36,7 +36,7 @@ export default function Login() {
       localStorage.setItem("refresh", tokenData.refresh);
 
       // 2. Obtener la información del dashboard para la redirección
-      const dashboardResponse = await fetch("http://127.0.0.1:8000/api/usuarios/dashboard/", {
+      const dashboardResponse = await fetch("https://migrania-app-pruebas-production-1be5.up.railway.app/api/usuarios/dashboard/", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
