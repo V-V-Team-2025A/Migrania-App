@@ -2,7 +2,7 @@ from datetime import timedelta
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from pathlib import Path
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -209,7 +209,6 @@ CORS_ALLOWED_ORIGINS = [
 
 # Email para desarrollo
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
 
 # Configuración de drf-spectacular para organizar tags
 SPECTACULAR_SETTINGS = {
