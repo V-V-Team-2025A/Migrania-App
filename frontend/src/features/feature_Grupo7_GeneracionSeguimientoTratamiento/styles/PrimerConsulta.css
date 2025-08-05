@@ -1,0 +1,127 @@
+.primer-consulta-container {
+    padding: var(--spacing-m);
+    background-color: var(--color-body-background);
+    border-radius: var(--border-radius);
+}
+
+header {
+    display: flex;
+    align-items: center;
+    padding: 16px 24px;
+    background-color: var(--color-text);
+    border-radius: 13px;
+    height: 50px;
+}
+
+header .primer-consulta-user-info {
+    display: flex;
+    align-items: center;
+}
+
+header .user-icon {
+    font-size: 2rem;
+}
+
+header .user-name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-left: 10px;
+    color: var(--color-text-dark);
+}
+
+.primer-consulta-patient-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--spacing-l);
+    margin-bottom: var(--spacing-l);
+}
+
+.primer-consulta-patient-info h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.primer-consulta-table-container {
+    width: 100%;
+    height: 350px;
+    overflow-y: auto;
+    background-color: var(--color-background);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: var(--spacing-m);
+}
+
+.primer-consulta-table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.primer-consulta-table th:nth-child(1),
+.primer-consulta-table td:nth-child(1) { width: 33.33%; }
+
+.primer-consulta-table th:nth-child(2),
+.primer-consulta-table td:nth-child(2) { width: 33.33%; }
+
+.primer-consulta-table th:nth-child(3),
+.primer-consulta-table td:nth-child(3) { width: 33.33%; }
+
+th, td {
+    padding: var(--spacing-s);
+    text-align: center;
+    vertical-align: middle;
+}
+
+.primer-consulta-actions {
+    display: flex;
+    margin-top: var(--spacing-xs);
+    gap: 10px;
+    justify-content: center;
+}
+
+.primer-consulta-action-button-create-treatment {
+    background-color: var(--color-action);
+    color: white;
+    padding: 12px 12px;
+    width: 300px;
+    height: 35px;
+    border-radius: var(--border-radius);
+    justify-content: center;
+}
+
+.primer-consulta-action-button-create-treatment:hover {
+    background-color: #2E7474;
+}
+
+.primer-consulta-action-button-cancel {
+    background-color: var(--color-error);
+    color: white;
+    padding: 12px 24px;
+    width: 300px;
+    height: 35px;
+    border-radius: var(--border-radius);
+    justify-content: center;
+}
+
+.primer-consulta-action-button-cancel:hover {
+    background-color: #D94A50;
+}
+
+.primer-consulta-history-button {
+    background-color: var(--color-action);
+    color: var(--color-text);
+    padding: 8px 20px;
+    border-radius: var(--border-radius);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    margin-left: auto;
+    display: block;
+    width: 200px;
+}
+
+.primer-consulta-history-button:hover {
+    background-color: #2E7474;
+}
