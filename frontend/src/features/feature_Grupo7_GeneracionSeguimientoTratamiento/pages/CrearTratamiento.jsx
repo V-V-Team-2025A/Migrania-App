@@ -25,6 +25,7 @@ function CrearTratamiento({ genero = "hombre" }) {
         { cantidad: 1, medicamento: "", caracteristica: "", frecuencia: "", duracion: "" }
     ]);
     const [recomendacionesSeleccionadas, setRecomendacionesSeleccionadas] = useState([]);
+    const [mostrarModal, setMostrarModal] = useState(false);  // Estado para mostrar el modal
 
     const recomendaciones = genero === "mujer" ? recomendacionesMujer : recomendacionesHombre;
 
@@ -54,12 +55,21 @@ function CrearTratamiento({ genero = "hombre" }) {
         );
     };
 
+    const handleEnviarTratamiento = () => {
+        setMostrarModal(true);  // Mostrar el modal cuando se envíe el tratamiento
+    };
+
+    const handleCerrarModal = () => {
+        setMostrarModal(false);  // Cerrar el modal
+        navigate("/home");  // Redirigir a la página anterior
+    };
+
     return (
         <div className="crear-tratamiento-container">
-            <header className="crear-tratamiento-header">
+            <header>
                 <div className="crear-tratamiento-user-info">
-                    <span className="crear-tratamiento-user-icon">👤</span>
-                    <span className="crear-tratamiento-user-name">Dr. X</span>
+                    <span className="user-icon">👤</span>
+                    <span className="user-name">Dr. X</span>
                 </div>
             </header>
 
@@ -67,73 +77,77 @@ function CrearTratamiento({ genero = "hombre" }) {
                 <h1>Paciente X – Crear Tratamiento</h1>
             </div>
 
-            <div className="crear-tratamiento-tabla-container">
-                <table className="crear-tratamiento-tabla">
+            <div className="crear-tratamiento-table-container">
+                <table className="crear-tratamiento-table">
                     <thead>
-                        <tr>
-                            <th>Cantidad</th>
-                            <th>Medicamento</th>
-                            <th>Característica</th>
-                            <th>Frecuencia</th>
-                            <th>Duración Tratamiento</th>
-                            <th>Acciones</th>
-                        </tr>
+                    <tr>
+                        <th>Cantidad</th>
+                        <th>Medicamento</th>
+                        <th>Característica</th>
+                        <th>Frecuencia</th>
+                        <th>Duración Tratamiento</th>
+                        <th>Acciones</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        {tratamientos.map((fila, index) => (
-                            <tr key={index}>
-                                <td>
-                                    <input
-                                        type="number"
-                                        placeholder="1"
-                                        min="1"
-                                        value={fila.cantidad}
-                                        onChange={(e) => handleInputChange(index, "cantidad", parseInt(e.target.value))}
-                                    />
-                                </td>
-                                <td>
-                                    <input
-                                        type="text"
-                                        placeholder="Ej: Analgésicos"
-                                        value={fila.medicamento}
-                                        onChange={(e) => handleInputChange(index, "medicamento", e.target.value)}
-                                    />
-                                </td>
-                                <td>
-                                    <input
-                                        type="text"
-                                        placeholder="Ej: 500mg"
-                                        value={fila.caracteristica}
-                                        onChange={(e) => handleInputChange(index, "caracteristica", e.target.value)}
-                                    />
-                                </td>
-                                <td>
-                                    <input
-                                        type="text"
-                                        placeholder="Ej: C/8h"
-                                        value={fila.frecuencia}
-                                        onChange={(e) => handleInputChange(index, "frecuencia", e.target.value)}
-                                    />
-                                </td>
-                                <td>
-                                    <input
-                                        type="text"
-                                        placeholder="Ej: 3 días"
-                                        value={fila.duracion}
-                                        onChange={(e) => handleInputChange(index, "duracion", e.target.value)}
-                                    />
-                                </td>
-                                <td className="crear-tratamiento-botones">
-                                    <button className="crear-tratamiento-add" onClick={handleAddFila}>+</button>
-                                    {tratamientos.length > 1 && (
-                                        <button className="crear-tratamiento-remove" onClick={() => handleRemoveFila(index)}>-</button>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
+                    {tratamientos.map((fila, index) => (
+                        <tr key={index}>
+                            <td>
+                                <input
+                                    type="number"
+                                    placeholder="1"
+                                    min="1"
+                                    value={fila.cantidad}
+                                    onChange={(e) => handleInputChange(index, "cantidad", parseInt(e.target.value))}
+                                    className="crear-tratamiento-input"
+                                />
+                            </td>
+                            <td>
+                                <input
+                                    type="text"
+                                    placeholder="Ej: Analgésicos"
+                                    value={fila.medicamento}
+                                    onChange={(e) => handleInputChange(index, "medicamento", e.target.value)}
+                                    className="crear-tratamiento-input"
+                                />
+                            </td>
+                            <td>
+                                <input
+                                    type="text"
+                                    placeholder="Ej: 500mg"
+                                    value={fila.caracteristica}
+                                    onChange={(e) => handleInputChange(index, "caracteristica", e.target.value)}
+                                    className="crear-tratamiento-input"
+                                />
+                            </td>
+                            <td>
+                                <input
+                                    type="text"
+                                    placeholder="Ej: C/8h"
+                                    value={fila.frecuencia}
+                                    onChange={(e) => handleInputChange(index, "frecuencia", e.target.value)}
+                                    className="crear-tratamiento-input"
+                                />
+                            </td>
+                            <td>
+                                <input
+                                    type="text"
+                                    placeholder="Ej: 3 días"
+                                    value={fila.duracion}
+                                    onChange={(e) => handleInputChange(index, "duracion", e.target.value)}
+                                    className="crear-tratamiento-input"
+                                />
+                            </td>
+                            <td className="crear-tratamiento-acciones-botones">
+                                <button className="crear-tratamiento-add-button" onClick={handleAddFila}>+</button>
+                                {tratamientos.length > 1 && (
+                                    <button className="crear-tratamiento-remove-button" onClick={() => handleRemoveFila(index)}>-</button>
+                                )}
+                            </td>
+                        </tr>
+                    ))}
                     </tbody>
                 </table>
-
                 <div className="crear-tratamiento-recomendaciones">
                     <h3>Recomendaciones</h3>
                     <div className="crear-tratamiento-lista-recomendaciones">
@@ -151,10 +165,22 @@ function CrearTratamiento({ genero = "hombre" }) {
                 </div>
             </div>
 
-            <div className="crear-tratamiento-acciones">
-                <button className="crear-tratamiento-enviar">Enviar tratamiento</button>
-                <button className="crear-tratamiento-cancelar" onClick={() => navigate(-1)}>↩ Regresar</button>
+            <div className="crear-tratamiento-actions">
+                <button className="crear-tratamiento-create-button" onClick={handleEnviarTratamiento}>
+                    Enviar tratamiento
+                </button>
+                <button className="crear-tratamiento-cancel-button" onClick={() => navigate(-1)}>Regresar</button>
             </div>
+
+            {/* Modal para confirmación */}
+            {mostrarModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2>Tratamiento enviado</h2>
+                        <button onClick={handleCerrarModal}>Aceptar</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

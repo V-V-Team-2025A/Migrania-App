@@ -33,10 +33,15 @@ function Tratamientos() {
 
             <div className="patient-info">
                 <h1>Paciente X - Tratamientos</h1>
-                <button className="history-button">Historial</button>
+                <button
+                    className="history-button"
+                    onClick={() => navigate("/historial")}  // Aquí agregamos la navegación al historial
+                >
+                    Historial
+                </button>
             </div>
 
-            <div className="table-container-PC">
+            <div className="table-container">
                 <table>
                     <thead>
                     <tr>

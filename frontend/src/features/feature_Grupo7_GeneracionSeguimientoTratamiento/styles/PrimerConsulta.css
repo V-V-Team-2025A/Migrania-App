@@ -1,11 +1,10 @@
-.primerConsulta__container {
+.primer-consulta-container {
     padding: var(--spacing-m);
     background-color: var(--color-body-background);
     border-radius: var(--border-radius);
-    min-height: 100vh;
 }
 
-.primerConsulta__header {
+header {
     display: flex;
     align-items: center;
     padding: 16px 24px;
@@ -14,36 +13,103 @@
     height: 50px;
 }
 
-.primerConsulta__user-info {
+header .primer-consulta-user-info {
     display: flex;
     align-items: center;
 }
 
-.primerConsulta__user-icon {
+header .user-icon {
     font-size: 2rem;
 }
 
-.primerConsulta__user-name {
+header .user-name {
     font-size: 1.6rem;
     font-weight: 700;
     margin-left: 10px;
     color: var(--color-text-dark);
 }
 
-.primerConsulta__patient-info {
+.primer-consulta-patient-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-top: var(--spacing-l);
+    margin-bottom: var(--spacing-l);
 }
 
-.primerConsulta__patient-info h1 {
+.primer-consulta-patient-info h1 {
     font-size: 32px;
     font-weight: 700;
     margin: 0;
 }
 
-.primerConsulta__history-button {
+.primer-consulta-table-container {
+    width: 100%;
+    height: 350px;
+    overflow-y: auto;
+    background-color: var(--color-background);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: var(--spacing-m);
+}
+
+.primer-consulta-table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.primer-consulta-table th:nth-child(1),
+.primer-consulta-table td:nth-child(1) { width: 33.33%; }
+
+.primer-consulta-table th:nth-child(2),
+.primer-consulta-table td:nth-child(2) { width: 33.33%; }
+
+.primer-consulta-table th:nth-child(3),
+.primer-consulta-table td:nth-child(3) { width: 33.33%; }
+
+th, td {
+    padding: var(--spacing-s);
+    text-align: center;
+    vertical-align: middle;
+}
+
+.primer-consulta-actions {
+    display: flex;
+    margin-top: var(--spacing-xs);
+    gap: 10px;
+    justify-content: center;
+}
+
+.primer-consulta-action-button-create-treatment {
+    background-color: var(--color-action);
+    color: white;
+    padding: 12px 12px;
+    width: 300px;
+    height: 35px;
+    border-radius: var(--border-radius);
+    justify-content: center;
+}
+
+.primer-consulta-action-button-create-treatment:hover {
+    background-color: #2E7474;
+}
+
+.primer-consulta-action-button-cancel {
+    background-color: var(--color-error);
+    color: white;
+    padding: 12px 24px;
+    width: 300px;
+    height: 35px;
+    border-radius: var(--border-radius);
+    justify-content: center;
+}
+
+.primer-consulta-action-button-cancel:hover {
+    background-color: #D94A50;
+}
+
+.primer-consulta-history-button {
     background-color: var(--color-action);
     color: var(--color-text);
     padding: 8px 20px;
@@ -51,76 +117,11 @@
     border: none;
     cursor: pointer;
     font-weight: 600;
+    margin-left: auto;
+    display: block;
     width: 200px;
 }
 
-.primerConsulta__history-button:hover {
+.primer-consulta-history-button:hover {
     background-color: #2E7474;
-}
-
-.primerConsulta__table-container {
-    width: 100%;
-    max-height: 350px;
-    overflow-y: auto;
-    background-color: var(--color-background);
-    border-radius: var(--border-radius);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin: var(--spacing-l) 0;
-}
-
-.primerConsulta__table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.primerConsulta__table th,
-.primerConsulta__table td {
-    padding: var(--spacing-s) var(--spacing-m);
-    font-size: 1rem;
-    color: var(--color-text);
-    border-bottom: 1px solid #4A5A69;
-    text-align: center;
-    white-space: nowrap;
-}
-
-.primerConsulta__table th {
-    font-weight: 600;
-    background-color: var(--color-background);
-}
-
-.primerConsulta__actions {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-top: var(--spacing-m);
-}
-
-.primerConsulta__crear {
-    background-color: var(--color-action);
-    width: 300px;
-    padding: var(--spacing-s) var(--spacing-m);
-    border-radius: var(--border-radius);
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    color: var(--color-text);
-}
-
-.primerConsulta__crear:hover {
-    background-color: #2E7474;
-}
-
-.primerConsulta__cancelar {
-    background-color: var(--color-error);
-    width: 300px;
-    padding: var(--spacing-s) var(--spacing-m);
-    border-radius: var(--border-radius);
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    color: var(--color-text);
-}
-
-.primerConsulta__cancelar:hover {
-    background-color: #D94A50;
 }
