@@ -9,7 +9,7 @@ export default function MidasMedico() {
         const fetchAutoevaluaciones = async () => {
             try {
 
-                const response = await fetch('http://localhost:8000/api/evaluaciones/autoevaluaciones/', {
+                const response = await fetch('https://migrania-app-pruebas-production.up.railway.app/api/evaluaciones/autoevaluaciones/', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     }

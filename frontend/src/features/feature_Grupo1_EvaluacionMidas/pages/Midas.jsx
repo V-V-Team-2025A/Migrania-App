@@ -22,7 +22,7 @@ export default function Midas() {
         const fetchPreguntas = async () => {
             try {
                 setLoading(true);
-                const response = await fetch('http://localhost:8000/api/evaluaciones/preguntas/', {
+                const response = await fetch('https://migrania-app-pruebas-production.up.railway.app/api/evaluaciones/preguntas/', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     }
@@ -53,7 +53,7 @@ export default function Midas() {
 
     const enviarRespuesta = async (idPregunta, valor) => {
         try {
-            await fetch("http://localhost:8000/api/evaluaciones/respuestas/", {
+            await fetch("https://migrania-app-pruebas-production.up.railway.app/api/evaluaciones/respuestas/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
