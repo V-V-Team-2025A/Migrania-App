@@ -1,69 +1,54 @@
-.container {
+.seguimiento {
     padding: var(--spacing-m);
     background-color: var(--color-body-background);
     border-radius: var(--border-radius);
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    gap: var(--spacing-m);
+    overflow: hidden;
 }
 
-.table-container {
-    width: 100%;
-    max-height: 350px;
-    overflow-y: auto;
-    background-color: var(--color-background);
-    border-radius: var(--border-radius);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: var(--spacing-m);
+header {
+    display: flex;
+    align-items: center;
+    padding: 16px 24px;
+    background-color: var(--color-text);
+    border-radius: 13px;
+    height: 50px;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
+header .user-info {
+    display: flex;
+    align-items: center;
 }
 
-thead {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
+header .user-icon {
+    font-size: 2rem;
 }
 
-tbody {
-    display: block;
-    max-height: 320px;
-    width: 100%;
+header .user-name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-left: 10px;
+    color: var(--color-text-dark);
 }
 
-tbody tr {
-    display: table;
-    table-layout: fixed;
-    width: 100%;
+.seguimiento__patient-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
 }
 
-table th, table td {
-    padding: var(--spacing-s) var(--spacing-m);
-    font-size: 1rem;
-    color: var(--color-text);
-    border-bottom: 1px solid #4A5A69;
-    text-align: center;
-    white-space: nowrap;
-    box-sizing: border-box;
+.seguimiento__patient-info h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 15px;
 }
 
-table tbody tr:hover {
-    background-color: transparent;
-}
-
-/* Botones */
-button {
-    padding: var(--spacing-s) var(--spacing-m);
-    border-radius: var(--border-radius);
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-}
-.tratamiento-button {
+.seguimiento__history-button,
+.seguimiento__tratamiento-button {
     background-color: var(--color-action);
     color: var(--color-text);
     padding: 8px 20px;
@@ -71,35 +56,156 @@ button {
     border: none;
     cursor: pointer;
     font-weight: 600;
-    margin-left: 10px;
+    margin-left: auto;
+    display: block;
     width: 200px;
 }
 
-.tratamiento-button:hover {
-    background-color: var(--color-action-hover);
-}
-
-button.create-treatment {
-    background-color: var(--color-action);
-    width: 300px;
-}
-
-button.create-treatment:hover {
+.seguimiento__history-button:hover,
+.seguimiento__tratamiento-button:hover {
     background-color: #2E7474;
 }
 
-button.cancel {
-    background-color: var(--color-error);
-    width: 300px;
+.seguimiento__table-container {
+    width: auto;
+    max-height: auto;
+    overflow-y: auto;
+    background-color: var(--color-background);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: var(--spacing-m);
+    flex-shrink: 0;
 }
 
-button.cancel:hover {
+.seguimiento__table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.seguimiento__table-container th,
+.seguimiento__table-container td {
+    padding: var(--spacing-s) var(--spacing-m);
+    text-align: center;
+    vertical-align: middle;
+    font-size: 1rem;
+    color: var(--color-text);
+    border-bottom: 1px solid #4A5A69;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.seguimiento__table-container th {
+    background-color: var(--color-background);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.seguimiento__table-container tbody tr:hover {
+    background-color: var(--color-background-hover);
+}
+
+.seguimiento__actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: var(--spacing-m);
+}
+
+.seguimiento__create-treatment {
+    background-color: var(--color-action);
+    color: white;
+    padding: 12px 12px;
+    width: 300px;
+    height: 35px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 1rem;
+    justify-content: center;
+}
+
+.seguimiento__create-treatment:hover {
+    background-color: #2E7474;
+}
+
+.seguimiento__cancel {
+    background-color: var(--color-error);
+    color: white;
+    padding: 12px 24px;
+    width: 300px;
+    height: 35px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 1rem;
+    justify-content: center;
+}
+
+.seguimiento__cancel:hover {
     background-color: #D94A50;
 }
 
-.actions {
+/* Modal de confirmación de cancelación */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
     display: flex;
-    gap: 10px;
     justify-content: center;
-    margin-top: var(--spacing-m);
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 24px;
+    border-radius: var(--border-radius);
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h2 {
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+    color: var(--color-text);
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.button-confirm,
+.button-cancel {
+    padding: 10px 20px;
+    margin: 10px;
+    border-radius: var(--border-radius);
+    border: none;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.button-confirm {
+    background-color: var(--color-error);
+    color: white;
+}
+
+.button-cancel {
+    background-color: var(--color-action);
+    color: white;
+}
+
+.button-confirm:hover {
+    background-color: #D94A50;
+}
+
+.button-cancel:hover {
+    background-color: #2E7474;
 }
