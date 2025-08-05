@@ -23,11 +23,9 @@ import PrimerConsulta from "./features/feature_Grupo7_GeneracionSeguimientoTrata
 import Seguimiento from "./features/feature_Grupo7_GeneracionSeguimientoTratamiento/pages/Seguimiento.jsx";
 import CrearTratamiento from "./features/feature_Grupo7_GeneracionSeguimientoTratamiento/pages/CrearTratamiento.jsx";
 import Tratamientos from "./features/feature_Grupo7_GeneracionSeguimientoTratamiento/pages/Tratamientos.jsx";
-import SuspenderTratamiento
-  from "./features/feature_Grupo7_GeneracionSeguimientoTratamiento/pages/SuspenderTratamiento.jsx";
+import SuspenderTratamiento from "./features/feature_Grupo7_GeneracionSeguimientoTratamiento/pages/SuspenderTratamiento.jsx";
 import EditarTratamiento from "./features/feature_Grupo7_GeneracionSeguimientoTratamiento/pages/EditarTratamiento.jsx";
-import HistorialTratamientos
-  from "./features/feature_Grupo7_GeneracionSeguimientoTratamiento/pages/HistorialTratamientos.jsx";
+import HistorialTratamientos from "./features/feature_Grupo7_GeneracionSeguimientoTratamiento/pages/HistorialTratamientos.jsx";
 import EstadisticasPaciente from "./features/feature_Grupo4_EstadisticasHistorial/pages/Estadisticas_Paciente.jsx"
 
 
@@ -64,15 +62,26 @@ createRoot(document.getElementById('root')).render(
 
         <Route path="/midas/resultados" element={<Resultados />} />
         <Route path='/midas/estadisticas' element={<MidasEstadisticas />} />
+        
+        {/* Rutas de Tratamientos */}
+        <Route path="/tratamientos" element={<Tratamientos />} />
+        <Route path="/primera-consulta" element={<PrimerConsulta />} />
+        <Route path="/crear-tratamiento" element={<CrearTratamiento />} />
+        <Route path="/editar-tratamiento/:id" element={<EditarTratamiento />} />
+        <Route path="/suspender-tratamiento/:id" element={<SuspenderTratamiento />} />
+        <Route path="/seguimiento" element={<Seguimiento />} />
+        <Route path="/historial-tratamientos" element={<HistorialTratamientos />} />
+        
+        {/* Rutas legacy de tratamientos (mantener por compatibilidad) */}
         <Route path="/primerConsulta" element={<PrimerConsulta />} />
         <Route path="/primerConsulta/crearTratamiento" element={<CrearTratamiento />} />
-        <Route path="/seguimiento" element={<Seguimiento />} />
         <Route path="/seguimiento/crearTratamiento" element={<CrearTratamiento />} />
         <Route path="/seguimiento/tratamientos" element={<Tratamientos />} />
         <Route path="/seguimiento/tratamientos/crearTratamiento" element={<CrearTratamiento />} />
         <Route path="/seguimiento/tratamientos/crearTratamiento/suspenderTratamiento" element={<SuspenderTratamiento />} />
         <Route path="/seguimiento/tratamientos/crearTratamiento/editarTratamiento" element={<EditarTratamiento />} />
         <Route path="/historialTratamientos" element={<HistorialTratamientos />} />
+        
         <Route path='/estadisticas' element={<EstadisticasPaciente />} />
       </Routes>
     </Router>

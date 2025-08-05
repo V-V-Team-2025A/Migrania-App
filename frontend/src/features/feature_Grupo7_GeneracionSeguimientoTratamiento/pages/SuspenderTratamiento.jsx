@@ -6,12 +6,13 @@ function SuspenderTratamiento() {
     const [mostrarModal, setMostrarModal] = useState(false);
     const navigate = useNavigate();
     const suspender = () => {
+        // lógica para suspender tratamiento (guardar, validar, etc.)
         setMostrarModal(true); // muestra el modal
     };
 
     const aceptar = () => {
         setMostrarModal(false);
-        navigate("/home");
+        navigate("/home"); // redirige al home del doctor
     };
     const tratamientoActivo = {
         cantidad: 1,
