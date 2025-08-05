@@ -6,7 +6,7 @@ const getApiBaseUrl = () => {
     return process.env.REACT_APP_API_BASE_URL;
   }
   // Fallback para desarrollo local
-  return 'http://localhost:8000/api';
+  return 'https://migrania-app-pruebas-production-1be5.up.railway.app/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
