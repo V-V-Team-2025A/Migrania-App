@@ -112,11 +112,6 @@ else:
             "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
             "HOST": os.getenv("POSTGRES_HOST"),
             "PORT": os.getenv("POSTGRES_PORT", "5432"),
-            "OPTIONS": {
-                "sslmode": "require",
-                "connect_timeout": 60,
-                "options": "-c statement_timeout=300000",
-            },
         }
     }
 CORS_ALLOW_ALL_ORIGINS = True 

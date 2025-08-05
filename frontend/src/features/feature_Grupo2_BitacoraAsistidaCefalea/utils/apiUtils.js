@@ -1,6 +1,6 @@
 
 // Importaciones de constantes y funciones auxiliares
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://migrania-app-pruebas-production.up.railway.app/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://migrania-app-pruebas-production-1be5.up.railway.app/api';
 const EPISODIOS_ENDPOINT = '/evaluaciones/episodios/';
 
 // Funciones auxiliares
