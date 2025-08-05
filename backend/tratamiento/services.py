@@ -22,7 +22,13 @@ class TratamientoService:
         """Crear un nuevo tratamiento"""
         if fecha_inicio is None:
             fecha_inicio = timezone.now().date()
-
+        if episodio == None and paciente == None:
+            tratamiento = Tratamiento(
+                fecha_inicio=fecha_inicio,
+                activo=activo,
+                recomendaciones=recomendaciones or []
+            )
+            return self.repository.save_tratamiento(tratamiento)
         tratamiento = Tratamiento(
             paciente=paciente,
             episodio=episodio,
@@ -53,7 +59,7 @@ class TratamientoService:
         if not tratamiento:
             return []
 
-        notificaciones = tratamiento.generarNotificaciones(fecha_actual)
+        notificaciones = tratamiento.generar_notificaciones(fecha_actual, self.repository)
         for notificacion in notificaciones:
             if isinstance(notificacion, Recordatorio):
                 self.repository.save_recordatorio(notificacion)
@@ -71,7 +77,7 @@ class TratamientoService:
         if not tratamiento:
             return []
 
-        notificaciones_procesadas = tratamiento.procesarNotificacionesPendientes(ahora)
+        notificaciones_procesadas = tratamiento.procesar_notificaciones_pendientes(ahora)
 
         # Guardar las notificaciones procesadas
         for notificacion in notificaciones_procesadas:
@@ -92,9 +98,9 @@ class TratamientoService:
             return None
 
         if tomado:
-            estado = alerta.confirmarTomado(hora_confirmacion)
+            estado = alerta.confirmar_tomado(hora_confirmacion)
         else:
-            estado = alerta.confirmarNoTomado()
+            estado = alerta.confirmar_no_tomado()
 
         self.repository.save_alerta(alerta)
         return estado
@@ -108,7 +114,7 @@ class TratamientoService:
         if not tratamiento:
             return None
 
-        return tratamiento.obtenerSiguienteNotificacion(ahora)
+        return tratamiento.obtener_siguiente_notificacion(ahora)
 
     def generar_recordatorio_recomendacion(self, tratamiento_id, recomendacion, hora_actual=None):
         """Generar un recordatorio de recomendación específico"""
@@ -156,11 +162,11 @@ class TratamientoService:
             return None
 
         if nuevo_estado == EstadoNotificacion.CONFIRMADO_TOMADO:
-            estado = alerta.confirmarTomado(hora_confirmacion)
+            estado = alerta.confirmar_tomado(hora_confirmacion)
         elif nuevo_estado == EstadoNotificacion.CONFIRMADO_NO_TOMADO:
-            estado = alerta.confirmarNoTomado()
+            estado = alerta.confirmar_no_tomado()
         else:
-            alerta.asignarEstado(nuevo_estado)
+            alerta.asignar_estado(nuevo_estado)
             estado = nuevo_estado
 
         self.repository.save_alerta(alerta)
@@ -214,7 +220,7 @@ class TratamientoService:
             return None
 
         # Cambiar estado a uno que indique que está desactivado
-        recordatorio.asignarEstado(EstadoNotificacion.CONFIRMADO_NO_TOMADO)
+        recordatorio.asignar_estado(EstadoNotificacion.CONFIRMADO_NO_TOMADO)
         self.repository.save_recordatorio(recordatorio)
 
         return {
@@ -234,4 +240,4 @@ class TratamientoService:
         if not tratamiento:
             return []
 
-        return tratamiento.obtenerNotificacionesPendientes()
+        return tratamiento.obtener_notificaciones_pendientes()

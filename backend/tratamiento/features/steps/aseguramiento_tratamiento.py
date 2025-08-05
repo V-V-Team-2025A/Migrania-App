@@ -1,21 +1,17 @@
 import os, django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'migraine_app.settings')
 django.setup()
-from usuarios.models import PacienteProfile
 from behave import step, use_step_matcher
 from datetime import datetime, timedelta
 from tratamiento.models import Recordatorio, Alerta, EstadoNotificacion, Recomendacion
 from tratamiento.repositories import FakeRepository
 from faker import Faker
 from tratamiento.services import TratamientoService
-import logging
 import warnings
 
 fake = Faker('es_ES')
 warnings.filterwarnings("ignore", category=RuntimeWarning, message="DateTimeField .* received a naive datetime")
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 use_step_matcher("re")
 
 @step("que el paciente tiene una medicina prescrita para la migraña")
@@ -24,25 +20,6 @@ def step_impl(context):
     context.service = TratamientoService(context.repository)
 
     hora_actual = datetime.now().time()
-    from django.contrib.auth import get_user_model
-    User = get_user_model()
-
-    context.usuario_paciente = User.objects.create_user(
-        username=fake.user_name(),
-        email=fake.unique.email(),
-        first_name=fake.first_name(),
-        last_name=fake.last_name(),
-        cedula=str(fake.unique.random_number(digits=10, fix_len=True)),
-        tipo_usuario='paciente',
-        genero=fake.random_element(['M', 'F', 'O', 'N']),
-    )
-
-    context.paciente = PacienteProfile.objects.create(
-        usuario=context.usuario_paciente,
-        contacto_emergencia_nombre=fake.name(),
-        contacto_emergencia_telefono=fake.phone_number()[:15],
-        contacto_emergencia_relacion="Padre"
-    )
 
     context.medicamento = context.service.crear_medicamento(
         nombre="Ibuprofeno",
@@ -55,7 +32,8 @@ def step_impl(context):
 
     context.tratamiento = context.service.crear_tratamiento(
         fecha_inicio=datetime.now().date(),
-        paciente=context.paciente,
+        episodio=None,
+        paciente=None,
         activo=True
     )
 
@@ -74,15 +52,14 @@ def step_impl(context):
     )
 
     context.hora_actual = context.hora_toma - timedelta(minutes=30)
+    assert context.hora_actual < context.hora_toma, "La hora actual no es antes de la hora de la toma"
 
+@step("se enviará un recordatorio al paciente indicando que debe tomar su medicación pronto")
+def step_impl(context):
     context.notificaciones = context.service.generar_notificaciones(
         context.tratamiento.id,
         context.hora_actual.date()
     )
-
-@step("se enviará un recordatorio al paciente indicando que debe tomar su medicación pronto")
-def step_impl(context):
-    recordatorios = [n for n in context.notificaciones if isinstance(n, Recordatorio)]
 
 @step('el estado del recordatorio será "activo"')
 def step_impl(context):
@@ -109,28 +86,31 @@ def step_impl(context, numero_alerta):
     context.repository.save_alerta(context.alerta)
     context.num_alerta = num_alerta
     context.alerta.enviar()
+    assert not context.alerta.estado == EstadoNotificacion.ACTIVO
 
 @step("la hora actual es (?P<tiempo_transcurrido>\\d+) minutos después de la hora programada para la toma")
 def step_impl(context, tiempo_transcurrido):
     tiempo_transcurrido = int(tiempo_transcurrido)
     context.hora_programada = context.alerta.fecha_hora
     context.hora_actual = context.hora_programada + timedelta(minutes=tiempo_transcurrido)
+    assert context.hora_actual >= context.hora_programada, "La hora actual no es después de la hora programada"
 
 @step("transcurran 15 minutos sin que el paciente confirme la toma")
 def step_impl(context):
     context.hora_transcurrida = context.hora_actual + timedelta(minutes=15)
-    context.nueva_alerta = context.alerta.reenviar(context.hora_transcurrida)
-    if context.nueva_alerta:
-        context.repository.save_alerta(context.nueva_alerta)
+    assert context.alerta.estado == EstadoNotificacion.SIN_CONFIRMAR
 
 @step('se actualizará el estado de la alerta a "sin confirmar"')
 def step_impl(context):
     alerta_actualizada = context.repository.get_alerta_by_id(context.alerta.id)
-    assert alerta_actualizada.estado == EstadoNotificacion.CONFIRMADO_NO_TOMADO, \
-        f"El estado de la alerta es {alerta_actualizada.estado}, debería ser {EstadoNotificacion.CONFIRMADO_NO_TOMADO}"
+    assert alerta_actualizada.estado == EstadoNotificacion.SIN_CONFIRMAR, \
+        f"El estado de la alerta es {alerta_actualizada.estado}, debería ser {EstadoNotificacion.SIN_CONFIRMAR}"
 
 @step("se programará una (?P<accion_siguiente>.*) alerta")
 def step_impl(context, accion_siguiente):
+    context.nueva_alerta = context.alerta.reenviar(context.hora_transcurrida)
+    if context.nueva_alerta:
+        context.repository.save_alerta(context.nueva_alerta)
     if accion_siguiente.lower() == "ninguna":
         assert context.nueva_alerta is None, "Se programó una alerta cuando no debería haberse programado ninguna"
     else:
@@ -143,10 +123,12 @@ def step_impl(context, accion_siguiente):
 def step_impl(context, estado_toma):
     tomado = estado_toma.lower() == "si"
     if tomado:
-        context.estado_resultado = context.alerta.confirmarTomado(context.hora_actual)
+        context.estado_resultado = context.alerta.confirmar_tomado(context.hora_actual)
     else:
-        context.estado_resultado = context.alerta.confirmarNoTomado()
+        context.estado_resultado = context.alerta.confirmar_no_tomado()
     context.repository.save_alerta(context.alerta)
+    assert not context.alerta.estado == EstadoNotificacion.SIN_CONFIRMAR
+
 
 @step('se actualizará el estado de la alerta a "(?P<estado_resultado>.*)"')
 def step_impl(context, estado_resultado):
@@ -166,7 +148,8 @@ def step_impl(context, estado_resultado):
 @step("que el paciente tiene una recomendación de tratamiento para la migraña")
 def step_impl(context):
     context.tratamiento = context.service.crear_tratamiento(
-        paciente=context.paciente,
+        paciente=None,
+        episodio=None,
         recomendaciones=[Recomendacion.HIDRATACION],
         fecha_inicio=datetime.now().date(),
         activo=True
