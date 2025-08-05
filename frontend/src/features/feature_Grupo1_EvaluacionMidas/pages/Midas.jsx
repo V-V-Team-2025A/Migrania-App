@@ -17,11 +17,12 @@ export default function Midas() {
     const token = localStorage.getItem("access");
     const location = useLocation();
     const idAutoevaluacion = location.state?.idAutoevaluacion;
+    const puedeHacerAutoevaluacion = location.state?.puedeHacerAutoevaluacion;
     useEffect(() => {
         const fetchPreguntas = async () => {
             try {
                 setLoading(true);
-                const response = await fetch('http://localhost:8000/api/evaluaciones/preguntas/', {
+                const response = await fetch('https://migrania-app-pruebas-production-1be5.up.railway.app/api/evaluaciones/preguntas/', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     }
@@ -52,7 +53,7 @@ export default function Midas() {
 
     const enviarRespuesta = async (idPregunta, valor) => {
         try {
-            await fetch("http://localhost:8000/api/evaluaciones/respuestas/", {
+            await fetch("https://migrania-app-pruebas-production-1be5.up.railway.app/api/evaluaciones/respuestas/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -105,7 +106,7 @@ export default function Midas() {
 
     return (
         <div className={styles["midas__contenedor"]}>
-            {mostrarModal && <ModalDisponibilidad onClose={() => setMostrarModal(false)} />}
+            {mostrarModal && <ModalDisponibilidad puedeHacerAutoevaluacion={puedeHacerAutoevaluacion} onClose={() => setMostrarModal(false)} />}
             <h1>Autoevaluación MIDAS</h1>
             {loading ? (
                 <p>Cargando preguntas...</p>
