@@ -96,7 +96,7 @@ export default function Dashboard() {
     const token = localStorage.getItem("access");
 
     try {
-        const response = await fetch("https://migrania-app-pruebas-production.up.railway.app/api/evaluaciones/autoevaluaciones/", {
+        const response = await fetch("https://migrania-app-pruebas-production-1be5.up.railway.app/api/evaluaciones/autoevaluaciones/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
