@@ -10,7 +10,7 @@ const getEnvVar = (key, defaultValue = '') => {
 
 export const API_CONFIG = {
   // URL base de la API - ajustar según el entorno
-  BASE_URL: getEnvVar('REACT_APP_API_BASE_URL', 'https://migrania-app-pruebas-production.up.railway.app/api'),
+  BASE_URL: getEnvVar('REACT_APP_API_BASE_URL', 'https://migrania-app-pruebas-production-1be5.up.railway.app/api'),
   
   // Endpoints específicos
   ENDPOINTS: {
