@@ -27,7 +27,7 @@ Esquema del escenario: Análisis de características diagnósticas clave
 Esquema del escenario: Análisis de síntomas asociados y su frecuencia
     Dado que el paciente ha registrado los siguientes episodios
       | severidad  | nauseas_vomitos | fotofobia | fonofobia |
-      | "Severa"   | "Sí"            | "No"      | "Sí"      |
+      | "Severa"   | "No"            | "No"      | "Sí"      |
       | "Moderada" | "No"            | "Sí"      | "Sí"      |
       | "Leve"     | "No"            | "No"      | "No"      |
       | "Severa"   | "Sí"            | "Sí"      | "Sí"      |
@@ -41,7 +41,7 @@ Esquema del escenario: Análisis de síntomas asociados y su frecuencia
     Y el sistema debe generar una conclusión sobre la correlación con la severidad con el mensaje: "<mensaje_correlacion_severidad>"
 
     Ejemplos:
-      | mensaje_sintoma_frecuente                                                           | mensaje_correlacion_severidad                                                                                                   |
+      | mensaje_sintoma_frecuente                                                                     | mensaje_correlacion_severidad                                                                                                   |
       | "Se observa que la fonofobia (sensibilidad al sonido) es un síntoma constante en tus crisis." | "Parece haber una relación entre la intensidad del dolor y las náuseas: cuando la cefalea es 'Severa', es más probable que experimentes náuseas." |
 
 Esquema del escenario: Análisis del fenómeno del aura

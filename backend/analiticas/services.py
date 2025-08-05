@@ -151,3 +151,4 @@ class AnalisisPatronesService:
                 "Esto podría indicar un patrón de 'migraña menstrual'. Te recomendamos conversar sobre este patrón con tu médico.")
 
         return "No se ha detectado un patrón claro de migraña menstrual en tu historial."
+
