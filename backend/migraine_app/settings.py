@@ -8,6 +8,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+# Cargar .env solo en desarrollo
+if os.getenv('RAILWAY_ENVIRONMENT') is None:
+    load_dotenv()
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv(
     "SECRET_KEY", "django-insecure-vmqe-^x45+go2sj@h-qs&ym7$rr)8(v)t4l81dw(s90o%+ht1s"
@@ -16,8 +20,17 @@ SECRET_KEY = os.getenv(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
+ALLOWED_HOSTS = [
+    "localhost", 
+    "127.0.0.1", 
+    "0.0.0.0",
+    ".railway.app",  # Allow Railway app domain
+    os.getenv('RAILWAY_PUBLIC_DOMAIN', ''),  # Allow Railway public domain if set
+]
 
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = []
 
 # Application definition
 
