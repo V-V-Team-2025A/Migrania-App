@@ -135,7 +135,7 @@ def step_impl(context, estado_toma):
 def step_impl(context, estado_resultado):
     estado_map = {
         "tomado": EstadoNotificacion.CONFIRMADO_TOMADO,
-        "tomado tarde": EstadoNotificacion.CONFIRMADO_TOMADO_TARDE,
+        "mal aplicado": EstadoNotificacion.CONFIRMADO_MAL_APLICADO,
         "tomado muy tarde": EstadoNotificacion.CONFIRMADO_TOMADO_MUY_TARDE,
         "no tomado": EstadoNotificacion.CONFIRMADO_NO_TOMADO,
     }

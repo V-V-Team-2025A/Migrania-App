@@ -9,7 +9,7 @@ class EstadoNotificacion(models.TextChoices):
     SIN_CONFIRMAR = 'sin_confirmar'
     CONFIRMADO_TOMADO = 'tomado'
     CONFIRMADO_NO_TOMADO = 'no_tomado'
-    CONFIRMADO_TOMADO_TARDE = 'tomado_tarde'
+    CONFIRMADO_MAL_APLICADO = 'mal aplicado'
     CONFIRMADO_TOMADO_MUY_TARDE = 'tomado_muy_tarde'
 
 class Recomendacion(models.TextChoices):
@@ -126,7 +126,7 @@ class Alerta(Notificacion):
         if tiempo_transcurrido <= 15:
             self.estado = EstadoNotificacion.CONFIRMADO_TOMADO
         elif tiempo_transcurrido <= 30:
-            self.estado = EstadoNotificacion.CONFIRMADO_TOMADO_TARDE
+            self.estado = EstadoNotificacion.CONFIRMADO_MAL_APLICADO
         else:
             self.estado = EstadoNotificacion.CONFIRMADO_TOMADO_MUY_TARDE
 
@@ -354,7 +354,7 @@ class Tratamiento(models.Model):
         # Estados que consideramos como "cumplimiento positivo"
         estados_cumplimiento = [
             EstadoNotificacion.CONFIRMADO_TOMADO,
-            EstadoNotificacion.CONFIRMADO_TOMADO_TARDE,
+            EstadoNotificacion.CONFIRMADO_MAL_APLICADO,
             EstadoNotificacion.CONFIRMADO_TOMADO_MUY_TARDE
         ]
 

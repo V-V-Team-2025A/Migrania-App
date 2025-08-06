@@ -39,7 +39,7 @@ Característica: Aseguramiento del tratamiento para la migraña
       | numero_alerta | tiempo_transcurrido | estado_toma | estado_resultado |
       | primera       | 0                   | si          | tomado           |
       | primera       | 0                   | no          | no tomado        |
-      | segunda       | 30                  | si          | tomado tarde     |
+      | segunda       | 30                  | si          | mal aplicado    |
       | segunda       | 30                  | no          | no tomado        |
       | tercera       | 45                  | si          | tomado muy tarde |
       | tercera       | 45                  | no          | no tomado        |
