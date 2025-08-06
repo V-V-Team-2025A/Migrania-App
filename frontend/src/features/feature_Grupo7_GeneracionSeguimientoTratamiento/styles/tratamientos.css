@@ -1,0 +1,166 @@
+.tratamientos {
+    padding: var(--spacing-m);
+    background-color: var(--color-body-background);
+    border-radius: var(--border-radius);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.tratamientos-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 16px 24px;
+    background-color: var(--color-text);
+    border-radius: 13px;
+    height: 50px;
+}
+
+.tratamientos-header .user-icon {
+    font-size: 2rem;
+}
+
+.tratamientos-header .user-name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-left: 10px;
+    color: var(--color-text-dark);
+}
+
+.tratamientos .patient-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 15px;
+}
+
+.tratamientos .patient-info h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 15px;
+}
+
+.tratamientos .history-button {
+    background-color: var(--color-action);
+    color: var(--color-text);
+    padding: 8px 20px;
+    border-radius: var(--border-radius);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    margin-left: 10px;
+    width: 200px;
+    justify-content: center;
+}
+
+.tratamientos .history-button:hover {
+    background-color: var(--color-action-hover);
+}
+
+.tratamientos .table-container {
+    width: auto;
+    height: auto;
+    overflow-y: auto;
+    background-color: var(--color-background);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: var(--spacing-m);
+}
+
+.tratamientos table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tratamientos table th:nth-child(1),
+.tratamientos table td:nth-child(1) { width: 15%; }
+
+.tratamientos table th:nth-child(2),
+.tratamientos table td:nth-child(2) { width: 10%; }
+
+.tratamientos table th:nth-child(3),
+.tratamientos table td:nth-child(3) { width: 15%; }
+
+.tratamientos table th:nth-child(4),
+.tratamientos table td:nth-child(4) { width: 10%; }
+
+.tratamientos table th:nth-child(5),
+.tratamientos table td:nth-child(5) { width: 20%; }
+
+.tratamientos table th:nth-child(6),
+.tratamientos table td:nth-child(6) { width: 30%; }
+
+.tratamientos th,
+.tratamientos td {
+    padding: var(--spacing-s);
+    text-align: center;
+    vertical-align: middle;
+}
+
+.tratamientos td.acciones {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    height: auto;
+    width: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.tratamientos .edit-button,
+.tratamientos .delete-button {
+    background-color: transparent;
+    border: none;
+    color: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    padding: 6px 10px;
+}
+
+.tratamientos .edit-button {
+    color: var(--color-action);
+}
+
+.tratamientos .delete-button {
+    color: var(--color-error);
+}
+
+/* Botones generales de acción */
+.tratamientos .actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: var(--spacing-m);
+}
+
+.tratamientos .create-treatment {
+    background-color: var(--color-action);
+    color: white;
+    padding: 12px 24px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 1rem;
+    width: 300px;
+    justify-content: center;
+}
+
+.tratamientos .cancel {
+    background-color: var(--color-error);
+    color: white;
+    padding: 12px 24px;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 1rem;
+    width: 300px;
+    justify-content: center;
+}

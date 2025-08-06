@@ -1,0 +1,159 @@
+.formularioContainer {
+  background: var(--color-background);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xl);
+  margin: var(--spacing-xl) auto;
+  max-width: var(--max-width);
+  width: 100%;
+  box-shadow: 0 4px 24px #0002;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.formularioWrapper {
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-body-background);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.mainTitle {
+  flex: 1;
+  text-align: center;
+  font-size: 2.3rem;
+  color: #fff;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.formBox {
+  background: #435263;
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xl);
+  max-width: var(--max-width);
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-shadow: 0 2px 12px #0001;
+}
+
+.formTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-bottom: 4px;
+  color: #fff;
+}
+
+.formRow {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 5px;
+}
+
+.formColFull {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.formColHalf {
+  flex: 1 1 48%;
+  display: flex;
+  flex-direction: column;
+}
+
+.input {
+  border-radius: 6px;
+  border: none;
+  padding: 10px 12px;
+  font-family: var(--font-main);
+  font-size: 1rem;
+  margin-bottom: 0;
+  width: 100%;
+  background: #f5f5f5;
+  color: #222c36;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.textarea {
+  border-radius: 6px;
+  border: none;
+  padding: 10px 12px;
+  font-family: var(--font-main);
+  font-size: 1rem;
+  resize: none;
+  width: 100%;
+  background: #f5f5f5;
+  color: #222c36;
+  min-height: 80px;
+  box-sizing: border-box;
+}
+
+.formButtons {
+  display: flex;
+  gap: 24px;
+  margin-top: 18px;
+  justify-content: center;
+}
+
+.btnAgendar {
+  background: #00bfc9;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 16px 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  width: 50%;
+  max-width: 240px;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: 0 2px 8px #0001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btnAgendar:hover {
+  background: #009fa7;
+}
+
+.btnCancelar {
+  background: #b85c5c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 16px 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  width: 50%;
+  max-width: 240px;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: 0 2px 8px #0001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btnCancelar:hover {
+  background: #a13d3d;
+}
