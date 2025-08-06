@@ -10,7 +10,11 @@ from .services import AnalisisPatronesService
 from .repositories import DjangoAnalisisPatronesRepository
 from .serializers import AnalisisPatronesSerializer
 from .estadisticas_service import EstadisticasHistorialService
-from .estadisticas_serializers import EstadisticasHistorialSerializer, PromediaSemanalRequestSerializer
+from .estadisticas_serializers import (
+    EstadisticasHistorialSerializer, 
+    PromediaSemanalRequestSerializer,
+    EstadisticasUnificadasSerializer
+)
 from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
 from usuarios.models import Usuario
@@ -241,3 +245,127 @@ class PromedioSemanalView(APIView):
             "fecha_fin": fecha_fin.date(),
             "paciente_id": paciente_id
         })
+
+
+@extend_schema(
+    summary="Estadísticas Unificadas",
+    description="Endpoint unificado que combina estadísticas historial con evolución MIDAS",
+    responses={
+        200: EstadisticasUnificadasSerializer,
+        400: {'type': 'object', 'properties': {'error': {'type': 'string'}}},
+        403: {'type': 'object', 'properties': {'error': {'type': 'string'}}},
+        404: {'type': 'object', 'properties': {'error': {'type': 'string'}}}
+    }
+)
+class EstadisticasUnificadasView(APIView):
+    """
+    API View para estadísticas unificadas (historial + MIDAS).
+    
+    Endpoints:
+    - GET /api/analiticas/estadisticas-unificadas/?paciente_id=X - Estadísticas unificadas (solo personal médico)
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get_paciente_id(self, request):
+        """
+        Obtiene el ID del paciente según el rol del usuario.
+        Solo personal médico puede usar este endpoint.
+        """
+        user = request.user
+        
+        # Solo personal médico puede acceder
+        if not (user.es_medico or user.es_enfermera):
+            return None
+            
+        paciente_id = request.query_params.get('paciente_id')
+        if paciente_id:
+            # Verificar que el paciente existe
+            try:
+                paciente = Usuario.objects.get(id=paciente_id, tipo_usuario=Usuario.TipoUsuario.PACIENTE)
+                return paciente.id
+            except Usuario.DoesNotExist:
+                raise Http404("Paciente no encontrado")
+        else:
+            return None
+
+    def get(self, request, *args, **kwargs):
+        """
+        Obtiene las estadísticas unificadas del paciente especificado.
+        """
+        # Verificar permisos
+        if not (request.user.es_medico or request.user.es_enfermera):
+            return Response(
+                {"error": "Solo el personal médico puede acceder a este endpoint"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        paciente_id = self.get_paciente_id(request)
+        
+        if paciente_id is None:
+            return Response(
+                {"error": "Debe especificar el parámetro 'paciente_id' para consultar estadísticas"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Inicializar servicios
+        repo = DjangoAnalisisPatronesRepository()
+        servicio_estadisticas = EstadisticasHistorialService(repository=repo)
+
+        # Obtener episodios para validaciones básicas
+        episodios = repo.obtener_episodios_por_paciente(paciente_id)
+        total_episodios = len(episodios)
+
+        # Caso: datos insuficientes
+        if total_episodios < 3:
+            # Contar evaluaciones MIDAS
+            try:
+                from evaluacion_diagnostico.models import AutoevaluacionMidas
+                evaluaciones_midas = AutoevaluacionMidas.objects.filter(paciente_id=paciente_id).count()
+            except:
+                evaluaciones_midas = 0
+                
+            resultados = {
+                "paciente_id": paciente_id,
+                "total_episodios": total_episodios,
+                "mensaje": "Datos insuficientes para generar estadísticas completas",
+                "datos_minimos_requeridos": {
+                    "episodios_minimos": 3,
+                    "episodios_actuales": total_episodios,
+                    "evaluaciones_midas": evaluaciones_midas
+                }
+            }
+            
+            serializer = EstadisticasUnificadasSerializer(data=resultados)
+            serializer.is_valid(raise_exception=True)
+            return Response(serializer.data)
+
+        # Caso: datos suficientes - calcular estadísticas completas
+        resultados = {"paciente_id": paciente_id, "total_episodios": total_episodios}
+        
+        # 1. Duración promedio
+        duracion_promedio = servicio_estadisticas.calcular_duracion_promedio(paciente_id)
+        if duracion_promedio > 0:
+            resultados["duracion_promedio"] = duracion_promedio
+        
+        # 2. Intensidad promedio (convertir a numérico)
+        intensidad_promedio = servicio_estadisticas.calcular_intensidad_promedio(paciente_id)
+        if intensidad_promedio != "No hay datos":
+            # Mapear texto a número
+            intensidad_map = {"Leve": 3.0, "Moderado": 6.0, "Severo": 9.0}
+            resultados["intensidad_promedio"] = intensidad_map.get(intensidad_promedio, 5.0)
+        
+        # 3. Análisis hormonal
+        porcentajes_hormonales = servicio_estadisticas.calcular_porcentajes_hormonales(paciente_id)
+        resultados["porcentaje_menstruacion"] = porcentajes_hormonales["menstruacion"]
+        resultados["porcentaje_anticonceptivos"] = porcentajes_hormonales["anticonceptivos"]
+        
+        # 4. Evolución MIDAS
+        evolucion_midas = servicio_estadisticas.obtener_datos_midas(paciente_id)
+        if evolucion_midas:
+            resultados["evolucion_midas"] = evolucion_midas
+
+        # Serializar y retornar respuesta
+        serializer = EstadisticasUnificadasSerializer(data=resultados)
+        serializer.is_valid(raise_exception=True)
+        
+        return Response(serializer.data)

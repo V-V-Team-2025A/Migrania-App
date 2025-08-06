@@ -144,6 +144,58 @@ class EstadisticasHistorialService:
             "tendencia": tendencia
         }
 
+    def obtener_datos_midas(self, paciente_id: int) -> Dict[str, Any]:
+        """
+        Obtiene las evaluaciones MIDAS del paciente y calcula la evolución.
+        
+        Args:
+            paciente_id: ID del paciente
+            
+        Returns:
+            Dict con datos de evolución MIDAS o None si no hay suficientes datos
+        """
+        try:
+            from evaluacion_diagnostico.models import AutoevaluacionMidas
+            
+            # Obtener evaluaciones MIDAS del paciente ordenadas por fecha
+            evaluaciones = AutoevaluacionMidas.objects.filter(
+                paciente_id=paciente_id
+            ).order_by('-fecha_evaluacion')
+            
+            if evaluaciones.count() < 2:
+                return None
+                
+            # Obtener las dos evaluaciones más recientes
+            evaluacion_actual = evaluaciones.first()
+            evaluacion_anterior = evaluaciones[1]
+            
+            # Calcular evolución
+            puntuacion_actual = evaluacion_actual.calcular_puntuacion_total()
+            puntuacion_anterior = evaluacion_anterior.calcular_puntuacion_total()
+            diferencia = puntuacion_actual - puntuacion_anterior
+            
+            # Determinar tendencia
+            if diferencia > 0:
+                tendencia = "empeoramiento"
+                interpretacion = "Aumento en la discapacidad relacionada con migraña"
+            elif diferencia < 0:
+                tendencia = "mejora"
+                interpretacion = "Disminución en la discapacidad relacionada con migraña"
+            else:
+                tendencia = "estable"
+                interpretacion = "Sin cambios significativos en la discapacidad"
+            
+            return {
+                "puntuacion_actual": puntuacion_actual,
+                "puntuacion_anterior": puntuacion_anterior,
+                "diferencia": diferencia,
+                "tendencia": tendencia,
+                "interpretacion": interpretacion
+            }
+            
+        except Exception:
+            return None
+
 
 # Instancia para usar en la aplicación
 estadisticas_historial_service = EstadisticasHistorialService()  # Con repositorio Django por defecto

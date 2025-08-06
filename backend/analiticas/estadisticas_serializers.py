@@ -61,3 +61,67 @@ class PromediaSemanalRequestSerializer(serializers.Serializer):
         required=False,
         help_text="Fecha de fin del período a analizar"
     )
+
+
+class EvolucionMidasSerializer(serializers.Serializer):
+    """
+    Serializer para la evolución de puntuaciones MIDAS.
+    """
+    puntuacion_actual = serializers.FloatField(
+        help_text="Puntuación MIDAS más reciente"
+    )
+    puntuacion_anterior = serializers.FloatField(
+        help_text="Puntuación MIDAS anterior"
+    )
+    diferencia = serializers.FloatField(
+        help_text="Diferencia entre puntuación actual y anterior"
+    )
+    tendencia = serializers.CharField(
+        help_text="Tendencia: 'mejora', 'empeoramiento' o 'estable'"
+    )
+    interpretacion = serializers.CharField(
+        help_text="Interpretación textual del cambio"
+    )
+
+
+class EstadisticasUnificadasSerializer(serializers.Serializer):
+    """
+    Serializer para el endpoint unificado de estadísticas.
+    Combina estadísticas historial con evolución MIDAS.
+    """
+    paciente_id = serializers.IntegerField(
+        help_text="ID del paciente"
+    )
+    total_episodios = serializers.IntegerField(
+        help_text="Total de episodios registrados"
+    )
+    duracion_promedio = serializers.FloatField(
+        required=False,
+        help_text="Duración promedio por episodio en horas"
+    )
+    intensidad_promedio = serializers.FloatField(
+        required=False,
+        help_text="Intensidad promedio del dolor (escala 1-10)"
+    )
+    porcentaje_menstruacion = serializers.FloatField(
+        required=False,
+        help_text="Porcentaje de episodios durante menstruación"
+    )
+    porcentaje_anticonceptivos = serializers.FloatField(
+        required=False,
+        help_text="Porcentaje de episodios asociados a anticonceptivos"
+    )
+    evolucion_midas = EvolucionMidasSerializer(
+        required=False,
+        help_text="Evolución de la puntuación MIDAS"
+    )
+    
+    # Campos para casos de datos insuficientes
+    mensaje = serializers.CharField(
+        required=False,
+        help_text="Mensaje informativo cuando no hay suficientes datos"
+    )
+    datos_minimos_requeridos = serializers.DictField(
+        required=False,
+        help_text="Información sobre datos mínimos requeridos"
+    )
