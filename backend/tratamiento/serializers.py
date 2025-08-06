@@ -11,7 +11,6 @@ class MedicamentoCreateSerializer(serializers.ModelSerializer):
             'frecuencia_horas', 'duracion_dias', 'hora_de_inicio'
         ]
 
-
 class MedicamentoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medicamento

@@ -9,7 +9,7 @@ from django.utils import timezone
 from datetime import datetime, date
 from faker import Faker
 from tratamiento.repositories import FakeRepository
-from tratamiento.services import TratamientoService
+from tratamiento.TratamientoService import TratamientoService
 from tratamiento.models import EpisodioCefalea
 
 use_step_matcher("re")
@@ -34,7 +34,7 @@ def step_impl(context):
     inicializar_contexto_basico(context)
 
     context.repository = FakeRepository()
-    context.service = TratamientoService(context.repository)
+    context.tratamiento_service = TratamientoService(context.repository)
 
     campos_esperados = {'Dosis', 'Medicamento', 'Características', 'Frecuencia', 'Duración tratamiento','Recomendacion'}
     campos_tabla = {row['Campo'] for row in context.table}
@@ -49,11 +49,11 @@ def step_impl(context):
 
     context.episodio = crear_episodio_dummy(paciente=context.paciente.usuario, tipo_migraña=context.tipo_migraña_actual)
 
-    context.tratamiento = context.service.crear_tratamiento( paciente=context.paciente, episodio=context.episodio,activo=True,
-        fecha_inicio=date.today(),
-    )
+    context.tratamiento = context.tratamiento_service.crear_tratamiento(paciente=context.paciente, episodio=context.episodio, activo=True,
+                                                                        fecha_inicio=date.today(),
+                                                                        )
 
-    context.medicamento = context.service.crear_medicamento(
+    context.medicamento = context.tratamiento_service.crear_medicamento(
         nombre=context.medicamento,
         dosis=context.dosis,
         caracteristica=context.caracteristica,
@@ -62,7 +62,7 @@ def step_impl(context):
         duracion_dias=context.duracion_dias
     )
 
-    context.service.agregar_medicamento_a_tratamiento( context.tratamiento.id, context.medicamento )
+    context.tratamiento_service.agregar_medicamento_a_tratamiento(context.tratamiento.id, context.medicamento)
 
     from tratamiento.models import Recomendacion
     context.tratamiento.recomendaciones = [Recomendacion.HIDRATACION]
@@ -84,7 +84,7 @@ def step_impl(context):
     assert context.campos_tabla == campos_esperados, f"Los campos de la tabla no coinciden con los esperados"
 
     tratamiento_desde_repo = context.repository.get_tratamiento_by_id(context.tratamiento_creado.id)
-    context.service.agregar_medicamento_a_tratamiento(context.tratamiento.id, context.medicamento)
+    context.tratamiento_service.agregar_medicamento_a_tratamiento(context.tratamiento.id, context.medicamento)
     medicamentos_tratamiento = context.repository.get_medicamentos_by_tratamiento_id(context.tratamiento_creado.id)
 
     assert len(medicamentos_tratamiento) >= 1, "El tratamiento debe tener al menos una medicación"
@@ -101,7 +101,7 @@ def step_paciente_con_tratamiento(context):
     inicializar_contexto_basico(context)
 
     context.repository = FakeRepository()
-    context.service = TratamientoService(context.repository)
+    context.tratamiento_service = TratamientoService(context.repository)
 
     context.episodio = EpisodioCefalea.objects.create(
         paciente=context.paciente.usuario,
@@ -120,7 +120,7 @@ def step_paciente_con_tratamiento(context):
         anticonceptivos=False,
         categoria_diagnostica='Migraña sin aura'
     )
-    context.tratamiento_activo = context.service.crear_tratamiento(
+    context.tratamiento_activo = context.tratamiento_service.crear_tratamiento(
         paciente=context.paciente,
         episodio=context.episodio,
         fecha_inicio=datetime.now().date(),
@@ -137,13 +137,13 @@ def step_historial_cumplimiento(context, porcentaje_cumplimiento, numero_tratami
     inicializar_contexto_basico(context)
 
     context.repository = FakeRepository()
-    context.service = TratamientoService(context.repository)
+    context.tratamiento_service = TratamientoService(context.repository)
 
     context.porcentaje_cumplimiento = float(porcentaje_cumplimiento)
     context.cumplimiento_promedio = context.porcentaje_cumplimiento
     context.numero_tratamientos = int(numero_tratamientos)
 
-    context.tratamiento_activo = context.service.crear_tratamiento(
+    context.tratamiento_activo = context.tratamiento_service.crear_tratamiento(
         paciente=context.paciente,
         episodio=context.episodio,
         fecha_inicio=datetime.now().date(),
@@ -186,7 +186,7 @@ def step_medico_ingresa_caracteristicas(context):
 @step('el sistema debe actualizar el tratamiento con los nuevos datos')
 def step_sistema_actualiza(context):
 
-    nuevo_medicamento = context.service.crear_medicamento(
+    nuevo_medicamento = context.tratamiento_service.crear_medicamento(
         nombre=context.nueva_medicamento,
         dosis=context.nueva_cantidad,
         caracteristica=context.caracteristica,
@@ -195,7 +195,7 @@ def step_sistema_actualiza(context):
         duracion_dias=context.nueva_duracion
     )
 
-    context.service.agregar_medicamento_a_tratamiento(
+    context.tratamiento_service.agregar_medicamento_a_tratamiento(
         context.tratamiento_activo.id,
         nuevo_medicamento
     )

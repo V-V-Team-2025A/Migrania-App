@@ -24,7 +24,11 @@ class EsPaciente(permissions.BasePermission):
 
     def has_permission(self, request, view):
         user = request.user
-        return user.is_authenticated and hasattr(user, 'perfil_paciente')
+        return (
+                user.is_authenticated and
+                user.tipo_usuario == 'paciente' and
+                hasattr(user, 'perfil_paciente')
+        )
 
 
 class EsPropietarioDelTratamientoOPersonalMedico(permissions.BasePermission):

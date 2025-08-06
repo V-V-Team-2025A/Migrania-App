@@ -11,7 +11,7 @@ from .serializers import (
     TratamientoUpdateSerializer
 
 )
-from .services import TratamientoService
+from .TratamientoService import TratamientoService
 from .permissions import (
     EsMedico,
     EsPaciente,
