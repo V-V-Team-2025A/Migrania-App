@@ -229,9 +229,20 @@ class Tratamiento(models.Model):
 
         notificaciones = []
 
-        # Calcular todas las fechas de tomas sin límite
+        # Calcular todas las fechas de tomas
         fechas_tomas = medicamento.calcular_fechas_de_tomas(self.fecha_inicio)
         fechas_recordatorios = medicamento.calcular_recordatorios(fechas_tomas)
+
+        for fecha_recordatorio in fechas_recordatorios:
+            # Solo generar recordatorios para la fecha actual o futura
+            if fecha_recordatorio.date() >= fecha_actual:
+                recordatorio = Recordatorio(
+                    mensaje=f"Recordatorio: Debe tomar su medicación '{medicamento.nombre}' pronto",
+                    fecha_hora=timezone.make_aware(fecha_recordatorio),
+                    estado=EstadoNotificacion.ACTIVO,
+                    tratamiento=self
+                )
+                notificaciones.append(recordatorio)
 
         return notificaciones
 

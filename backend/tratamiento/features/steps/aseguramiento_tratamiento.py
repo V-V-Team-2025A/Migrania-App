@@ -60,6 +60,7 @@ def step_impl(context):
         context.tratamiento.id,
         context.hora_actual.date()
     )
+    assert len(context.notificaciones) > 0, f"No se generaron notificaciones en absoluto para el tratamiento {context.tratamiento.id}"
 
 @step('el estado del recordatorio será "activo"')
 def step_impl(context):
