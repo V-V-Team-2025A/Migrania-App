@@ -30,7 +30,7 @@ export default function AnalisisPatrones() {
                 return;
             }
             try {
-                const response = await fetch("http://127.0.0.1:8000/api/analiticas/patrones/", {
+                const response = await fetch("https://migrania-app-pruebas-production-1be5.up.railway.app/api/analiticas/patrones/", {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
                 if (!response.ok) throw new Error(`Error: ${response.status}`);
@@ -53,7 +53,7 @@ export default function AnalisisPatrones() {
             tarjetasDeAnalisis.push({
                 id: 'clinica',
                 icono: <Warning size={32} />,
-                titulo: "Factores Médicos",
+                titulo: "Patrones Clínicos",
                 descripcion: patronesData.conclusion_clinica,
                 recomendacion: "Considera consultar a un profesional de salud para una evaluación médica."
             });
@@ -114,14 +114,6 @@ export default function AnalisisPatrones() {
                     subtitulo="Basado en tus registros"
                     icono={<ChartLineUp size={48} weight="light" />}
                     color="secondary-light"
-                />
-                <TarjetaResumen
-                    titulo="Alertas Preventivas"
-                    valor={tarjetasDeAnalisis.filter(t => t.id !== 'aura').length} 
-                    subtitulo="Patrones detectados"
-                    icono={<Warning size={48} weight="light" />}
-                    color="secondary-dark"
-                    iconColor="var(--color-error)"
                 />
             </section>
 

@@ -1,8 +1,9 @@
+from datetime import datetime
 from rest_framework import serializers
 from .models import AutoevaluacionMidas, Pregunta, Respuesta, EpisodioCefalea
 from rest_framework import serializers
 from usuarios.models import Usuario
-
+from drf_spectacular.utils import extend_schema_field
 
 class PreguntaSerializer(serializers.ModelSerializer):
     """
@@ -60,13 +61,20 @@ class AutoevaluacionMidasSerializer(serializers.ModelSerializer):
     """
 
     respuestas_midas_individuales = RespuestaSerializer(many=True, read_only=True)
+    fecha_autoevaluacion = serializers.SerializerMethodField()
 
     class Meta:
         model = AutoevaluacionMidas
         fields = ['id', 'fecha_autoevaluacion',
                   'puntaje_total', 'grado_discapacidad',
                   'respuestas_midas_individuales']
-
+    
+    @extend_schema_field(serializers.DateField())
+    def get_fecha_autoevaluacion(self, obj):
+            # Forzar a date en caso de que sea datetime
+            if isinstance(obj.fecha_autoevaluacion, datetime):
+                return obj.fecha_autoevaluacion.date()
+            return obj.fecha_autoevaluacion
 
 class CrearEpisodioCefaleaSerializer(serializers.ModelSerializer):
     """

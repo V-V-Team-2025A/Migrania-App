@@ -12,41 +12,87 @@ class MedicamentoSerializer(serializers.ModelSerializer):
 
 
 class TratamientoCreateSerializer(serializers.ModelSerializer):
-    medicamentos = MedicamentoSerializer(many=True)
+    medicamentos = MedicamentoCreateSerializer(many=True)
     recomendaciones = serializers.ListField(
-        child=serializers.ChoiceField(choices=Recomendacion.choices),
-        required=False
+        child=serializers.IntegerField(), write_only=True
     )
-    paciente_id = serializers.IntegerField(write_only=True)
+    # SOLUCIÓN: Definir el queryset directamente
+    paciente = serializers.PrimaryKeyRelatedField(
+        queryset=PacienteProfile.objects.all()
+    )
 
     class Meta:
         model = Tratamiento
-        fields = [
-            'paciente_id', 'fecha_inicio', 'recomendaciones', 'medicamentos'
-        ]
+        fields = ['episodio', 'paciente', 'medicamentos', 'recomendaciones']
 
     def create(self, validated_data):
         medicamentos_data = validated_data.pop('medicamentos', [])
-        recomendaciones = validated_data.pop('recomendaciones', [])
-        paciente_id = validated_data.pop('paciente_id')
-
-        tratamiento = Tratamiento.objects.create(
-            paciente_id=paciente_id,
-            recomendaciones=recomendaciones,
-            **validated_data
-        )
+        recomendaciones_ids = validated_data.pop('recomendaciones', [])
+        tratamiento = Tratamiento.objects.create(**validated_data)
 
         for med_data in medicamentos_data:
             medicamento = Medicamento.objects.create(**med_data)
             tratamiento.medicamentos.add(medicamento)
 
+        tratamiento.recomendaciones.set(recomendaciones_ids)
         return tratamiento
+
+
+class TratamientoCancelarSerializer(serializers.ModelSerializer):
+    medicamentos = MedicamentoSerializer(many=True, read_only=True)
+    porcentaje_cumplimiento = serializers.FloatField(source='cumplimiento', read_only=True)
+
+    class Meta:
+        model = Tratamiento
+        fields = ['id', 'medicamentos', 'porcentaje_cumplimiento', 'motivo_cancelacion']
+
+
+class TratamientoUpdateSerializer(serializers.ModelSerializer):
+    medicamentos = MedicamentoCreateSerializer(many=True, required=False)
+    recomendaciones = serializers.ListField(
+        child=serializers.IntegerField(), required=False
+    )
+
+    class Meta:
+        model = Tratamiento
+        fields = ['episodio', 'medicamentos', 'recomendaciones']
+
+    def update(self, instance, validated_data):
+        medicamentos_data = validated_data.pop('medicamentos', None)
+        recomendaciones_ids = validated_data.pop('recomendaciones', None)
+
+        # Actualizar campos simples
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        # Actualizar medicamentos
+        if medicamentos_data is not None:
+            instance.medicamentos.clear()
+            for med_data in medicamentos_data:
+                medicamento = Medicamento.objects.create(**med_data)
+                instance.medicamentos.add(medicamento)
+
+        # Actualizar recomendaciones
+        if recomendaciones_ids is not None:
+            instance.recomendaciones.set(recomendaciones_ids)
+
+        instance.save()
+        return instance
+
+
+class TratamientoResumenSerializer(serializers.ModelSerializer):
+    episodio = serializers.StringRelatedField(read_only=True)
+    porcentaje_cumplimiento = serializers.FloatField(source='cumplimiento')
+
+    class Meta:
+        model = Tratamiento
+        fields = ['id', 'episodio', 'fecha_inicio', 'activo', 'porcentaje_cumplimiento']
 
 
 class TratamientoSerializer(serializers.ModelSerializer):
     medicamentos = MedicamentoSerializer(many=True, read_only=True)
+    recomendaciones = serializers.SerializerMethodField()
     paciente_nombre = serializers.CharField(source='paciente.usuario.get_full_name', read_only=True)
-    recomendaciones = serializers.ListField(child=serializers.CharField(), read_only=True)
 
     class Meta:
         model = Tratamiento

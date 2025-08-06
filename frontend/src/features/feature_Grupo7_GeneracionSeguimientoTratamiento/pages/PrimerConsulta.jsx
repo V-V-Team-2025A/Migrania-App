@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import TratamientoHeader from "../components/TratamientoHeader";
 import "../styles/PrimerConsulta.css";
 import ConfirmacionCancelar from "../components/ConfirmacionCancelar";
 
@@ -26,9 +27,7 @@ function PrimerConsulta() {
         setIsModalVisible(false);
     };
 
-    const handleNavigateHistorial = () => {
-        navigate("/historial");
-    };
+    const handleNavigateHistorial = () => navigate("/bitacora-medico/:pacienteId");
 
     const handleNavigateCrearTratamiento = () => {
         navigate("/primerConsulta/crearTratamiento");
@@ -37,25 +36,25 @@ function PrimerConsulta() {
     const hasOneEpisode = episodeData.length === 1;
 
     return (
-        <div className="container">
-            <header>
-                <div className="user-info">
-                    <span className="user-icon">👤</span>
-                    <span className="user-name">{doctorName}</span>
-                </div>
-            </header>
+        <div className="primer-consulta-container">
+            <TratamientoHeader 
+                title="Primera Consulta"
+                showBackButton={true}
+                customBackAction={() => navigate('/tratamientos')}
+                userName={doctorName}
+                patientName={patientName}
+            />
 
             {hasOneEpisode && (
                 <>
-                    <div className="patient-info">
-                        <h1>{patientName} - Primer Consulta</h1>
-                        <button className="history-button" onClick={handleNavigateHistorial}>
+                    <div className="primer-consulta-patient-info">
+                        <button className="primer-consulta-history-button" onClick={handleNavigateHistorial}>
                             Historial
                         </button>
                     </div>
 
-                    <div className="table-container">
-                        <table>
+                    <div className="primer-consulta-table-container">
+                        <table className="primer-consulta-table">
                             <thead>
                             <tr>
                                 <th>Num. Episodio</th>
@@ -75,17 +74,16 @@ function PrimerConsulta() {
                         </table>
                     </div>
 
-                    <div className="actions">
-                        <button className="action-button create-treatment" onClick={handleNavigateCrearTratamiento}>
+                    <div className="primer-consulta-actions">
+                        <button className="primer-consulta-action-button-create-treatment" onClick={handleNavigateCrearTratamiento}>
                             Crear tratamiento
                         </button>
-                        <button className="action-button cancel" onClick={handleCancel}>
+                        <button className="primer-consulta-action-button-cancel" onClick={handleCancel}>
                             Cancelar
                         </button>
                     </div>
                 </>
             )}
-
             {isModalVisible && <ConfirmacionCancelar onClose={handleCloseModal} />}
         </div>
     );

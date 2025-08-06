@@ -3,11 +3,12 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from .models import Pregunta, Respuesta, AutoevaluacionMidas
 from .permissions import EsPaciente, EsPropietarioDeLaAutoevaluacionOPersonalMedico
-from .autoevaluacion_midas_service import autoevaluacion_midas_service
+
 from .episodio_cefalea_service import episodio_cefalea_service
 from .models import EpisodioCefalea
 from .permissions import EsPropietarioDelEpisodioOPersonalMedico
 from .serializers import CrearEpisodioCefaleaSerializer, EpisodioCefaleaSerializer
+
 
 from .serializers import (
     PreguntaSerializer,
@@ -58,31 +59,27 @@ class AutoevaluacionMidasViewSet(viewsets.ModelViewSet):
             delta = serializer.validated_data.get("fecha_autoevaluacion") or ultima.fecha_autoevaluacion
             dias = (delta - ultima.fecha_autoevaluacion).days
             if dias < 90:
-                raise PermissionDenied("Debes esperar al menos 90 días para una nueva autoevaluación.")
+                raise PermissionDenied("No disponible")
         serializer.save(paciente=paciente)
 
 
 class RespuestaViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    """
-    ViewSet para manejar las respuestas a las preguntas de la autoevaluación MIDAS.
-    Permite crear respuestas y listar las respuestas de una autoevaluación específica.
-    """
     queryset = Respuesta.objects.select_related('autoevaluacion', 'pregunta').all()
-    serializer_class = RespuestaSerializer
     permission_classes = [permissions.IsAuthenticated, EsPaciente]
 
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CrearRespuestaSerializer
+        return RespuestaSerializer
+
     def create(self, request, *args, **kwargs):
-        """
-        Crea una respuesta y, si es la última (pregunta 5), actualiza el puntaje total.
-        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         respuesta = serializer.save()
         autoevaluacion = respuesta.autoevaluacion
         if autoevaluacion.respuestas_midas_individuales.count() == 5:
-            # Actualiza el puntaje total y grado de discapacidad
             autoevaluacion.actualizar_puntaje_total()
-        return Response(serializer.data)
+        return Response(RespuestaSerializer(respuesta).data)
 
 
 class EpisodioCefaleaViewSet(
