@@ -5,7 +5,7 @@ from tratamiento.models import Medicamento, Tratamiento, Recordatorio, Alerta, E
 
 class TratamientoService:
     def __init__(self, repository):
-        self.repository = repository
+        self.tratamiento_repository = repository
 
     def crear_medicamento(self, nombre, dosis, caracteristica, hora_inicio, frecuencia_horas, duracion_dias):
         """Crear un nuevo medicamento"""
@@ -17,7 +17,7 @@ class TratamientoService:
             frecuencia_horas=frecuencia_horas,
             duracion_dias=duracion_dias
         )
-        return self.repository.save_medicamento(medicamento)
+        return self.tratamiento_repository.save_medicamento(medicamento)
 
     def crear_tratamiento(self, paciente, episodio=None, recomendaciones=None, fecha_inicio=None, activo=True):
         tratamiento_existente = Tratamiento.objects.filter(episodio=episodio).first()
@@ -39,31 +39,31 @@ class TratamientoService:
 
     def agregar_medicamento_a_tratamiento(self, tratamiento_id, medicamento):
         """Agregar un medicamento al tratamiento"""
-        tratamiento = self.repository.get_tratamiento_by_id(tratamiento_id)
+        tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
         if not tratamiento:
             return False
 
         # Si el medicamento no existe, lo guardamos primero
         if not medicamento.id:
-            medicamento = self.repository.save_medicamento(medicamento)
+            medicamento = self.tratamiento_repository.save_medicamento(medicamento)
 
-        return self.repository.add_medicamento_to_tratamiento(tratamiento_id, medicamento.id)
+        return self.tratamiento_repository.add_medicamento_to_tratamiento(tratamiento_id, medicamento.id)
 
     def generar_notificaciones(self, tratamiento_id, fecha_actual=None):
         """Generar notificaciones para un tratamiento"""
         if fecha_actual is None:
             fecha_actual = timezone.now().date()
 
-        tratamiento = self.repository.get_tratamiento_by_id(tratamiento_id)
+        tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
         if not tratamiento:
             return []
 
         notificaciones = tratamiento.generarNotificaciones(fecha_actual)
         for notificacion in notificaciones:
             if isinstance(notificacion, Recordatorio):
-                self.repository.save_recordatorio(notificacion)
+                self.tratamiento_repository.save_recordatorio(notificacion)
             elif isinstance(notificacion, Alerta):
-                self.repository.save_alerta(notificacion)
+                self.tratamiento_repository.save_alerta(notificacion)
 
         return notificaciones
 
@@ -72,7 +72,7 @@ class TratamientoService:
         if ahora is None:
             ahora = timezone.now()
 
-        tratamiento = self.repository.get_tratamiento_by_id(tratamiento_id)
+        tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
         if not tratamiento:
             return []
 
@@ -81,9 +81,9 @@ class TratamientoService:
         # Guardar las notificaciones procesadas
         for notificacion in notificaciones_procesadas:
             if isinstance(notificacion, Recordatorio):
-                self.repository.save_recordatorio(notificacion)
+                self.tratamiento_repository.save_recordatorio(notificacion)
             elif isinstance(notificacion, Alerta):
-                self.repository.save_alerta(notificacion)
+                self.tratamiento_repository.save_alerta(notificacion)
 
         return notificaciones_procesadas
 
@@ -92,7 +92,7 @@ class TratamientoService:
         if hora_confirmacion is None:
             hora_confirmacion = timezone.now()
 
-        alerta = self.repository.get_alerta_by_id(alerta_id)
+        alerta = self.tratamiento_repository.get_alerta_by_id(alerta_id)
         if not alerta:
             return None
 
@@ -101,7 +101,7 @@ class TratamientoService:
         else:
             estado = alerta.confirmarNoTomado()
 
-        self.repository.save_alerta(alerta)
+        self.tratamiento_repository.save_alerta(alerta)
         return estado
 
     def obtener_proxima_notificacion(self, tratamiento_id, ahora=None):
@@ -109,7 +109,7 @@ class TratamientoService:
         if ahora is None:
             ahora = timezone.now()
 
-        tratamiento = self.repository.get_tratamiento_by_id(tratamiento_id)
+        tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
         if not tratamiento:
             return None
 
@@ -120,7 +120,7 @@ class TratamientoService:
         if hora_actual is None:
             hora_actual = timezone.now()
 
-        tratamiento = self.repository.get_tratamiento_by_id(tratamiento_id)
+        tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
         if not tratamiento:
             return None
 
@@ -131,4 +131,4 @@ class TratamientoService:
             tratamiento=tratamiento
         )
 
-        return self.repository.save_recordatorio(recordatorio)
+        return self.tratamiento_repository.save_recordatorio(recordatorio)

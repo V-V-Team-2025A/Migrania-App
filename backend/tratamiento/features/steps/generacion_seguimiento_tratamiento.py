@@ -8,8 +8,8 @@ from behave import *
 from django.utils import timezone
 from datetime import datetime, date
 from faker import Faker
-from tratamiento.repositories import FakeRepository
-from tratamiento.TratamientoService import TratamientoService
+from tratamiento.repositories import FakeTratamientoRepository
+from tratamiento.tratamiento_service import TratamientoService
 from tratamiento.models import EpisodioCefalea
 from tratamiento.models import Recomendacion
 
@@ -34,8 +34,8 @@ def step_primer_episodio(context, tipo_migrana):
 def step_ingresar_datos(context):
     inicializar_contexto_basico(context)
 
-    context.repository = FakeRepository()
-    context.tratamiento_service = TratamientoService(context.repository)
+    context.tratamiento_repository = FakeTratamientoRepository()
+    context.tratamiento_service = TratamientoService(context.tratamiento_repository)
 
     campos_esperados = {'Dosis', 'Medicamento', 'Características', 'Frecuencia', 'Duración tratamiento','Recomendacion'}
     campos_tabla = campos_tabla_ingresar(context)
@@ -67,7 +67,7 @@ def step_ingresar_datos(context):
     context.tratamiento_service.agregar_medicamento_a_tratamiento(context.tratamiento.id, context.medicamento)
 
     context.tratamiento.recomendaciones = [Recomendacion.HIDRATACION]
-    context.repository.save_tratamiento(context.tratamiento)
+    context.tratamiento_repository.save_tratamiento(context.tratamiento)
 
     context.tratamiento_creado = context.tratamiento
 
@@ -89,9 +89,9 @@ def step_crea_tratamiento(context):
                         'Recomendacion'}
     assert context.campos_tabla == campos_esperados, f"Los campos de la tabla no coinciden con los esperados"
 
-    tratamiento_repositorio = context.repository.get_tratamiento_by_id(context.tratamiento_creado.id)
+    tratamiento_repositorio = context.tratamiento_repository.get_tratamiento_by_id(context.tratamiento_creado.id)
     context.tratamiento_service.agregar_medicamento_a_tratamiento(context.tratamiento.id, context.medicamento)
-    medicamentos_tratamiento = context.repository.get_medicamentos_by_tratamiento_id(context.tratamiento_creado.id)
+    medicamentos_tratamiento = context.tratamiento_repository.get_medicamentos_by_tratamiento_id(context.tratamiento_creado.id)
 
     assert len(medicamentos_tratamiento) >= 1, "El tratamiento debe tener al menos una medicación"
     assert len(tratamiento_repositorio.recomendaciones) >= 1, "El tratamiento debe tener al menos una recomendación"
@@ -106,8 +106,8 @@ def step_crea_tratamiento(context):
 def step_paciente_con_tratamiento(context):
     inicializar_contexto_basico(context)
 
-    context.repository = FakeRepository()
-    context.tratamiento_service = TratamientoService(context.repository)
+    context.tratamiento_repository = FakeTratamientoRepository()
+    context.tratamiento_service = TratamientoService(context.tratamiento_repository)
 
     tipo_migraña = getattr(context, 'tipo_migraña', 'Migraña sin aura')
     context.episodio = crear_episodio_dummy(paciente=context.paciente.usuario, tipo_migraña=tipo_migraña)
@@ -128,8 +128,8 @@ def step_paciente_con_tratamiento(context):
 def step_historial_cumplimiento(context, porcentaje_cumplimiento, numero_tratamientos):
     inicializar_contexto_basico(context)
 
-    context.repository = FakeRepository()
-    context.tratamiento_service = TratamientoService(context.repository)
+    context.tratamiento_repository = FakeTratamientoRepository()
+    context.tratamiento_service = TratamientoService(context.tratamiento_repository)
 
     context.porcentaje_cumplimiento = float(porcentaje_cumplimiento)
     context.cumplimiento_promedio = context.porcentaje_cumplimiento
@@ -143,13 +143,13 @@ def step_historial_cumplimiento(context, porcentaje_cumplimiento, numero_tratami
         activo=True
     )
     context.tratamiento_activo.cumplimiento = context.porcentaje_cumplimiento
-    context.repository.save_tratamiento(context.tratamiento_activo)
+    context.tratamiento_repository.save_tratamiento(context.tratamiento_activo)
     assert context.tratamiento_activo is not None, "El primer tratamiento debe existir."
 
 
 @step("el médico evalúa el cumplimiento del tratamiento anterior")
 def step_medico_evalua(context):
-    tratamiento_1 = context.repository.get_tratamiento_by_id(context.tratamiento_activo.id)
+    tratamiento_1 = context.tratamiento_repository.get_tratamiento_by_id(context.tratamiento_activo.id)
 
     context.cumplimiento_tratamiento_1 = float(tratamiento_1.cumplimiento)
 
@@ -193,7 +193,7 @@ def step_sistema_actualiza(context):
         nuevo_medicamento
     )
 
-    context.repository.save_tratamiento(context.tratamiento_activo)
+    context.tratamiento_repository.save_tratamiento(context.tratamiento_activo)
     context.actualizacion_exitosa = True
 
     assert context.actualizacion_exitosa == True, "La actualización debe ser exitosa."
@@ -212,11 +212,11 @@ def step_ingresar_motivo(context, motivo_cancelacion):
 
 @step("el sistema debe cancelar el tratamiento con los datos ingresados")
 def step_cancelar_tratamiento(context):
-    tratamiento_a_cancelar = context.repository.get_tratamiento_by_id(context.tratamiento_activo.id)
+    tratamiento_a_cancelar = context.tratamiento_repository.get_tratamiento_by_id(context.tratamiento_activo.id)
     tratamiento_a_cancelar.activo = False
     tratamiento_a_cancelar.motivo_cancelacion = context.motivo_cancelacion
 
-    context.repository.save_tratamiento(tratamiento_a_cancelar)
+    context.tratamiento_repository.save_tratamiento(tratamiento_a_cancelar)
 
     context.tratamiento_cancelado = tratamiento_a_cancelar
     context.cancelacion_realizada = True
@@ -296,7 +296,6 @@ def inicializar_contexto_basico(context):
         (m for m in context.fake_repo.get_all_medicos() if m.usuario.id == context.usuario_medico.id),
         None
     )
-
 
 def crear_episodio_dummy(paciente, tipo_migraña):
     """

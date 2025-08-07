@@ -61,7 +61,7 @@ class BaseRepository(ABC):
         pass
 
 
-class DjangoRepository(BaseRepository):
+class DjangoTratamientoRepository(BaseRepository):
     def get_medicamento_by_id(self, id):
         try:
             return Medicamento.objects.get(pk=id)
@@ -148,18 +148,20 @@ class DjangoRepository(BaseRepository):
         return []
 
 
-class FakeRepository(BaseRepository):
+class FakeTratamientoRepository(BaseRepository):
     def __init__(self):
         self.medicamentos = {}
         self.tratamientos = {}
         self.recordatorios = {}
         self.alertas = {}
+        self.episodios = {}
         self.tratamiento_medicamentos = {}
         self.next_id = {
             'medicamento': 1,
             'tratamiento': 1,
             'recordatorio': 1,
-            'alerta': 1
+            'alerta': 1,
+            'episodio': 1
         }
 
     def _get_next_id(self, tipo):
@@ -247,3 +249,15 @@ class FakeRepository(BaseRepository):
         ]
 
         return sorted(alertas + recordatorios, key=lambda x: x.fecha_hora)
+
+    def save_episodio(self, episodio):
+        if not episodio.id:
+            episodio.id = self._get_next_id('episodio')
+        self.episodios[episodio.id] = episodio
+        return episodio
+
+    def get_episodio_by_id(self, id):
+        return self.episodios.get(id)
+
+    def get_all_episodios(self):
+        return list(self.episodios.values())
