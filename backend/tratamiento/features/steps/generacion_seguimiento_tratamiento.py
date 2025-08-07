@@ -11,6 +11,7 @@ from faker import Faker
 from tratamiento.repositories import FakeRepository
 from tratamiento.TratamientoService import TratamientoService
 from tratamiento.models import EpisodioCefalea
+from tratamiento.models import Recomendacion
 
 use_step_matcher("re")
 fake = Faker('es_ES')
@@ -65,7 +66,6 @@ def step_ingresar_datos(context):
 
     context.tratamiento_service.agregar_medicamento_a_tratamiento(context.tratamiento.id, context.medicamento)
 
-    from tratamiento.models import Recomendacion
     context.tratamiento.recomendaciones = [Recomendacion.HIDRATACION]
     context.repository.save_tratamiento(context.tratamiento)
 
@@ -89,12 +89,12 @@ def step_crea_tratamiento(context):
                         'Recomendacion'}
     assert context.campos_tabla == campos_esperados, f"Los campos de la tabla no coinciden con los esperados"
 
-    tratamiento_desde_repo = context.repository.get_tratamiento_by_id(context.tratamiento_creado.id)
+    tratamiento_repositorio = context.repository.get_tratamiento_by_id(context.tratamiento_creado.id)
     context.tratamiento_service.agregar_medicamento_a_tratamiento(context.tratamiento.id, context.medicamento)
     medicamentos_tratamiento = context.repository.get_medicamentos_by_tratamiento_id(context.tratamiento_creado.id)
 
     assert len(medicamentos_tratamiento) >= 1, "El tratamiento debe tener al menos una medicación"
-    assert len(tratamiento_desde_repo.recomendaciones) >= 1, "El tratamiento debe tener al menos una recomendación"
+    assert len(tratamiento_repositorio.recomendaciones) >= 1, "El tratamiento debe tener al menos una recomendación"
 
     assert context.tratamiento_creado.activo == True, "El tratamiento debe estar activo"
     assert context.tratamiento_creado.estaActivo() == True, "El tratamiento debe estar en estado activo"
@@ -109,23 +109,9 @@ def step_paciente_con_tratamiento(context):
     context.repository = FakeRepository()
     context.tratamiento_service = TratamientoService(context.repository)
 
-    context.episodio = EpisodioCefalea.objects.create(
-        paciente=context.paciente.usuario,
-        duracion_cefalea_horas=2,
-        severidad='Moderada',
-        localizacion='Unilateral',
-        caracter_dolor='Pulsátil',
-        empeora_actividad=True,
-        nauseas_vomitos=True,
-        fotofobia=True,
-        fonofobia=False,
-        presencia_aura=False,
-        sintomas_aura='Ninguno',
-        duracion_aura_minutos=0,
-        en_menstruacion=False,
-        anticonceptivos=False,
-        categoria_diagnostica='Migraña sin aura'
-    )
+    tipo_migraña = getattr(context, 'tipo_migraña', 'Migraña sin aura')
+    context.episodio = crear_episodio_dummy(paciente=context.paciente.usuario, tipo_migraña=tipo_migraña)
+
     context.tratamiento_activo = context.tratamiento_service.crear_tratamiento(
         paciente=context.paciente,
         episodio=context.episodio,
@@ -149,6 +135,7 @@ def step_historial_cumplimiento(context, porcentaje_cumplimiento, numero_tratami
     context.cumplimiento_promedio = context.porcentaje_cumplimiento
     context.numero_tratamientos = int(numero_tratamientos)
 
+    context.episodio = crear_episodio_dummy(paciente=context.paciente.usuario, tipo_migraña='Migraña sin aura')
     context.tratamiento_activo = context.tratamiento_service.crear_tratamiento(
         paciente=context.paciente,
         episodio=context.episodio,
@@ -239,60 +226,107 @@ def step_cancelar_tratamiento(context):
 
 
 def inicializar_contexto_basico(context):
-    from django.contrib.auth import get_user_model
-    User = get_user_model()
-    from usuarios.models import PacienteProfile, MedicoProfile
+    """
+       Inicializa el contexto básico usando FakeUserRepository
+       en lugar de la base de datos real
+       """
+    from usuarios.repositories import FakeUserRepository
+    from faker import Faker
+    from datetime import date
+    import random
 
-    context.usuario_paciente = User.objects.create_user(
-        username=fake.user_name(),
-        email=fake.unique.email(),
-        first_name=fake.first_name(),
-        last_name=fake.last_name(),
-        cedula=str(fake.unique.random_number(digits=10, fix_len=True)),
-        tipo_usuario='paciente',
-        genero=fake.random_element(['M', 'F', 'O', 'N']),
+    fake = Faker('es_ES')  # Para datos en español
+
+    # Crear instancia del repositorio fake
+    context.fake_repo = FakeUserRepository()
+
+    # Crear usuario paciente usando el repositorio fake
+    user_data_paciente = {
+        'first_name': fake.first_name(),
+        'last_name': fake.last_name(),
+        'email': fake.unique.email(),
+        'cedula': str(fake.unique.random_number(digits=10, fix_len=True)),
+        'telefono': fake.msisdn()[3:13],  # Generar teléfono de 10 dígitos
+        'fecha_nacimiento': fake.date_of_birth(minimum_age=18, maximum_age=80),
+        'genero': fake.random_element(['M', 'F', 'O', 'N']),
+        'direccion': fake.address(),
+    }
+
+    profile_data_paciente = {
+        'grupo_sanguineo': fake.random_element(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']),
+        'contacto_emergencia_nombre': fake.name(),
+        'contacto_emergencia_telefono': fake.msisdn()[3:13],  # Teléfono de 10 dígitos
+        'contacto_emergencia_relacion': fake.random_element(
+            ['Padre', 'Madre', 'Hermano', 'Hermana', 'Cónyuge', 'Hijo', 'Hija'])
+    }
+
+    # Crear paciente usando el repositorio
+    context.usuario_paciente = context.fake_repo.create_paciente(user_data_paciente, profile_data_paciente)
+
+    # Obtener el perfil del paciente creado
+    context.paciente = next(
+        (p for p in context.fake_repo.get_all_pacientes() if p.usuario.id == context.usuario_paciente.id),
+        None
     )
 
-    context.paciente = PacienteProfile.objects.create(
-        usuario=context.usuario_paciente,
-        contacto_emergencia_nombre=fake.name(),
-        contacto_emergencia_telefono=fake.phone_number()[:15],
-        contacto_emergencia_relacion="Padre"
+    # Crear usuario médico usando el repositorio fake
+    user_data_medico = {
+        'first_name': fake.first_name(),
+        'last_name': fake.last_name(),
+        'email': fake.unique.email(),
+        'cedula': str(fake.unique.random_number(digits=10, fix_len=True)),
+        'telefono': fake.msisdn()[3:13],  # Generar teléfono de 10 dígitos
+        'fecha_nacimiento': fake.date_of_birth(minimum_age=25, maximum_age=65),
+        'genero': fake.random_element(['M', 'F']),
+        'direccion': fake.address(),
+    }
+
+    profile_data_medico = {
+        'numero_licencia': fake.unique.bothify(text='MED-####'),
+        'especializacion': fake.random_element(
+            ['cardiologia', 'neurologia', 'pediatria', 'dermatologia', 'ginecologia']),
+        'anos_experiencia': fake.random_int(min=1, max=30),
+    }
+
+    # Crear médico usando el repositorio
+    context.usuario_medico = context.fake_repo.create_medico(user_data_medico, profile_data_medico)
+
+    # Obtener el perfil del médico creado
+    context.medico = next(
+        (m for m in context.fake_repo.get_all_medicos() if m.usuario.id == context.usuario_medico.id),
+        None
     )
 
-    context.usuario_medico = User.objects.create_user(
-        username=f"medico_{fake.user_name()}",
-        email=fake.unique.email(),
-        first_name=fake.first_name(),
-        last_name=fake.last_name(),
-        cedula=str(fake.unique.random_number(digits=10, fix_len=True)),
-        tipo_usuario='medico',
-        genero='M'
-    )
-
-    context.medico = MedicoProfile.objects.create(
-        usuario=context.usuario_medico,
-        numero_licencia=fake.unique.bothify(text='LIC-#####'),
-        especializacion='neurologia',
-        anos_experiencia=5
-    )
 
 def crear_episodio_dummy(paciente, tipo_migraña):
-    return EpisodioCefalea.objects.create(
-        paciente=paciente,
-        duracion_cefalea_horas=2,
-        severidad='Moderada',
-        localizacion='Unilateral',
-        caracter_dolor='Pulsátil',
-        empeora_actividad=True,
-        nauseas_vomitos=True,
-        fotofobia=True,
-        fonofobia=False,
-        presencia_aura=True,
-        sintomas_aura='Visuales, Sensitivos',
-        duracion_aura_minutos=30,
-        en_menstruacion=False,
-        anticonceptivos=False,
-        categoria_diagnostica=tipo_migraña
-    )
+    """
+    Crear episodio dummy específicamente para BDD testing.
+    Siempre usa repositorio fake.
+    """
+    from evaluacion_diagnostico.repositories import FakeEpisodioCefaleaRepository
+    from evaluacion_diagnostico.episodio_cefalea_service import EpisodioCefaleaService
+
+    # Servicio with fake repository
+    repository = FakeEpisodioCefaleaRepository()
+    episodio_service = EpisodioCefaleaService(repository=repository)
+
+    # Datos del episodio
+    datos_episodio = {
+        'duracion_cefalea_horas': 2,
+        'severidad': 'Moderada',
+        'localizacion': 'Unilateral',
+        'caracter_dolor': 'Pulsátil',
+        'empeora_actividad': True,
+        'nauseas_vomitos': True,
+        'fotofobia': True,
+        'fonofobia': False,
+        'presencia_aura': True,
+        'sintomas_aura': 'Visuales, Sensitivos',
+        'duracion_aura_minutos': 30,
+        'en_menstruacion': False,
+        'anticonceptivos': False,
+        'categoria_diagnostica': tipo_migraña
+    }
+
+    return episodio_service.crear_episodio(paciente, datos_episodio)
 
