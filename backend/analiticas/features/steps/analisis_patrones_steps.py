@@ -1,5 +1,7 @@
 from behave import *
 
+from analiticas.analisis_patrones_data_structures import EpisodioData
+
 use_step_matcher("re")
 
 
@@ -23,6 +25,15 @@ def step_impl(context):
     context.paciente = user_repo.create_paciente(user_data, profile_data)
     assert context.paciente is not None, "La creación del paciente de prueba falló."
 
+    extraer_contexto(context)
+
+    episodios_guardados = len(context.analisis_repo.obtener_episodios_por_paciente(context.paciente.pk))
+    episodios_esperados = len(context.table.rows)
+    assert episodios_guardados == episodios_esperados, \
+        f"Se esperaban {episodios_esperados} episodios, pero se guardaron {episodios_guardados}."
+
+
+def extraer_contexto(context):
     for row in context.table:
         row_data = {k: v.strip('"') for k, v in row.as_dict().items()}
 
@@ -32,11 +43,6 @@ def step_impl(context):
         episodio_data = EpisodioData(**row_data)
         episodio_data.paciente_id = context.paciente.pk
         context.analisis_repo.guardar_episodio(context.paciente.pk, episodio_data)
-
-    episodios_guardados = len(context.analisis_repo.obtener_episodios_por_paciente(context.paciente.pk))
-    episodios_esperados = len(context.table.rows)
-    assert episodios_guardados == episodios_esperados, \
-        f"Se esperaban {episodios_esperados} episodios, pero se guardaron {episodios_guardados}."
 
 
 @when("se analiza las características diagnósticas principales")
@@ -121,3 +127,4 @@ def step_impl(context, mensaje_conclusion_hormonal):
     valor_esperado = mensaje_conclusion_hormonal.strip('"')
     assert context.conclusion_hormonal == valor_esperado, \
         f"Esperado: '{valor_esperado}', Obtenido: '{context.conclusion_hormonal}'"
+

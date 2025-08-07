@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from tratamiento.models import Medicamento, Tratamiento, Recordatorio, Alerta, EstadoNotificacion
 
-
 class TratamientoService:
     def __init__(self, repository):
         self.repository = repository
@@ -20,22 +19,24 @@ class TratamientoService:
         return self.repository.save_medicamento(medicamento)
 
     def crear_tratamiento(self, paciente, episodio=None, recomendaciones=None, fecha_inicio=None, activo=True):
-        tratamiento_existente = Tratamiento.objects.filter(episodio=episodio).first()
-        if tratamiento_existente:
-            return tratamiento_existente
-
+        """Crear un nuevo tratamiento"""
+        if fecha_inicio is None:
+            fecha_inicio = timezone.now().date()
+        if episodio == None and paciente == None:
+            tratamiento = Tratamiento(
+                fecha_inicio=fecha_inicio,
+                activo=activo,
+                recomendaciones=recomendaciones or []
+            )
+            return self.repository.save_tratamiento(tratamiento)
         tratamiento = Tratamiento(
             paciente=paciente,
             episodio=episodio,
             fecha_inicio=fecha_inicio,
-            activo=activo
+            activo=activo,
+            recomendaciones=recomendaciones or []
         )
-        tratamiento.save()
-
-        if recomendaciones:
-            tratamiento.recomendaciones.set(recomendaciones)
-
-        return tratamiento
+        return self.repository.save_tratamiento(tratamiento)
 
     def agregar_medicamento_a_tratamiento(self, tratamiento_id, medicamento):
         """Agregar un medicamento al tratamiento"""
@@ -58,7 +59,7 @@ class TratamientoService:
         if not tratamiento:
             return []
 
-        notificaciones = tratamiento.generarNotificaciones(fecha_actual)
+        notificaciones = tratamiento.generar_notificaciones(fecha_actual, self.repository)
         for notificacion in notificaciones:
             if isinstance(notificacion, Recordatorio):
                 self.repository.save_recordatorio(notificacion)
@@ -76,7 +77,7 @@ class TratamientoService:
         if not tratamiento:
             return []
 
-        notificaciones_procesadas = tratamiento.procesarNotificacionesPendientes(ahora)
+        notificaciones_procesadas = tratamiento.procesar_notificaciones_pendientes(ahora)
 
         # Guardar las notificaciones procesadas
         for notificacion in notificaciones_procesadas:
@@ -97,9 +98,9 @@ class TratamientoService:
             return None
 
         if tomado:
-            estado = alerta.confirmarTomado(hora_confirmacion)
+            estado = alerta.confirmar_tomado(hora_confirmacion)
         else:
-            estado = alerta.confirmarNoTomado()
+            estado = alerta.confirmar_no_tomado()
 
         self.repository.save_alerta(alerta)
         return estado
@@ -113,7 +114,7 @@ class TratamientoService:
         if not tratamiento:
             return None
 
-        return tratamiento.obtenerSiguienteNotificacion(ahora)
+        return tratamiento.obtener_siguiente_notificacion(ahora)
 
     def generar_recordatorio_recomendacion(self, tratamiento_id, recomendacion, hora_actual=None):
         """Generar un recordatorio de recomendación específico"""
@@ -132,3 +133,111 @@ class TratamientoService:
         )
 
         return self.repository.save_recordatorio(recordatorio)
+
+    def obtener_siguiente_alerta(self, tratamiento_id, ahora=None):
+        """Obtener la siguiente alerta pendiente de un tratamiento"""
+        if ahora is None:
+            ahora = timezone.now()
+
+        tratamiento = self.repository.get_tratamiento_by_id(tratamiento_id)
+        if not tratamiento:
+            return None
+
+        # Buscar la siguiente alerta activa
+        siguiente_alerta = self.repository.get_siguiente_alerta(tratamiento_id, ahora)
+        return siguiente_alerta
+
+    def cambiar_estado_alerta(self, alerta_id, nuevo_estado, hora_confirmacion=None):
+        """Cambiar el estado de una alerta"""
+        if hora_confirmacion is None:
+            hora_confirmacion = timezone.now()
+
+        try:
+            alerta_id = int(alerta_id)
+        except (ValueError, TypeError):
+            return None
+
+        alerta = self.repository.get_alerta_by_id(alerta_id)
+        if not alerta:
+            return None
+
+        if nuevo_estado == EstadoNotificacion.CONFIRMADO_TOMADO:
+            estado = alerta.confirmar_tomado(hora_confirmacion)
+        elif nuevo_estado == EstadoNotificacion.CONFIRMADO_NO_TOMADO:
+            estado = alerta.confirmar_no_tomado()
+        else:
+            alerta.asignar_estado(nuevo_estado)
+            estado = nuevo_estado
+
+        self.repository.save_alerta(alerta)
+        return {
+            'alerta_id': alerta_id,
+            'estado_anterior': alerta.estado,
+            'estado_nuevo': estado,
+            'mensaje': alerta.mensaje
+        }
+
+    def mostrar_recordatorio(self, recordatorio_id):
+        """Mostrar un recordatorio específico"""
+        try:
+            recordatorio_id = int(recordatorio_id)
+        except (ValueError, TypeError):
+            return None
+            
+        recordatorio = self.repository.get_recordatorio_by_id(recordatorio_id)
+        if not recordatorio:
+            return None
+
+        # Marcar como enviado si está activo
+        if recordatorio.estado == EstadoNotificacion.ACTIVO:
+            enviado = recordatorio.enviar()
+            self.repository.save_recordatorio(recordatorio)
+            return {
+                'recordatorio_id': recordatorio_id,
+                'mensaje': recordatorio.mensaje,
+                'fecha_hora': recordatorio.fecha_hora,
+                'estado': recordatorio.estado,
+                'enviado': enviado
+            }
+
+        return {
+            'recordatorio_id': recordatorio_id,
+            'mensaje': recordatorio.mensaje,
+            'fecha_hora': recordatorio.fecha_hora,
+            'estado': recordatorio.estado,
+            'enviado': False
+        }
+
+    def desactivar_recordatorio(self, recordatorio_id):
+        """Desactivar un recordatorio"""
+        try:
+            recordatorio_id = int(recordatorio_id)
+        except (ValueError, TypeError):
+            return None
+            
+        recordatorio = self.repository.get_recordatorio_by_id(recordatorio_id)
+        if not recordatorio:
+            return None
+
+        # Cambiar estado a uno que indique que está desactivado
+        recordatorio.asignar_estado(EstadoNotificacion.CONFIRMADO_NO_TOMADO)
+        self.repository.save_recordatorio(recordatorio)
+
+        return {
+            'recordatorio_id': recordatorio_id,
+            'mensaje': recordatorio.mensaje,
+            'estado_anterior': EstadoNotificacion.ACTIVO,
+            'estado_nuevo': recordatorio.estado,
+            'desactivado': True
+        }
+
+    def obtener_notificaciones_pendientes(self, tratamiento_id, ahora=None):
+        """Obtener todas las notificaciones pendientes de un tratamiento"""
+        if ahora is None:
+            ahora = timezone.now()
+
+        tratamiento = self.repository.get_tratamiento_by_id(tratamiento_id)
+        if not tratamiento:
+            return []
+
+        return tratamiento.obtener_notificaciones_pendientes()
