@@ -15,7 +15,7 @@ Característica: Generación y análisis de seguimiento de tratamiento médico
 
     Dado que el paciente presenta su primer episodio con la categorización <tipo_migraña>
     Cuando el médico ingresa los datos del tratamiento
-      | Campo                |
+      | Cantidad             |
       | Dosis                |
       | Medicamento          |
       | Características      |

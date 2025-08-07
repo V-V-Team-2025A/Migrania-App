@@ -16,13 +16,13 @@ use_step_matcher("re")
 fake = Faker('es_ES')
 
 @step("que el paciente tiene al menos un historial de migrañas")
-def step_impl(context):
+def step_historial_migranas(context):
     inicializar_contexto_basico(context)
     context.tiene_historial = True
     assert context.paciente is not None, "El paciente no fue creado."
 
 @step("que el paciente presenta su primer episodio con la categorización (.+)")
-def step_impl(context, tipo_migrana):
+def step_primer_episodio(context, tipo_migrana):
     inicializar_contexto_basico(context)
     context.tipo_migraña_actual = tipo_migrana
     context.primer_episodio = True
@@ -30,14 +30,14 @@ def step_impl(context, tipo_migrana):
     assert context.tipo_migraña_actual == tipo_migrana, "El tipo de migraña no coincide."
 
 @step("el médico ingresa los datos del tratamiento")
-def step_impl(context):
+def step_ingresar_datos(context):
     inicializar_contexto_basico(context)
 
     context.repository = FakeRepository()
     context.tratamiento_service = TratamientoService(context.repository)
 
     campos_esperados = {'Dosis', 'Medicamento', 'Características', 'Frecuencia', 'Duración tratamiento','Recomendacion'}
-    campos_tabla = {row['Campo'] for row in context.table}
+    campos_tabla = campos_tabla_ingresar(context)
     assert campos_esperados == campos_tabla, f"Campos faltantes o incorrectos"
     context.campos_tabla = campos_tabla
 
@@ -49,9 +49,10 @@ def step_impl(context):
 
     context.episodio = crear_episodio_dummy(paciente=context.paciente.usuario, tipo_migraña=context.tipo_migraña_actual)
 
-    context.tratamiento = context.tratamiento_service.crear_tratamiento(paciente=context.paciente, episodio=context.episodio, activo=True,
-                                                                        fecha_inicio=date.today(),
-                                                                        )
+    context.tratamiento = context.tratamiento_service.crear_tratamiento(
+        paciente=context.paciente, episodio=context.episodio, activo=True,
+        fecha_inicio=date.today(),
+    )
 
     context.medicamento = context.tratamiento_service.crear_medicamento(
         nombre=context.medicamento,
@@ -74,8 +75,13 @@ def step_impl(context):
     assert context.tratamiento_creado.activo == True, "El tratamiento debe estar activo."
 
 
+def campos_tabla_ingresar(context):
+    campos_tabla = {row['Cantidad'] for row in context.table}
+    return campos_tabla
+
+
 @step("el sistema crea el tratamiento")
-def step_impl(context):
+def step_crea_tratamiento(context):
     assert hasattr(context, 'tratamiento_creado'), "El tratamiento debió ser creado en el step anterior"
     assert context.tratamiento_creado is not None, "El tratamiento no puede ser None"
 
@@ -172,7 +178,7 @@ def step_modificar_tratamiento(context):
     assert context.modificacion_decidida is True, "La decisión de modificar el tratamiento debe estar tomada"
 
 
-@step('el médico ingresa las siguientes características para el nuevo tratamiento')
+@step("el médico ingresa las siguientes características para el nuevo tratamiento")
 def step_medico_ingresa_caracteristicas(context):
     context.nueva_cantidad = fake.random_element(['10', '20', '12', '30'])
     context.nueva_medicamento = fake.random_element(['Ibuprofeno', 'Paracetamol', 'Sumatriptán'])
@@ -183,7 +189,7 @@ def step_medico_ingresa_caracteristicas(context):
     assert context.nueva_medicamento is not None, "La medicación debe estar definida."
 
 
-@step('el sistema debe actualizar el tratamiento con los nuevos datos')
+@step("el sistema debe actualizar el tratamiento con los nuevos datos")
 def step_sistema_actualiza(context):
 
     nuevo_medicamento = context.tratamiento_service.crear_medicamento(
@@ -212,13 +218,13 @@ def step_cancelar_tratamiento_actual(context):
     context.decision_cancelacion = True
 
 @step('el médico ingresa el motivo como "(?P<motivo_cancelacion>.+)"')
-def step_impl(context, motivo_cancelacion):
+def step_ingresar_motivo(context, motivo_cancelacion):
     context.motivo_cancelacion = motivo_cancelacion
     assert len(motivo_cancelacion.strip()) > 0, "El motivo no puede estar vacío"
 
 
 @step("el sistema debe cancelar el tratamiento con los datos ingresados")
-def step_impl(context):
+def step_cancelar_tratamiento(context):
     tratamiento_a_cancelar = context.repository.get_tratamiento_by_id(context.tratamiento_activo.id)
     tratamiento_a_cancelar.activo = False
     tratamiento_a_cancelar.motivo_cancelacion = context.motivo_cancelacion
