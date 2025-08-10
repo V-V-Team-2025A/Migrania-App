@@ -309,12 +309,12 @@ class Tratamiento(models.Model):
                 a.save()
                 todas_notificaciones.append(a)
 
-        for rec in self.recomendaciones.all():
+        for rec in self.recomendaciones:
             for i in range(dias_anticipacion):
                 fecha = timezone.now().date() + timedelta(days=i)
                 hora = datetime.combine(fecha, datetime.min.time().replace(hour=9))
                 r = Recordatorio(
-                    mensaje=f"Recordatorio de recomendación: {rec.descripcion}",
+                    mensaje=f"Recordatorio de recomendación: {rec}",
                     fecha_hora=hora,
                     estado=EstadoNotificacion.ACTIVO
                 )
@@ -339,10 +339,9 @@ class Tratamiento(models.Model):
         self.calcular_cumplimiento()
         return True
 
-
     def calcularDuracion(self):
         if self.medicamentos.exists():
-            return max(m.duracion for m in self.medicamentos.all())
+            return max(m.duracion_dias for m in self.medicamentos.all())
         return 0
 
 

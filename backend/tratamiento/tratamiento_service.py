@@ -1,27 +1,18 @@
+# tratamiento/tratamiento_service.py
 from datetime import datetime, timedelta
 from django.utils import timezone
-from tratamiento.models import Medicamento, Tratamiento, Recordatorio, Alerta, EstadoNotificacion
+from tratamiento.models import Tratamiento, Recordatorio, Alerta, EstadoNotificacion
 
 
 class TratamientoService:
     def __init__(self, repository):
         self.tratamiento_repository = repository
 
-    def crear_medicamento(self, nombre, dosis, caracteristica, hora_inicio, frecuencia_horas, duracion_dias):
-        """Crear un nuevo medicamento"""
-        medicamento = Medicamento(
-            nombre=nombre,
-            dosis=dosis,
-            caracteristica=caracteristica,
-            hora_de_inicio=hora_inicio,
-            frecuencia_horas=frecuencia_horas,
-            duracion_dias=duracion_dias
-        )
-        return self.tratamiento_repository.save_medicamento(medicamento)
-
     def crear_tratamiento(self, paciente, episodio=None, recomendaciones=None, fecha_inicio=None, activo=True):
         tratamiento_existente = Tratamiento.objects.filter(episodio=episodio).first()
         if tratamiento_existente:
+            # Asegura que el repo conozca el tratamiento existente
+            self.tratamiento_repository.save_tratamiento(tratamiento_existente)
             return tratamiento_existente
 
         tratamiento = Tratamiento(
@@ -32,8 +23,13 @@ class TratamientoService:
         )
         tratamiento.save()
 
+        # Sincroniza con el repo fake siempre
+        self.tratamiento_repository.save_tratamiento(tratamiento)
+
         if recomendaciones:
-            tratamiento.recomendaciones.set(recomendaciones)
+            # JSONField -> asignar lista y guardar
+            tratamiento.recomendaciones = list(recomendaciones)
+            tratamiento.save(update_fields=["recomendaciones"])
 
         return tratamiento
 
@@ -44,21 +40,18 @@ class TratamientoService:
             return False
 
         # Si el medicamento no existe, lo guardamos primero
-        if not medicamento.id:
+        if not getattr(medicamento, "id", None):
             medicamento = self.tratamiento_repository.save_medicamento(medicamento)
 
         return self.tratamiento_repository.add_medicamento_to_tratamiento(tratamiento_id, medicamento.id)
 
-    def generar_notificaciones(self, tratamiento_id, fecha_actual=None):
-        """Generar notificaciones para un tratamiento"""
-        if fecha_actual is None:
-            fecha_actual = timezone.now().date()
-
+    def generar_notificaciones(self, tratamiento_id, dias_anticipacion=7):
+        """Generar notificaciones para un tratamiento (por días de anticipación)"""
         tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
         if not tratamiento:
             return []
 
-        notificaciones = tratamiento.generarNotificaciones(fecha_actual)
+        notificaciones = tratamiento.generarNotificaciones(dias_anticipacion=dias_anticipacion)
         for notificacion in notificaciones:
             if isinstance(notificacion, Recordatorio):
                 self.tratamiento_repository.save_recordatorio(notificacion)
@@ -67,16 +60,13 @@ class TratamientoService:
 
         return notificaciones
 
-    def procesar_notificaciones_pendientes(self, tratamiento_id, ahora=None):
+    def procesar_notificaciones_pendientes(self, tratamiento_id):
         """Procesar notificaciones pendientes"""
-        if ahora is None:
-            ahora = timezone.now()
-
         tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
         if not tratamiento:
             return []
 
-        notificaciones_procesadas = tratamiento.procesarNotificacionesPendientes(ahora)
+        notificaciones_procesadas = tratamiento.procesarNotificacionesPendientes()
 
         # Guardar las notificaciones procesadas
         for notificacion in notificaciones_procesadas:
@@ -104,16 +94,13 @@ class TratamientoService:
         self.tratamiento_repository.save_alerta(alerta)
         return estado
 
-    def obtener_proxima_notificacion(self, tratamiento_id, ahora=None):
+    def obtener_proxima_notificacion(self, tratamiento_id):
         """Obtener la próxima notificación a enviar"""
-        if ahora is None:
-            ahora = timezone.now()
-
         tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
         if not tratamiento:
             return None
 
-        return tratamiento.obtenerSiguienteNotificacion(ahora)
+        return tratamiento.obtenerSiguienteNotificacion()
 
     def generar_recordatorio_recomendacion(self, tratamiento_id, recomendacion, hora_actual=None):
         """Generar un recordatorio de recomendación específico"""
@@ -127,8 +114,7 @@ class TratamientoService:
         recordatorio = Recordatorio(
             mensaje=f"Recordatorio de recomendación: {recomendacion}",
             fecha_hora=hora_actual,
-            estado=EstadoNotificacion.ACTIVO,
-            tratamiento=tratamiento
+            estado=EstadoNotificacion.ACTIVO
         )
-
-        return self.tratamiento_repository.save_recordatorio(recordatorio)
+        self.tratamiento_repository.save_recordatorio(recordatorio)
+        return recordatorio
