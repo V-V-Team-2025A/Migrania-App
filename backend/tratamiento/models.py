@@ -339,16 +339,16 @@ class Tratamiento(models.Model):
         self.calcular_cumplimiento()
         return True
 
-    def calcularDuracion(self):
+    def calcular_duracion(self):
         if self.medicamentos.exists():
             return max(m.duracion_dias for m in self.medicamentos.all())
         return 0
 
 
-    def estaActivo(self):
+    def esta_activo(self):
         if not self.activo:
             return False
-        duracion = self.calcularDuracion()
+        duracion = self.calcular_duracion()
         if duracion > 0 and self.fecha_inicio:
             fecha_fin = self.fecha_inicio + timedelta(days=duracion)
             return timezone.now().date() <= fecha_fin
@@ -364,7 +364,7 @@ class Tratamiento(models.Model):
 
 
     def procesarNotificacionesPendientes(self):
-        if not self.estaActivo():
+        if not self.esta_activo():
             logger.info(f"No se procesaron notificaciones porque el tratamiento no está activo")
             return []
 
@@ -414,6 +414,12 @@ class Tratamiento(models.Model):
         self.save(update_fields=['cumplimiento'])
 
         return self.cumplimiento
+
+    def cancelar(self, motivo):
+        """Cancela el tratamiento con un motivo específico"""
+        self.activo = False
+        self.motivo_cancelacion = motivo
+        self.save(update_fields=['activo', 'motivo_cancelacion'])
 
     def __str__(self):
         return f"Tratamiento {self.id} - Medicamentos: {self.medicamentos.count()}"

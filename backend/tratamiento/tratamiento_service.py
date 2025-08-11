@@ -9,6 +9,11 @@ class TratamientoService:
         self.tratamiento_repository = repository
 
     def crear_tratamiento(self, paciente, episodio=None, recomendaciones=None, fecha_inicio=None, activo=True):
+        # Validaciones
+        errores = self._validar_datos_tratamiento(paciente, episodio, recomendaciones, fecha_inicio)
+        if errores:
+            raise ValueError(f"Datos de tratamiento inválidos: {', '.join(errores)}")
+
         tratamiento_existente = Tratamiento.objects.filter(episodio=episodio).first()
         if tratamiento_existente:
             # Asegura que el repo conozca el tratamiento existente
@@ -33,6 +38,47 @@ class TratamientoService:
 
         return tratamiento
 
+    def _validar_datos_tratamiento(self, paciente, episodio, recomendaciones, fecha_inicio):
+        """Validar datos del tratamiento según reglas de negocio"""
+        errores = []
+
+        # Validar paciente
+        if not paciente:
+            errores.append("El paciente es obligatorio")
+
+        # Validar episodio (puede ser opcional dependiendo del caso de uso)
+        if episodio is None:
+            # Podría ser válido en algunos casos, pero agregar advertencia
+            pass
+
+        # Validar fecha de inicio
+        if fecha_inicio and fecha_inicio > datetime.now().date():
+            errores.append("La fecha de inicio no puede ser futura")
+
+        return errores
+
+    def modificar_tratamiento(self, tratamiento_id, nuevos_datos):
+        """Modifica un tratamiento existente"""
+        tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
+        if not tratamiento:
+            raise ValueError(f"Tratamiento con ID {tratamiento_id} no encontrado")
+
+        # Aplicar modificaciones
+        for campo, valor in nuevos_datos.items():
+            if hasattr(tratamiento, campo):
+                setattr(tratamiento, campo, valor)
+
+        return self.tratamiento_repository.save_tratamiento(tratamiento)
+
+    def cancelar_tratamiento(self, tratamiento_id, motivo):
+        """Cancela un tratamiento con el motivo especificado"""
+        tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
+        if not tratamiento:
+            raise ValueError(f"Tratamiento con ID {tratamiento_id} no encontrado")
+
+        tratamiento.cancelar(motivo)
+        return self.tratamiento_repository.save_tratamiento(tratamiento)
+
     def agregar_medicamento_a_tratamiento(self, tratamiento_id, medicamento):
         """Agregar un medicamento al tratamiento"""
         tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
@@ -44,6 +90,20 @@ class TratamientoService:
             medicamento = self.tratamiento_repository.save_medicamento(medicamento)
 
         return self.tratamiento_repository.add_medicamento_to_tratamiento(tratamiento_id, medicamento.id)
+
+    def obtener_estadisticas_cumplimiento(self, tratamiento_id):
+        """Obtiene estadísticas detalladas de cumplimiento"""
+        tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
+        if not tratamiento:
+            return None
+
+        return {
+            'porcentaje_cumplimiento': tratamiento.cumplimiento,
+            'estaActivo': tratamiento.esta_activo(),
+            'duracion_dias': tratamiento.calcular_duracion(),
+            'fecha_inicio': tratamiento.fecha_inicio,
+            'total_medicamentos': tratamiento.medicamentos.count() if hasattr(tratamiento.medicamentos, 'count') else 0
+        }
 
     def generar_notificaciones(self, tratamiento_id, dias_anticipacion=7):
         """Generar notificaciones para un tratamiento (por días de anticipación)"""

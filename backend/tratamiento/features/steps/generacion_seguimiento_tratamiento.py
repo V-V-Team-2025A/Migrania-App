@@ -17,15 +17,11 @@ from evaluacion_diagnostico.episodio_cefalea_service import EpisodioCefaleaServi
 from tratamiento.repositories import FakeTratamientoRepository
 from tratamiento.tratamiento_service import TratamientoService
 from tratamiento.medicamento_service import MedicamentoService
+from tratamiento.seguimiento_services import SeguimientoService
 from tratamiento.models import Recomendacion
 
 use_step_matcher("re")
 fake = Faker('es_ES')
-
-
-# =========================
-# Steps (solo @step)
-# =========================
 
 @step("que el paciente tiene al menos un historial de migrañas")
 def step_historial_migranas(context):
@@ -53,8 +49,6 @@ def step_primer_episodio(context, tipo_migrana):
         inicializar_contexto_basico(context)
 
     tipo = tipo_migrana.strip()
-    context.tipo_migraña_actual = tipo
-    context.primer_episodio = True
 
     # Crea episodio con datos coherentes al tipo
     context.episodio = crear_episodio_de_prueba(
@@ -77,20 +71,14 @@ def step_ingresar_datos(context):
     context.tratamiento_service = TratamientoService(context.tratamiento_repository)
     context.medicamento_service = MedicamentoService(context.tratamiento_repository)
 
-    # Lectura/validación de tabla
-    campos_esperados = {'Dosis', 'Medicamento', 'Características', 'Frecuencia', 'Duración tratamiento', 'Recomendacion'}
-    campos_tabla = campos_tabla_ingresar(context)
-    assert campos_esperados == campos_tabla, f"Campos faltantes o incorrectos. Recibidos: {campos_tabla}"
-    context.campos_tabla = campos_tabla
-
     # Datos deterministas
-    context.dosis = "500mg"
-    context.medicamento_nombre = "Ibuprofeno"
-    context.duracion_dias = 7
-    context.caracteristica = "Tabletas"
-    context.frecuencia_horas = 8
+    dosis = "500mg"
+    medicamento_nombre = "Ibuprofeno"
+    duracion_dias = 7
+    caracteristica = "Tabletas"
+    frecuencia_horas = 8
 
-    # 1) Crear tratamiento activo (ORM)
+    # 1) Crear tratamiento activo
     context.tratamiento = context.tratamiento_service.crear_tratamiento(
         paciente=context.paciente,
         episodio=context.episodio,
@@ -103,17 +91,17 @@ def step_ingresar_datos(context):
 
     # 3) Crear y agregar medicamento
     context.medicamento = context.medicamento_service.crear_medicamento(
-        nombre=context.medicamento_nombre,
-        dosis=context.dosis,
-        caracteristica=context.caracteristica,
+        nombre=medicamento_nombre,
+        dosis=dosis,
+        caracteristica=caracteristica,
         hora_inicio=timezone.now().time(),
-        frecuencia_horas=context.frecuencia_horas,
-        duracion_dias=context.duracion_dias
+        frecuencia_horas=frecuencia_horas,
+        duracion_dias=duracion_dias
     )
-    ok = context.tratamiento_service.agregar_medicamento_a_tratamiento(
+    tratamiento = context.tratamiento_service.agregar_medicamento_a_tratamiento(
         context.tratamiento.id, context.medicamento
     )
-    assert ok, "No se pudo agregar el medicamento al tratamiento (repo no encontró el tratamiento)."
+    assert tratamiento, "No se pudo agregar el medicamento al tratamiento (repo no encontró el tratamiento)."
 
     # 4) Al menos una recomendación (JSONField como lista de strings)
     context.tratamiento.recomendaciones = [Recomendacion.HIDRATACION.value]  # "hidratacion"
@@ -127,9 +115,6 @@ def step_crea_tratamiento(context):
     assert hasattr(context, 'tratamiento_creado'), "El tratamiento debió ser creado en el step anterior"
     assert context.tratamiento_creado is not None, "El tratamiento no puede ser None"
 
-    campos_esperados = {'Dosis', 'Medicamento', 'Características', 'Frecuencia', 'Duración tratamiento', 'Recomendacion'}
-    assert context.campos_tabla == campos_esperados, "Los campos de la tabla no coinciden con los esperados"
-
     tratamiento_repositorio = context.tratamiento_repository.get_tratamiento_by_id(context.tratamiento_creado.id)
     medicamentos_tratamiento = context.tratamiento_repository.get_medicamentos_by_tratamiento_id(
         context.tratamiento_creado.id
@@ -140,7 +125,7 @@ def step_crea_tratamiento(context):
         "El tratamiento debe tener al menos una recomendación"
 
     assert context.tratamiento_creado.activo is True, "El tratamiento debe estar activo"
-    assert context.tratamiento_creado.estaActivo() is True, "El tratamiento debe estar en estado activo"
+    assert context.tratamiento_creado.esta_activo() is True, "El tratamiento debe estar en estado activo"
 
     context.tratamiento_generado = context.tratamiento_creado
 
@@ -167,15 +152,13 @@ def step_paciente_con_tratamiento(context):
     )
     # sincroniza en repo por si el service devolvió uno existente
     context.tratamiento_repository.save_tratamiento(context.tratamiento_activo)
-    assert context.tratamiento_activo.estaActivo(), "El tratamiento no está activo."
+    assert context.tratamiento_activo.esta_activo(), "El tratamiento no está activo."
 
 
 @step(
     "el historial de alertas indica que el paciente ha confirmado (?P<porcentaje_cumplimiento>.+)% de las tomas correspondientes a (?P<numero_tratamientos>.+) tratamientos")
 def step_historial_cumplimiento(context, porcentaje_cumplimiento, numero_tratamientos):
     context.porcentaje_cumplimiento = float(porcentaje_cumplimiento)
-    context.cumplimiento_promedio = context.porcentaje_cumplimiento
-    context.numero_tratamientos = int(numero_tratamientos)
 
     # Asegurar tratamiento activo en contexto
     if not getattr(context, "tratamiento_activo", None):
@@ -188,22 +171,34 @@ def step_historial_cumplimiento(context, porcentaje_cumplimiento, numero_tratami
 
 @step("el médico evalúa el cumplimiento del tratamiento anterior")
 def step_medico_evalua(context):
-    tratamiento_1 = context.tratamiento_repository.get_tratamiento_by_id(context.tratamiento_activo.id)
-    context.cumplimiento_tratamiento_1 = float(tratamiento_1.cumplimiento)
-    context.evaluacion_completada = True
-    assert context.cumplimiento_tratamiento_1 >= 0, "El cumplimiento del primer tratamiento debe ser válido."
-    assert context.evaluacion_completada is True, "La evaluación debe estar completada."
+
+    context.seguimiento_service = SeguimientoService(context.tratamiento_service)
+
+    tratamiento = getattr(context, "tratamiento_activo", None)
+    if not tratamiento:
+        raise ValueError("No hay tratamiento activo para evaluar cumplimiento")
+
+    evaluacion = context.seguimiento_service.evaluar_cumplimiento(tratamiento.id)
+
+    context.evaluacion_cumplimiento = evaluacion
+    context.cumplimiento_evaluado = True
+
+    assert context.cumplimiento_evaluado is True, "La evaluación debe estar completada."
 
 
 @step("se decide modificar el tratamiento")
 def step_modificar_tratamiento(context):
-    context.modificacion_decidida = True
-    assert context.modificacion_decidida is True, "La decisión de modificar el tratamiento debe estar tomada."
+    porcentaje = context.evaluacion_cumplimiento.get('porcentaje', 0.0)
+    accion = context.seguimiento_service.decidir_accion_seguimiento(porcentaje)
 
+    assert accion == 'modificar', f"Con {porcentaje}% se esperaba 'modificar', se obtuvo '{accion}'"
+
+    # Solo guardamos la decisión
+    context.decision_accion = accion
 
 @step("el médico ingresa las siguientes características para el nuevo tratamiento")
 def step_medico_ingresa_caracteristicas(context):
-    # Mantengo tu formato de tabla y picks
+    # Generar nuevos datos usando Faker
     context.nueva_cantidad = fake.random_element(['10', '20', '12', '30'])
     context.nueva_medicamento = fake.random_element(['Ibuprofeno', 'Paracetamol', 'Sumatriptán'])
     context.nueva_duracion = fake.random_element([3, 15, 8])
@@ -221,9 +216,9 @@ def step_sistema_actualiza(context):
     if not getattr(context, "tratamiento_activo", None):
         step_paciente_con_tratamiento(context)
 
-    context.medicamento_service = MedicamentoService(context.tratamiento_repository)
+    medicamento_service = MedicamentoService(context.tratamiento_repository)
 
-    nuevo_medicamento = context.medicamento_service.crear_medicamento(
+    nuevo_medicamento = medicamento_service.crear_medicamento(
         nombre=context.nueva_medicamento,
         dosis=context.nueva_cantidad,
         caracteristica=context.caracteristica,
@@ -231,11 +226,11 @@ def step_sistema_actualiza(context):
         frecuencia_horas=8,
         duracion_dias=context.nueva_duracion
     )
-    ok = context.tratamiento_service.agregar_medicamento_a_tratamiento(
+    tratamiento_nuevo = context.tratamiento_service.agregar_medicamento_a_tratamiento(
         context.tratamiento_activo.id,
         nuevo_medicamento
     )
-    assert ok, "No se pudo agregar el medicamento al tratamiento (repo no encontró el tratamiento)."
+    assert tratamiento_nuevo, "No se pudo agregar el medicamento al tratamiento (repo no encontró el tratamiento)."
 
     context.tratamiento_repository.save_tratamiento(context.tratamiento_activo)
     context.actualizacion_exitosa = True
@@ -244,8 +239,14 @@ def step_sistema_actualiza(context):
 
 @step('se decide cancelar el tratamiento')
 def step_cancelar_tratamiento_actual(context):
-    assert context.cumplimiento_promedio < 80, "El cumplimiento promedio debe ser menor a 80%."
-    context.decision_cancelacion = True
+    porcentaje = context.evaluacion_cumplimiento.get('porcentaje', 0.0)
+
+    assert porcentaje < 80, "El cumplimiento promedio debe ser menor a 80%."
+
+    accion = context.seguimiento_service.decidir_accion_seguimiento(porcentaje)
+    assert accion == 'cancelar', f"Con {porcentaje}% se esperaba 'cancelar', se obtuvo '{accion}'"
+
+    context.decision_accion = accion
 
 
 @step('el médico ingresa el motivo como "(?P<motivo_cancelacion>.+)"')
@@ -269,9 +270,7 @@ def step_cancelar_tratamiento(context):
     assert context.cancelacion_realizada is True, "La cancelación debe estar realizada."
 
 
-# =========================
-# Helpers (al final del archivo)
-# =========================
+# Helpers
 
 def inicializar_contexto_basico(context):
     """
@@ -326,73 +325,6 @@ def inicializar_contexto_basico(context):
         (m for m in context.fake_repo.get_all_medicos() if m.usuario.id == context.usuario_medico.id),
         None
     )
-
-
-def campos_tabla_ingresar(context):
-    """
-    Lectura flexible de tabla: acepta cualquier encabezado, sinónimos y acentos.
-    Devuelve el set canónico:
-      {'Dosis','Medicamento','Características','Frecuencia','Duración tratamiento','Recomendacion'}
-    """
-    import unicodedata
-
-    def _norm_local(s: str) -> str:
-        s = (s or "").strip().lower()
-        s = unicodedata.normalize("NFD", s)
-        s = "".join(ch for ch in s if unicodedata.category(ch) != "Mn")
-        s = s.replace("  ", " ")
-        return s
-
-    alias = {
-        "dosis": "Dosis",
-        "medicamento": "Medicamento",
-        "medicacion": "Medicamento",
-        "caracteristica": "Características",
-        "caracteristicas": "Características",
-        "frecuencia": "Frecuencia",
-        "cada": "Frecuencia",
-        "duracion": "Duración tratamiento",
-        "duracion tratamiento": "Duración tratamiento",
-        "duracion del tratamiento": "Duración tratamiento",
-        "duracion tto": "Duración tratamiento",
-        "duraciontto": "Duración tratamiento",
-        "recomendacion": "Recomendacion",
-        "recomendaciones": "Recomendacion",
-    }
-
-    esperados = {
-        "Dosis", "Medicamento", "Características", "Frecuencia", "Duración tratamiento", "Recomendacion",
-    }
-
-    if context.table is None:
-        return set()
-
-    encontrados = set()
-
-    try:
-        if "Cantidad" in context.table.headings:
-            for row in context.table:
-                key = _norm_local(row["Cantidad"]).replace("  ", " ")
-                key_map = alias.get(key)
-                if key_map in esperados:
-                    encontrados.add(key_map)
-    except Exception:
-        pass
-
-    for row in context.table.rows:
-        for cell in row.cells:
-            key = _norm_local(cell).replace("  ", " ")
-            key_map = alias.get(key)
-            if key_map in esperados:
-                encontrados.add(key_map)
-
-            key_no_space = key.replace(" ", "")
-            key_map = alias.get(key_no_space)
-            if key_map in esperados:
-                encontrados.add(key_map)
-
-    return encontrados
-
 
 def _norm(s: str) -> str:
     """Normaliza: minúsculas y sin acentos/espacios dobles."""
