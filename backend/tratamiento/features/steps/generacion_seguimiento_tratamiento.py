@@ -1,4 +1,3 @@
-# tratamiento/features/steps/generacion_seguimiento_tratamiento.py
 import os
 import django
 
