@@ -4,7 +4,7 @@ from django.utils import timezone
 class SeguimientoService:
 
     UMBRAL_CUMPLIMIENTO_ALTO = 80.0
-    UMBRAL_CUMPLIMIENTO_BAJO = 80.0
+    UMBRAL_CUMPLIMIENTO_BAJO = 60.0
 
     def __init__(self, tratamiento_service):
         self._tratamiento_service = tratamiento_service
