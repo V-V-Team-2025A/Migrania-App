@@ -35,7 +35,6 @@ def step_historial_migranas(context):
     context.historial_episodios = [episodio_prev]
     context.tiene_historial = True
 
-    # Asserts de sanidad (no de negocio)
     assert context.paciente is not None, "No se creó el paciente en el contexto."
     assert episodio_prev is not None, "No se pudo crear el episodio previo."
     assert context.historial_episodios and len(context.historial_episodios) >= 1, \
@@ -57,7 +56,6 @@ def step_primer_episodio(context, tipo_migrana):
         tipo_migraña=tipo
     )
 
-    # Asserts de sanidad (comparación normalizada)
     if hasattr(context.episodio, "categoria_diagnostica"):
         assert _norm(context.episodio.categoria_diagnostica) == _norm(tipo), \
             f'La categorización del episodio ("{getattr(context.episodio, "categoria_diagnostica", None)}") ' \
@@ -66,7 +64,6 @@ def step_primer_episodio(context, tipo_migrana):
 
 @step("el médico ingresa los datos del tratamiento")
 def step_ingresar_datos(context):
-    # Repos/Servicios de tratamiento (FAKE)
     context.tratamiento_repository = FakeTratamientoRepository()
     context.tratamiento_service = TratamientoService(context.tratamiento_repository)
     context.medicamento_service = MedicamentoService(context.tratamiento_repository)
@@ -86,7 +83,7 @@ def step_ingresar_datos(context):
         fecha_inicio=date.today(),
     )
 
-    # 2) **Sincronizar** en repo fake ANTES de agregar medicamento
+    # 2) Sincronizar en repo fake ANTES de agregar medicamento
     context.tratamiento_repository.save_tratamiento(context.tratamiento)
 
     # 3) Crear y agregar medicamento

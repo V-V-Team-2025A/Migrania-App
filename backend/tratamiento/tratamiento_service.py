@@ -1,5 +1,4 @@
-# tratamiento/tratamiento_service.py
-from datetime import datetime, timedelta
+from datetime import datetime
 from django.utils import timezone
 from tratamiento.models import Tratamiento, Recordatorio, Alerta, EstadoNotificacion
 
@@ -8,6 +7,7 @@ class TratamientoService:
     def __init__(self, repository):
         self.tratamiento_repository = repository
 
+    # Creación y mantenimiento
     def crear_tratamiento(self, paciente, episodio=None, recomendaciones=None, fecha_inicio=None, activo=True):
         # Validaciones
         errores = self._validar_datos_tratamiento(paciente, episodio, recomendaciones, fecha_inicio)
@@ -16,7 +16,6 @@ class TratamientoService:
 
         tratamiento_existente = Tratamiento.objects.filter(episodio=episodio).first()
         if tratamiento_existente:
-            # Asegura que el repo conozca el tratamiento existente
             self.tratamiento_repository.save_tratamiento(tratamiento_existente)
             return tratamiento_existente
 
@@ -28,42 +27,32 @@ class TratamientoService:
         )
         tratamiento.save()
 
-        # Sincroniza con el repo fake siempre
         self.tratamiento_repository.save_tratamiento(tratamiento)
 
         if recomendaciones:
-            # JSONField -> asignar lista y guardar
             tratamiento.recomendaciones = list(recomendaciones)
             tratamiento.save(update_fields=["recomendaciones"])
 
         return tratamiento
 
     def _validar_datos_tratamiento(self, paciente, episodio, recomendaciones, fecha_inicio):
-        """Validar datos del tratamiento según reglas de negocio"""
+        # Validar datos del tratamiento según reglas de negocio
         errores = []
 
-        # Validar paciente
         if not paciente:
             errores.append("El paciente es obligatorio")
 
-        # Validar episodio (puede ser opcional dependiendo del caso de uso)
-        if episodio is None:
-            # Podría ser válido en algunos casos, pero agregar advertencia
-            pass
-
-        # Validar fecha de inicio
         if fecha_inicio and fecha_inicio > datetime.now().date():
             errores.append("La fecha de inicio no puede ser futura")
 
         return errores
 
     def modificar_tratamiento(self, tratamiento_id, nuevos_datos):
-        """Modifica un tratamiento existente"""
+        # Modifica un tratamiento existente
         tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
         if not tratamiento:
             raise ValueError(f"Tratamiento con ID {tratamiento_id} no encontrado")
 
-        # Aplicar modificaciones
         for campo, valor in nuevos_datos.items():
             if hasattr(tratamiento, campo):
                 setattr(tratamiento, campo, valor)
@@ -71,7 +60,7 @@ class TratamientoService:
         return self.tratamiento_repository.save_tratamiento(tratamiento)
 
     def cancelar_tratamiento(self, tratamiento_id, motivo):
-        """Cancela un tratamiento con el motivo especificado"""
+        # Cancela tratamiento con motivo
         tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
         if not tratamiento:
             raise ValueError(f"Tratamiento con ID {tratamiento_id} no encontrado")
@@ -79,66 +68,62 @@ class TratamientoService:
         tratamiento.cancelar(motivo)
         return self.tratamiento_repository.save_tratamiento(tratamiento)
 
+    # Medicamentos
     def agregar_medicamento_a_tratamiento(self, tratamiento_id, medicamento):
-        """Agregar un medicamento al tratamiento"""
         tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
         if not tratamiento:
             return False
 
-        # Si el medicamento no existe, lo guardamos primero
         if not getattr(medicamento, "id", None):
             medicamento = self.tratamiento_repository.save_medicamento(medicamento)
 
         return self.tratamiento_repository.add_medicamento_to_tratamiento(tratamiento_id, medicamento.id)
 
+    # Notificaciones y seguimiento
     def obtener_estadisticas_cumplimiento(self, tratamiento_id):
-        """Obtiene estadísticas detalladas de cumplimiento"""
         tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
         if not tratamiento:
             return None
 
         return {
             'porcentaje_cumplimiento': tratamiento.cumplimiento,
-            'estaActivo': tratamiento.esta_activo(),
+            'esta_activo': tratamiento.esta_activo(),
             'duracion_dias': tratamiento.calcular_duracion(),
             'fecha_inicio': tratamiento.fecha_inicio,
             'total_medicamentos': tratamiento.medicamentos.count() if hasattr(tratamiento.medicamentos, 'count') else 0
         }
 
     def generar_notificaciones(self, tratamiento_id, dias_anticipacion=7):
-        """Generar notificaciones para un tratamiento (por días de anticipación)"""
         tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
         if not tratamiento:
             return []
 
-        notificaciones = tratamiento.generarNotificaciones(dias_anticipacion=dias_anticipacion)
-        for notificacion in notificaciones:
-            if isinstance(notificacion, Recordatorio):
-                self.tratamiento_repository.save_recordatorio(notificacion)
-            elif isinstance(notificacion, Alerta):
-                self.tratamiento_repository.save_alerta(notificacion)
+        notificaciones = tratamiento.generar_notificaciones(dias_anticipacion=dias_anticipacion)
+        for n in notificaciones:
+            if isinstance(n, Recordatorio):
+                self.tratamiento_repository.save_recordatorio(n)
+            elif isinstance(n, Alerta):
+                self.tratamiento_repository.save_alerta(n)
 
         return notificaciones
 
     def procesar_notificaciones_pendientes(self, tratamiento_id):
-        """Procesar notificaciones pendientes"""
         tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
         if not tratamiento:
             return []
 
-        notificaciones_procesadas = tratamiento.procesarNotificacionesPendientes()
+        notificaciones_procesadas = tratamiento.procesar_notificaciones_pendientes()
 
-        # Guardar las notificaciones procesadas
-        for notificacion in notificaciones_procesadas:
-            if isinstance(notificacion, Recordatorio):
-                self.tratamiento_repository.save_recordatorio(notificacion)
-            elif isinstance(notificacion, Alerta):
-                self.tratamiento_repository.save_alerta(notificacion)
+        for n in notificaciones_procesadas:
+            if isinstance(n, Recordatorio):
+                self.tratamiento_repository.save_recordatorio(n)
+            elif isinstance(n, Alerta):
+                self.tratamiento_repository.save_alerta(n)
 
         return notificaciones_procesadas
 
     def confirmar_toma(self, alerta_id, tomado=True, hora_confirmacion=None):
-        """Confirmar la toma de un medicamento"""
+        #Confirmar la toma de un medicamento
         if hora_confirmacion is None:
             hora_confirmacion = timezone.now()
 
@@ -147,29 +132,30 @@ class TratamientoService:
             return None
 
         if tomado:
-            estado = alerta.confirmarTomado(hora_confirmacion)
+            delta_min = (hora_confirmacion - alerta.fecha_hora).total_seconds() / 60.0
+            if delta_min <= alerta.duracion:
+                estado = EstadoNotificacion.CONFIRMADO_TOMADO
+            elif delta_min <= (alerta.duracion + alerta.tiempo_espera):
+                estado = EstadoNotificacion.CONFIRMADO_TOMADO_TARDE
+            else:
+                estado = EstadoNotificacion.CONFIRMADO_TOMADO_MUY_TARDE
         else:
-            estado = alerta.confirmarNoTomado()
+            estado = EstadoNotificacion.CONFIRMADO_NO_TOMADO  # <-- aquí estaba el typo
 
+        alerta.estado = estado
         self.tratamiento_repository.save_alerta(alerta)
         return estado
 
     def obtener_proxima_notificacion(self, tratamiento_id):
-        """Obtener la próxima notificación a enviar"""
         tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
         if not tratamiento:
             return None
-
-        return tratamiento.obtenerSiguienteNotificacion()
+        return tratamiento.obtener_siguiente_notificacion()
 
     def generar_recordatorio_recomendacion(self, tratamiento_id, recomendacion, hora_actual=None):
-        """Generar un recordatorio de recomendación específico"""
+        # Genera un recordatorio de recomendación
         if hora_actual is None:
             hora_actual = timezone.now()
-
-        tratamiento = self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
-        if not tratamiento:
-            return None
 
         recordatorio = Recordatorio(
             mensaje=f"Recordatorio de recomendación: {recomendacion}",

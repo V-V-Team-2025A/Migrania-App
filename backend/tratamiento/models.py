@@ -9,7 +9,6 @@ from evaluacion_diagnostico.models import  EpisodioCefalea
 
 logger = logging.getLogger(__name__)
 
-
 class EstadoNotificacion(models.TextChoices):
     ACTIVO = 'activo'
     SIN_CONFIRMAR = 'sin_confirmar'
@@ -18,10 +17,8 @@ class EstadoNotificacion(models.TextChoices):
     CONFIRMADO_TOMADO_TARDE = 'tomado_tarde'
     CONFIRMADO_TOMADO_MUY_TARDE = 'tomado_muy_tarde'
 
-
 class BicolaNotificacion:
-    """Clase separada para manejar la bicola de notificaciones"""
-
+    #Clase para manejar bicola de notificaciones
     def __init__(self):
         self.elementos = deque()
 
@@ -52,7 +49,7 @@ class BicolaNotificacion:
         return len(self.elementos) == 0
 
     def ordenar(self):
-        # Importación tardía para evitar referencias circulares
+        # Importación tardía para evitar bucles
         from .models import Alerta
 
         alertas_frente = []
@@ -75,7 +72,6 @@ class BicolaNotificacion:
 
     def listar_elementos(self):
         return list(self.elementos)
-
 
 class Notificacion(models.Model):
     mensaje = models.CharField(max_length=255)
@@ -103,7 +99,6 @@ class Notificacion(models.Model):
 
     def __str__(self):
         return f"{self.__class__.__name__}: {self.mensaje} - {self.estado}"
-
 
 class Alerta(Notificacion):
     numero_alerta = models.IntegerField()
@@ -158,7 +153,6 @@ class Alerta(Notificacion):
 
         return False
 
-
 class Recordatorio(Notificacion):
     def enviar(self):
         logger.info(f"Recordatorio enviado: {self.mensaje}")
@@ -166,7 +160,6 @@ class Recordatorio(Notificacion):
 
     def actualizarEstadoSegunTiempo(self, ahora):
         return False
-
 
 class Recomendacion(models.TextChoices):
     RUTINA_SUENO = "rutina_sueno", "Mantener una rutina regular de sueño"
@@ -178,18 +171,17 @@ class Recomendacion(models.TextChoices):
     EVITAR_ESFUERZO = "evitar_esfuerzo", "Evitar esfuerzo físico durante el episodio"
     NAUSEAS_VOMITOS = "nauseas_vomitos", "Líquidos en pequeñas cantidades y evitar alimentos pesados"
 
-    # Exclusivas para mujeres
+    #recomendaciones para mujeres
     MENSTRUACION = "menstruacion", "Usar analgésicos adecuados durante la menstruación"
     ANTICONCEPTIVOS = "anticonceptivos", "Consultar con un ginecólogo sobre anticonceptivos hormonales"
 
     def __str__(self):
-        return f"{self.descripcion} ({self.get_aplicable_a_display()})"
-
+        return self.label
 
 class Medicamento(models.Model):
     nombre = models.CharField(max_length=100)
     dosis = models.CharField(max_length=50)
-    caracteristica = models.CharField(blank=True)
+    caracteristica = models.CharField(max_length=100, blank=True)
     frecuencia_horas = models.IntegerField(default=8)
     duracion_dias = models.IntegerField()
     hora_de_inicio = models.TimeField()
@@ -212,7 +204,6 @@ class Medicamento(models.Model):
 
     def __str__(self):
         return f"{self.nombre} ({self.dosis})"
-
 
 class Tratamiento(models.Model):
     episodio = models.OneToOneField(
@@ -259,35 +250,37 @@ class Tratamiento(models.Model):
 
     def asignar_recomendaciones_generales(self):
         self.recomendaciones = [
-            Recomendacion.RUTINA_SUENO,
-            Recomendacion.EJERCICIO_MODERADO,
-            Recomendacion.CONTROL_ESTRES,
-            Recomendacion.HIDRATACION,
-            Recomendacion.AMBIENTE_OSCURO,
-            Recomendacion.COMPRESION,
-            Recomendacion.EVITAR_ESFUERZO,
-            Recomendacion.NAUSEAS_VOMITOS,
+            Recomendacion.RUTINA_SUENO.value,
+            Recomendacion.EJERCICIO_MODERADO.value,
+            Recomendacion.CONTROL_ESTRES.value,
+            Recomendacion.HIDRATACION.value,
+            Recomendacion.AMBIENTE_OSCURO.value,
+            Recomendacion.COMPRESION.value,
+            Recomendacion.EVITAR_ESFUERZO.value,
+            Recomendacion.NAUSEAS_VOMITOS.value,
         ]
-
+        self.save(update_fields=["recomendaciones"])
 
     def agregar_recomendaciones_para_mujer(self):
-        self.recomendaciones.append(Recomendacion.MENSTRUACION)
-        self.recomendaciones.append(Recomendacion.ANTICONCEPTIVOS)
+        self.recomendaciones.append(Recomendacion.MENSTRUACION.value)
+        self.recomendaciones.append(Recomendacion.ANTICONCEPTIVOS.value)
+        self.save(update_fields=["recomendaciones"])
 
-    def generarNotificaciones(self, dias_anticipacion=7):
+    def generar_notificaciones(self, dias_anticipacion=7):
         todas_notificaciones = []
         fecha_limite = None
 
         if dias_anticipacion > 0:
-            fecha_limite = timezone.now() + timedelta(days=dias_anticipacion)
+            fecha_limite = (timezone.now() + timedelta(days=dias_anticipacion)).date()
 
         for medicamento in self.medicamentos.all():
             fechas_tomas = medicamento.calcularFechasDeTomas(self.fecha_inicio)
-            if fecha_limite:
-                fechas_tomas = [f for f in fechas_tomas if f <= fecha_limite]
 
+            if fecha_limite is not None:
+                fechas_tomas = [f for f in fechas_tomas if f.date() <= fecha_limite]
+
+            # Recordatorios de 30 min antes
             recordatorios = medicamento.calcularRecordatorios(fechas_tomas)
-
             for fr in recordatorios:
                 r = Recordatorio(
                     mensaje=f"Recordatorio para tomar {medicamento.nombre} ({medicamento.dosis})",
@@ -297,6 +290,7 @@ class Tratamiento(models.Model):
                 r.save()
                 todas_notificaciones.append(r)
 
+            # Alertas en la hora exacta de la toma
             for ft in fechas_tomas:
                 a = Alerta(
                     mensaje=f"Es hora de tomar {medicamento.nombre} ({medicamento.dosis})",
@@ -321,15 +315,13 @@ class Tratamiento(models.Model):
                 r.save()
                 todas_notificaciones.append(r)
 
-        # Guardar los IDs de las notificaciones generadas
         self.notificaciones_generadas = [n.id for n in todas_notificaciones]
         self.save()
 
         logger.info(f"Generadas {len(todas_notificaciones)} notificaciones para el tratamiento.")
         return todas_notificaciones
 
-
-    def confirmarToma(self, notificacion, estado):
+    def confirmar_toma(self, notificacion, estado):
         if not isinstance(notificacion, Alerta):
             logger.warning("Notificación no válida")
             return False
@@ -344,7 +336,6 @@ class Tratamiento(models.Model):
             return max(m.duracion_dias for m in self.medicamentos.all())
         return 0
 
-
     def esta_activo(self):
         if not self.activo:
             return False
@@ -354,16 +345,15 @@ class Tratamiento(models.Model):
             return timezone.now().date() <= fecha_fin
         return True
 
-
-    def obtenerSiguienteNotificacion(self):
+    def obtener_siguiente_notificacion(self):
         return self.bicola_notificacion.verFrente()
 
 
-    def obtenerNotificacionesPendientes(self):
+    def obtener_notificaciones_pendientes(self):
         return self.bicola_notificacion.listar_elementos()
 
 
-    def procesarNotificacionesPendientes(self):
+    def procesar_notificaciones_pendientes(self):
         if not self.esta_activo():
             logger.info(f"No se procesaron notificaciones porque el tratamiento no está activo")
             return []
@@ -389,7 +379,7 @@ class Tratamiento(models.Model):
         return notificaciones_procesadas
 
     def calcular_cumplimiento(self):
-        alertas_tratamiento = Alerta.objects.filter(id__in=self.notificaciones_generadas        )
+        alertas_tratamiento = Alerta.objects.filter(id__in=self.notificaciones_generadas)
 
         if not alertas_tratamiento.exists():
             return 0.0
@@ -416,11 +406,10 @@ class Tratamiento(models.Model):
         return self.cumplimiento
 
     def cancelar(self, motivo):
-        """Cancela el tratamiento con un motivo específico"""
+        #Cancela el tratamiento con un motivo específico
         self.activo = False
         self.motivo_cancelacion = motivo
         self.save(update_fields=['activo', 'motivo_cancelacion'])
 
     def __str__(self):
         return f"Tratamiento {self.id} - Medicamentos: {self.medicamentos.count()}"
-
