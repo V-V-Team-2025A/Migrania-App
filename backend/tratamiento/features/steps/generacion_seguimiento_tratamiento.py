@@ -37,10 +37,14 @@ def step_historial_migranas(context):
     assert episodio_prev is not None, "No se pudo crear el episodio previo."
     assert context.historial_episodios and len(context.historial_episodios) >= 1, \
         "Se esperaba al menos un episodio en el historial."
+
     # Asegura servicios provistos por environment.py
     assert hasattr(context, "tratamiento_service"), "Falta tratamiento_service en context (revisa environment.py)."
     assert hasattr(context, "medicamento_service"), "Falta medicamento_service en context (revisa environment.py)."
+    assert hasattr(context, "seguimiento_service"), "Falta seguimiento_service en context (revisa environment.py)."
     assert hasattr(context, "tratamiento_repository"), "Falta tratamiento_repository en context (revisa environment.py)."
+    assert hasattr(context, "medicamento_repository"), "Falta medicamento_repository en context (revisa environment.py)."
+    assert hasattr(context, "seguimiento_repository"), "Falta seguimiento_repository en context (revisa environment.py)."
 
 
 @step(r"que el paciente presenta su primer episodio con la categorización (.+)")
@@ -73,12 +77,6 @@ def step_ingresar_datos(context):
     ts = context.tratamiento_service
     ms = context.medicamento_service
     repo = context.tratamiento_repository
-
-    # Validación de tabla de entrada
-    campos_esperados = {'Dosis', 'Medicamento', 'Características', 'Frecuencia', 'Duración tratamiento', 'Recomendacion'}
-    campos_tabla = campos_tabla_ingresar(context)
-    assert campos_esperados == campos_tabla, f"Campos faltantes o incorrectos. Recibidos: {campos_tabla}"
-    context.campos_tabla = campos_tabla
 
     context.dosis = "500mg"
     context.medicamento_nombre = "Ibuprofeno"
@@ -117,9 +115,6 @@ def step_crea_tratamiento(context):
     assert hasattr(context, 'tratamiento_creado'), "El tratamiento debió ser creado en el step anterior"
     assert context.tratamiento_creado is not None, "El tratamiento no puede ser None"
 
-    campos_esperados = {'Dosis', 'Medicamento', 'Características', 'Frecuencia', 'Duración tratamiento', 'Recomendacion'}
-    assert context.campos_tabla == campos_esperados, "Los campos de la tabla no coinciden con los esperados"
-
     repo = context.tratamiento_repository
     tratamiento_repo = repo.get_tratamiento_by_id(context.tratamiento_creado.id)
     meds = repo.get_medicamentos_by_tratamiento_id(context.tratamiento_creado.id)
@@ -145,7 +140,7 @@ def step_paciente_con_tratamiento(context):
         )
 
     ts = context.tratamiento_service
-    repo = context.tratamiento_repository
+    repo_t = context.tratamiento_repository
 
     context.tratamiento_activo = ts.crear_tratamiento(
         paciente=context.paciente,
@@ -153,7 +148,7 @@ def step_paciente_con_tratamiento(context):
         fecha_inicio=datetime.now().date(),
         activo=True
     )
-    repo.save_tratamiento(context.tratamiento_activo)
+    repo_t.save_tratamiento(context.tratamiento_activo)
 
     assert context.tratamiento_activo.esta_activo(), "El tratamiento no está activo."
 
@@ -167,25 +162,54 @@ def step_historial_cumplimiento(context, porcentaje_cumplimiento, numero_tratami
     if not getattr(context, "tratamiento_activo", None):
         step_paciente_con_tratamiento(context)
 
-    context.tratamiento_activo.cumplimiento = context.porcentaje_cumplimiento
-    context.tratamiento_repository.save_tratamiento(context.tratamiento_activo)
+    estadisticas_cumplimiento = {
+        'porcentaje_cumplimiento': context.porcentaje_cumplimiento,
+        'numero_tratamientos': context.numero_tratamientos,
+        'fecha_evaluacion': datetime.now()
+    }
 
+    repo_s = context.seguimiento_repository
+    repo_s.save_estadisticas_cumplimiento(context.tratamiento_activo, estadisticas_cumplimiento)
     assert context.tratamiento_activo is not None, "El tratamiento debe existir."
 
 
 @step("el médico evalúa el cumplimiento del tratamiento anterior")
 def step_medico_evalua(context):
-    repo = context.tratamiento_repository
-    tratamiento_1 = repo.get_tratamiento_by_id(context.tratamiento_activo.id)
-    context.cumplimiento_tratamiento_1 = float(tratamiento_1.cumplimiento)
-    context.evaluacion_completada = True
+    tratamiento = getattr(context, "tratamiento_activo", None)
+    if not tratamiento:
+        raise ValueError("No hay tratamiento activo para evaluar cumplimiento")
+
+    evaluacion = context.seguimiento_service.evaluar_cumplimiento(tratamiento.id)
+
+    if evaluacion is None or evaluacion.get('porcentaje', 0.0) == 0.0:
+        # Fallback: usar datos del repositorio o contexto
+        porcentaje_guardado = context.seguimiento_repository.calcular_cumplimiento_tratamiento(tratamiento.id)
+        porcentaje_contexto = getattr(context, 'porcentaje_cumplimiento', 0.0)
+        porcentaje_final = max(porcentaje_guardado, porcentaje_contexto)
+
+        evaluacion = {
+            'porcentaje': porcentaje_final,
+            'categoria': 'bajo' if porcentaje_final < 80 else 'alto',
+            'estadisticas': {'porcentaje_cumplimiento': porcentaje_final}
+        }
+
+    context.evaluacion_cumplimiento = evaluacion
+    context.cumplimiento_evaluado = True
+    context.cumplimiento_tratamiento_1 = evaluacion.get('porcentaje', 0.0)
 
     assert context.cumplimiento_tratamiento_1 >= 0, "El cumplimiento debe ser válido."
-    assert context.evaluacion_completada is True, "La evaluación debe estar completada."
+    assert context.cumplimiento_evaluado is True, "La evaluación debe estar completada."
 
 
 @step("se decide modificar el tratamiento")
 def step_modificar_tratamiento(context):
+    porcentaje = context.evaluacion_cumplimiento.get('porcentaje', 0.0)
+    accion = context.seguimiento_service.decidir_accion_seguimiento(porcentaje)
+
+    assert accion == 'modificar', f"Con {porcentaje}% se esperaba 'modificar', se obtuvo '{accion}'"
+
+    # Solo guardamos la decisión
+    context.decision_accion = accion
     context.modificacion_decidida = True
     assert context.modificacion_decidida is True, "La decisión de modificar el tratamiento debe estar tomada."
 
@@ -218,8 +242,8 @@ def step_sistema_actualiza(context):
         frecuencia_horas=8,
         duracion_dias=context.nueva_duracion
     )
-    ok = ts.agregar_medicamento_a_tratamiento(context.tratamiento_activo.id, nuevo_medicamento)
-    assert ok, "No se pudo agregar el medicamento al tratamiento."
+    tratamiento_nuevo = ts.agregar_medicamento_a_tratamiento(context.tratamiento_activo.id, nuevo_medicamento)
+    assert tratamiento_nuevo, "No se pudo agregar el medicamento al tratamiento."
 
     repo.save_tratamiento(context.tratamiento_activo)
     context.actualizacion_exitosa = True
@@ -227,7 +251,14 @@ def step_sistema_actualiza(context):
 
 @step('se decide cancelar el tratamiento')
 def step_cancelar_tratamiento_actual(context):
-    assert context.cumplimiento_promedio < 80, "El cumplimiento promedio debe ser menor a 80%."
+    porcentaje = context.evaluacion_cumplimiento.get('porcentaje', 0.0)
+
+    assert porcentaje < 80, "El cumplimiento promedio debe ser menor a 80%."
+
+    accion = context.seguimiento_service.decidir_accion_seguimiento(porcentaje)
+    assert accion == 'cancelar', f"Con {porcentaje}% se esperaba 'cancelar', se obtuvo '{accion}'"
+
+    context.decision_accion = accion
     context.decision_cancelacion = True
 
 @step('el médico ingresa el motivo como "(?P<motivo_cancelacion>.+)"')

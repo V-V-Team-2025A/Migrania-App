@@ -22,7 +22,7 @@ class SeguimientoService:
     def decidir_accion_seguimiento(self, porcentaje_cumplimiento):
         if porcentaje_cumplimiento >= self.UMBRAL_CUMPLIMIENTO_ALTO:
             return 'modificar'
-        elif porcentaje_cumplimiento < self.UMBRAL_CUMPLIMIENTO_BAJO:
+        elif porcentaje_cumplimiento <= self.UMBRAL_CUMPLIMIENTO_BAJO:
             return 'cancelar'
         else:
             return 'mantener'

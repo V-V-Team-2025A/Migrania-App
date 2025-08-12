@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
-from django.utils import timezone
-from tratamiento.models import Medicamento, Tratamiento, Recordatorio, Alerta, EstadoNotificacion
+from tratamiento.models import Medicamento, Tratamiento
 
-class BaseRepository(ABC):
+class BaseMedicamentoRepository(ABC):
     @abstractmethod
     def get_medicamento_by_id(self, id):
         pass
@@ -16,6 +14,8 @@ class BaseRepository(ABC):
     def save_medicamento(self, medicamento):
         pass
 
+
+class BaseTratamientoRepository(ABC):
     @abstractmethod
     def get_tratamiento_by_id(self, id):
         pass
@@ -33,35 +33,23 @@ class BaseRepository(ABC):
         pass
 
     @abstractmethod
-    def get_recordatorios_by_tratamiento(self, tratamiento_id):
+    def get_medicamentos_by_tratamiento_id(self, tratamiento_id):
+        pass
+
+class BaseSeguimientoRepository(ABC):
+    @abstractmethod
+    def get_seguimiento_by_tratamiento_id(self, tratamiento_id):
         pass
 
     @abstractmethod
-    def get_recordatorio_by_id(self, id):
+    def save_seguimiento(self, seguimiento):
         pass
 
     @abstractmethod
-    def save_recordatorio(self, recordatorio):
+    def calcular_cumplimiento_tratamiento(self, tratamiento_id):
         pass
 
-    @abstractmethod
-    def get_alerta_by_id(self, id):
-        pass
-
-    @abstractmethod
-    def get_alertas_by_tratamiento(self, tratamiento_id):
-        pass
-
-    @abstractmethod
-    def save_alerta(self, alerta):
-        pass
-
-    @abstractmethod
-    def get_notificaciones_pendientes(self, tratamiento_id, fecha_hora=None):
-        pass
-
-
-class DjangoTratamientoRepository(BaseRepository):
+class DjangoMedicamentoRepository(BaseMedicamentoRepository):
     def get_medicamento_by_id(self, id):
         try:
             return Medicamento.objects.get(pk=id)
@@ -75,6 +63,7 @@ class DjangoTratamientoRepository(BaseRepository):
         medicamento.save()
         return medicamento
 
+class DjangoTratamientoRepository(BaseTratamientoRepository):
     def get_tratamiento_by_id(self, id):
         try:
             return Tratamiento.objects.get(pk=id)
@@ -90,83 +79,47 @@ class DjangoTratamientoRepository(BaseRepository):
 
     def add_medicamento_to_tratamiento(self, tratamiento_id, medicamento_id):
         tratamiento = self.get_tratamiento_by_id(tratamiento_id)
-        medicamento = self.get_medicamento_by_id(medicamento_id)
+        medicamento = Medicamento.objects.get(pk=medicamento_id)
         if tratamiento and medicamento:
             tratamiento.medicamentos.add(medicamento)
             return True
         return False
 
-    def get_recordatorios_by_tratamiento(self, tratamiento_id):
+    def get_medicamentos_by_tratamiento_id(self, tratamiento_id):
         tratamiento = self.get_tratamiento_by_id(tratamiento_id)
         if tratamiento:
-            return tratamiento.recordatorios.all()
+            return list(tratamiento.medicamentos.all())
         return []
 
-    def get_recordatorio_by_id(self, id):
+class DjangoSeguimientoRepository(BaseSeguimientoRepository):
+    def get_seguimiento_by_tratamiento_id(self, tratamiento_id):
         try:
-            return Recordatorio.objects.get(pk=id)
-        except Recordatorio.DoesNotExist:
+            tratamiento = Tratamiento.objects.get(pk=tratamiento_id)
+            return tratamiento  # Por ahora el seguimiento está en el mismo tratamiento
+        except Tratamiento.DoesNotExist:
             return None
 
-    def save_recordatorio(self, recordatorio):
-        recordatorio.save()
-        return recordatorio
+    def save_seguimiento(self, seguimiento):
+        # Si el seguimiento es parte del tratamiento
+        if hasattr(seguimiento, 'save'):
+            seguimiento.save()
+        return seguimiento
 
-    def get_alerta_by_id(self, id):
+    def calcular_cumplimiento_tratamiento(self, tratamiento_id):
         try:
-            return Alerta.objects.get(pk=id)
-        except Alerta.DoesNotExist:
-            return None
+            tratamiento = Tratamiento.objects.get(pk=tratamiento_id)
+            return tratamiento.calcular_cumplimiento()
+        except Tratamiento.DoesNotExist:
+            return 0.0
 
-    def get_alertas_by_tratamiento(self, tratamiento_id):
-        tratamiento = self.get_tratamiento_by_id(tratamiento_id)
-        if tratamiento:
-            return tratamiento.alertas.all()
-        return []
-
-    def save_alerta(self, alerta):
-        alerta.save()
-        return alerta
-
-    def get_notificaciones_pendientes(self, tratamiento_id, fecha_hora=None):
-        if fecha_hora is None:
-            fecha_hora = timezone.now()
-
-        tratamiento = self.get_tratamiento_by_id(tratamiento_id)
-        if tratamiento:
-            alertas = list(tratamiento.alertas.filter(
-                estado=EstadoNotificacion.ACTIVO,
-                fecha_hora__lte=fecha_hora
-            ))
-
-            recordatorios = list(tratamiento.recordatorios.filter(
-                estado=EstadoNotificacion.ACTIVO,
-                fecha_hora__lte=fecha_hora
-            ))
-
-            return sorted(alertas + recordatorios, key=lambda x: x.fecha_hora)
-        return []
-
-
-class FakeTratamientoRepository(BaseRepository):
+class FakeMedicamentoRepository(BaseMedicamentoRepository):
     def __init__(self):
         self.medicamentos = {}
-        self.tratamientos = {}
-        self.recordatorios = {}
-        self.alertas = {}
-        self.episodios = {}
-        self.tratamiento_medicamentos = {}
-        self.next_id = {
-            'medicamento': 1,
-            'tratamiento': 1,
-            'recordatorio': 1,
-            'alerta': 1,
-            'episodio': 1
-        }
+        self.next_id = 1
 
-    def _get_next_id(self, tipo):
-        id = self.next_id[tipo]
-        self.next_id[tipo] += 1
+    def _get_next_id(self):
+        id = self.next_id
+        self.next_id += 1
         return id
 
     def get_medicamento_by_id(self, id):
@@ -177,9 +130,27 @@ class FakeTratamientoRepository(BaseRepository):
 
     def save_medicamento(self, medicamento):
         if not medicamento.id:
-            medicamento.id = self._get_next_id('medicamento')
+            medicamento.id = self._get_next_id()
         self.medicamentos[medicamento.id] = medicamento
         return medicamento
+
+    def delete_medicamento(self, id):
+        if id in self.medicamentos:
+            del self.medicamentos[id]
+            return True
+        return False
+
+class FakeTratamientoRepository(BaseTratamientoRepository):
+    def __init__(self, medicamento_repository=None):
+        self.tratamientos = {}
+        self.tratamiento_medicamentos = {}  # tratamiento_id -> set(medicamento_ids)
+        self.next_id = 1
+        self.medicamento_repository = medicamento_repository
+
+    def _get_next_id(self):
+        id = self.next_id
+        self.next_id += 1
+        return id
 
     def get_tratamiento_by_id(self, id):
         return self.tratamientos.get(id)
@@ -189,13 +160,13 @@ class FakeTratamientoRepository(BaseRepository):
 
     def save_tratamiento(self, tratamiento):
         if not tratamiento.id:
-            tratamiento.id = self._get_next_id('tratamiento')
+            tratamiento.id = self._get_next_id()
             self.tratamiento_medicamentos[tratamiento.id] = set()
         self.tratamientos[tratamiento.id] = tratamiento
         return tratamiento
 
     def add_medicamento_to_tratamiento(self, tratamiento_id, medicamento_id):
-        if tratamiento_id in self.tratamientos and medicamento_id in self.medicamentos:
+        if tratamiento_id in self.tratamientos:
             if tratamiento_id not in self.tratamiento_medicamentos:
                 self.tratamiento_medicamentos[tratamiento_id] = set()
             self.tratamiento_medicamentos[tratamiento_id].add(medicamento_id)
@@ -204,60 +175,71 @@ class FakeTratamientoRepository(BaseRepository):
 
     def get_medicamentos_by_tratamiento_id(self, tratamiento_id):
         ids = self.tratamiento_medicamentos.get(tratamiento_id, set())
-        return [self.medicamentos[mid] for mid in ids if mid in self.medicamentos]
+        if self.medicamento_repository:
+            return [self.medicamento_repository.get_medicamento_by_id(mid)
+                   for mid in ids if self.medicamento_repository.get_medicamento_by_id(mid)]
+        return list(ids)  # Devuelve solo los IDs si no hay repo de medicamentos
 
-    def get_recordatorios_by_tratamiento(self, tratamiento_id):
-        return [r for r in self.recordatorios.values() if getattr(r, 'tratamiento_id', None) == tratamiento_id]
 
-    def get_recordatorio_by_id(self, id):
-        return self.recordatorios.get(id)
+class FakeSeguimientoRepository(BaseSeguimientoRepository):
+    def __init__(self, tratamiento_repository: BaseTratamientoRepository):
+        self.episodios = {}
+        self.estadisticas_cumplimiento = {}
+        self.next_id = 1
+        self.tratamiento_repository = tratamiento_repository
 
-    def save_recordatorio(self, recordatorio):
-        if not recordatorio.id:
-            recordatorio.id = self._get_next_id('recordatorio')
-        self.recordatorios[recordatorio.id] = recordatorio
-        return recordatorio
+    def _get_next_id(self):
+        _id = self.next_id
+        self.next_id += 1
+        return _id
 
-    def get_alerta_by_id(self, id):
-        return self.alertas.get(id)
+    # ==== Métodos de la interfaz ====
+    def get_seguimiento_by_tratamiento_id(self, tratamiento_id):
+        """
+        En este fake consideramos que 'seguimiento' es el mismo tratamiento.
+        """
+        return self.tratamiento_repository.get_tratamiento_by_id(tratamiento_id)
 
-    def get_alertas_by_tratamiento(self, tratamiento_id):
-        return [a for a in self.alertas.values() if getattr(a, 'tratamiento_id', None) == tratamiento_id]
+    def save_seguimiento(self, seguimiento):
+        """
+        Guarda un episodio de seguimiento.
+        """
+        if not getattr(seguimiento, "id", None):
+            seguimiento.id = self._get_next_id()
+        self.episodios[seguimiento.id] = seguimiento
+        return seguimiento
 
-    def save_alerta(self, alerta):
-        if not alerta.id:
-            alerta.id = self._get_next_id('alerta')
-        self.alertas[alerta.id] = alerta
-        return alerta
+    def calcular_cumplimiento_tratamiento(self, tratamiento_id):
+        """
+        Retorna el porcentaje de cumplimiento de un tratamiento.
+        Si no existe, devuelve 0.0.
+        """
+        estadisticas = self.estadisticas_cumplimiento.get(tratamiento_id)
+        if estadisticas and "porcentaje_cumplimiento" in estadisticas:
+            return estadisticas["porcentaje_cumplimiento"]
+        return 0.0
 
-    def get_notificaciones_pendientes(self, tratamiento_id, fecha_hora=None):
-        if fecha_hora is None:
-            fecha_hora = timezone.now()
+    def save_estadisticas_cumplimiento(self, tratamiento_id, estadisticas):
+        """
+        Guarda estadísticas de cumplimiento.
+        Espera un dict con al menos: {'porcentaje_cumplimiento': float, ...}
+        """
+        if "porcentaje_cumplimiento" not in estadisticas:
+            raise ValueError("Las estadísticas deben incluir 'porcentaje_cumplimiento'")
+        self.estadisticas_cumplimiento[tratamiento_id] = estadisticas
+        return estadisticas
 
-        alertas = [
-            a for a in self.alertas.values()
-            if getattr(a, 'tratamiento_id', None) == tratamiento_id
-            and a.estado == EstadoNotificacion.ACTIVO
-            and a.fecha_hora <= fecha_hora
+    def get_estadisticas_cumplimiento(self, tratamiento_id):
+        """
+        Retorna el dict completo de estadísticas, o None si no existe.
+        """
+        return self.estadisticas_cumplimiento.get(tratamiento_id)
+
+    def get_episodios_by_paciente(self, paciente_id):
+        """
+        Retorna todos los episodios registrados para un paciente.
+        """
+        return [
+            episodio for episodio in self.episodios.values()
+            if getattr(episodio, 'paciente_id', None) == paciente_id
         ]
-
-        recordatorios = [
-            r for r in self.recordatorios.values()
-            if getattr(r, 'tratamiento_id', None) == tratamiento_id
-            and r.estado == EstadoNotificacion.ACTIVO
-            and r.fecha_hora <= fecha_hora
-        ]
-
-        return sorted(alertas + recordatorios, key=lambda x: x.fecha_hora)
-
-    def save_episodio(self, episodio):
-        if not episodio.id:
-            episodio.id = self._get_next_id('episodio')
-        self.episodios[episodio.id] = episodio
-        return episodio
-
-    def get_episodio_by_id(self, id):
-        return self.episodios.get(id)
-
-    def get_all_episodios(self):
-        return list(self.episodios.values())

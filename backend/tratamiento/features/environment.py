@@ -10,10 +10,15 @@ def before_all(context):
     random.seed(12345)
 
 def before_scenario(context, scenario):
-    from tratamiento.repositories import FakeTratamientoRepository
+    from tratamiento.repositories import FakeTratamientoRepository, FakeMedicamentoRepository, FakeSeguimientoRepository
     from tratamiento.tratamiento_service import TratamientoService
     from tratamiento.medicamento_service import MedicamentoService
+    from tratamiento.seguimiento_services import SeguimientoService
 
-    context.tratamiento_repository = FakeTratamientoRepository()
+    context.medicamento_repository = FakeMedicamentoRepository()
+    context.tratamiento_repository = FakeTratamientoRepository(context.medicamento_repository)
+    context.seguimiento_repository = FakeSeguimientoRepository(context.tratamiento_repository)
+
     context.tratamiento_service = TratamientoService(context.tratamiento_repository)
-    context.medicamento_service = MedicamentoService(context.tratamiento_repository)
+    context.medicamento_service = MedicamentoService(context.medicamento_repository)
+    context.seguimiento_service = SeguimientoService(context.tratamiento_service)
