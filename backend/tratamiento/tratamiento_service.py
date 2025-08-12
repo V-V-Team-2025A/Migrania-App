@@ -9,24 +9,23 @@ class TratamientoService:
 
     # Creación y mantenimiento
     def crear_tratamiento(self, paciente, episodio=None, recomendaciones=None, fecha_inicio=None, activo=True):
-        # Validaciones
         errores = self._validar_datos_tratamiento(paciente, episodio, recomendaciones, fecha_inicio)
         if errores:
             raise ValueError(f"Datos de tratamiento inválidos: {', '.join(errores)}")
 
-        tratamiento_existente = Tratamiento.objects.filter(episodio=episodio).first()
-        if tratamiento_existente:
-            self.tratamiento_repository.save_tratamiento(tratamiento_existente)
-            return tratamiento_existente
+        existing = (
+            self.tratamiento_repository.get_tratamiento_by_episodio(episodio)
+            if hasattr(self.tratamiento_repository, "get_tratamiento_by_episodio")
+            else Tratamiento.objects.filter(episodio=episodio).first()
+        )
+        if existing:
+            self.tratamiento_repository.save_tratamiento(existing)
+            return existing
 
         tratamiento = Tratamiento(
-            paciente=paciente,
-            episodio=episodio,
-            fecha_inicio=fecha_inicio,
-            activo=activo
+            paciente=paciente, episodio=episodio, fecha_inicio=fecha_inicio, activo=activo
         )
         tratamiento.save()
-
         self.tratamiento_repository.save_tratamiento(tratamiento)
 
         if recomendaciones:

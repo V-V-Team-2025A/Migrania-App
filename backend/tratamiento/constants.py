@@ -1,0 +1,8 @@
+from django.conf import settings
+
+ALERTA_DURACION_MIN      = getattr(settings, "ALERTA_DURACION_MIN", 15)
+ALERTA_TIEMPO_ESPERA_MIN = getattr(settings, "ALERTA_TIEMPO_ESPERA_MIN", 15)
+RECOMENDACION_HORA       = getattr(settings, "RECOMENDACION_HORA", 9)
+
+UMBRAL_CUMPLIMIENTO_ALTO = getattr(settings, "UMBRAL_CUMPLIMIENTO_ALTO", 80.0)
+UMBRAL_CUMPLIMIENTO_BAJO = getattr(settings, "UMBRAL_CUMPLIMIENTO_BAJO", 60.0)

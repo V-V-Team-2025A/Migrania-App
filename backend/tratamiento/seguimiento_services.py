@@ -1,20 +1,17 @@
 from django.utils import timezone
-
+from tratamiento.constants import UMBRAL_CUMPLIMIENTO_ALTO, UMBRAL_CUMPLIMIENTO_BAJO
 
 class SeguimientoService:
-
-    UMBRAL_CUMPLIMIENTO_ALTO = 80.0
-    UMBRAL_CUMPLIMIENTO_BAJO = 60.0
+    UMBRAL_CUMPLIMIENTO_ALTO = UMBRAL_CUMPLIMIENTO_ALTO
+    UMBRAL_CUMPLIMIENTO_BAJO = UMBRAL_CUMPLIMIENTO_BAJO
 
     def __init__(self, tratamiento_service):
         self._tratamiento_service = tratamiento_service
 
     def evaluar_cumplimiento(self, tratamiento_id):
-        #Evalúa cumplimiento actual del tratamiento
         estadisticas = self._tratamiento_service.obtener_estadisticas_cumplimiento(tratamiento_id)
         if not estadisticas:
             return None
-
         porcentaje = estadisticas['porcentaje_cumplimiento']
         return {
             'porcentaje': porcentaje,
@@ -34,35 +31,22 @@ class SeguimientoService:
         evaluacion = self.evaluar_cumplimiento(tratamiento_id)
         if not evaluacion:
             return None
-
-        accion_recomendada = self.decidir_accion_seguimiento(evaluacion['porcentaje'])
-
         return {
             'tratamiento_id': tratamiento_id,
             'evaluacion': evaluacion,
-            'accion_recomendada': accion_recomendada,
+            'accion_recomendada': self.decidir_accion_seguimiento(evaluacion['porcentaje']),
             'fecha_evaluacion': timezone.now(),
             'recomendaciones_adicionales': self._generar_recomendaciones_adicionales(evaluacion)
         }
 
     def _categorizar_cumplimiento(self, porcentaje):
-        if porcentaje >= self.UMBRAL_CUMPLIMIENTO_ALTO:
-            return 'alto'
-        else:
-            return 'bajo'
+        return 'alto' if porcentaje >= self.UMBRAL_CUMPLIMIENTO_ALTO else 'bajo'
 
     def _generar_recomendaciones_adicionales(self, evaluacion):
-        # genera recomendaciones adicionales basadas en la evaluación
-        categoria = evaluacion['categoria']
-
-        if categoria == 'bajo':
+        if evaluacion['categoria'] == 'bajo':
             return [
                 "Revisar barreras para el cumplimiento",
                 "Considerar simplificar el régimen",
-                "Evaluar efectos secundarios"
+                "Evaluar efectos secundarios",
             ]
-        else:
-            return [
-                "Mantener el régimen actual",
-                "Considerar optimizaciones menores"
-            ]
+        return ["Mantener el régimen actual", "Considerar optimizaciones menores"]

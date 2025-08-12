@@ -1,11 +1,14 @@
 from django.db import models
 from django.utils import timezone
 from collections import deque
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 import logging
 
 from usuarios.models import PacienteProfile
 from evaluacion_diagnostico.models import  EpisodioCefalea
+from tratamiento.constants import (
+    ALERTA_DURACION_MIN, ALERTA_TIEMPO_ESPERA_MIN, RECOMENDACION_HORA
+)
 
 logger = logging.getLogger(__name__)
 
@@ -271,15 +274,18 @@ class Tratamiento(models.Model):
         fecha_limite = None
 
         if dias_anticipacion > 0:
+            # Evita comparaciones aware/naive: usa solo la FECHA
             fecha_limite = (timezone.now() + timedelta(days=dias_anticipacion)).date()
 
         for medicamento in self.medicamentos.all():
+            # Fechas de tomas (datetimes naive)
             fechas_tomas = medicamento.calcularFechasDeTomas(self.fecha_inicio)
 
             if fecha_limite is not None:
+                # Compara por fecha para evitar TypeError aware/naive
                 fechas_tomas = [f for f in fechas_tomas if f.date() <= fecha_limite]
 
-            # Recordatorios de 30 min antes
+            # Recordatorios 30 min antes de cada toma
             recordatorios = medicamento.calcularRecordatorios(fechas_tomas)
             for fr in recordatorios:
                 r = Recordatorio(
@@ -297,8 +303,8 @@ class Tratamiento(models.Model):
                     fecha_hora=ft,
                     estado=EstadoNotificacion.ACTIVO,
                     numero_alerta=1,
-                    duracion=15,
-                    tiempo_espera=15
+                    duracion=ALERTA_DURACION_MIN,
+                    tiempo_espera=ALERTA_TIEMPO_ESPERA_MIN
                 )
                 a.save()
                 todas_notificaciones.append(a)
@@ -306,7 +312,7 @@ class Tratamiento(models.Model):
         for rec in self.recomendaciones:
             for i in range(dias_anticipacion):
                 fecha = timezone.now().date() + timedelta(days=i)
-                hora = datetime.combine(fecha, datetime.min.time().replace(hour=9))
+                hora = datetime.combine(fecha, time(RECOMENDACION_HORA, 0))
                 r = Recordatorio(
                     mensaje=f"Recordatorio de recomendación: {rec}",
                     fecha_hora=hora,
